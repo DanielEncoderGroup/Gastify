@@ -1,8 +1,88 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import Icon from '../../components/ui/Icon';
+import { toast } from 'react-hot-toast';
+import { authService } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
 
 const LandingPage: React.FC = () => {
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [emailError, setEmailError] = useState(false);
+  const [loginError, setLoginError] = useState('');
+  const navigate = useNavigate();
+  const { login } = useAuth();
+
+  // Efecto para bloquear el scroll cuando el modal está abierto
+  useEffect(() => {
+    if (showLoginModal) {
+      // Bloquear el scroll del body
+      document.body.style.overflow = 'hidden';
+    } else {
+      // Restaurar el scroll del body
+      document.body.style.overflow = 'auto';
+    }
+
+    // Limpiar el efecto cuando el componente se desmonte
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [showLoginModal]);
+
+  // Función para validar el formato del correo electrónico
+  const isValidEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validar correo electrónico
+    if (!isValidEmail(email)) {
+      setEmailError(true);
+      return;
+    }
+    
+    // Resetear el error si el correo es válido
+    setEmailError(false);
+    setIsLoading(true);
+    
+    try {
+      // Usar el AuthContext para la autenticación real con JWT
+      await login(email, password);
+      
+      // Si llegamos aquí, el login fue exitoso
+      setLoginError('');
+      toast.success('Inicio de sesión exitoso');
+      // Usamos la ruta /app/projects que sí está correctamente configurada
+      navigate('/app/projects');
+    } catch (error: any) {
+      // Manejar el error de autenticación
+      const errorMessage = error.response?.data?.message || 'Correo electrónico o contraseña incorrecta';
+      setLoginError(errorMessage);
+      // Eliminamos toast.error para quitar la notificación roja en la esquina superior derecha
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+  
+  // Limpiar los errores cuando se cierra el modal
+  const handleCloseModal = () => {
+    setShowLoginModal(false);
+    setLoginError('');
+    setEmailError(false);
+    setEmail('');
+    setPassword('');
+  };
+
   return (
     <div className="bg-white">
       {/* Header */}
@@ -25,12 +105,12 @@ const LandingPage: React.FC = () => {
               <a href="#valores" className="text-base font-medium text-gray-300 hover:text-white">
                 Valores
               </a>
-              <Link
-                to="/login"
+              <button
+                onClick={() => setShowLoginModal(true)}
                 className="whitespace-nowrap text-base font-medium text-gray-300 hover:text-white"
               >
                 Iniciar sesión
-              </Link>
+              </button>
               <Link
                 to="/register"
                 className="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-gray-900 bg-blue-500 hover:bg-blue-600"
@@ -62,12 +142,12 @@ const LandingPage: React.FC = () => {
             >
               Comenzar ahora
             </Link>
-            <Link
-              to="/login"
+            <button
+              onClick={() => setShowLoginModal(true)}
               className="text-base font-medium text-white hover:text-blue-300"
             >
               Iniciar sesión
-            </Link>
+            </button>
           </div>
         </div>
       </div>
@@ -599,7 +679,9 @@ const LandingPage: React.FC = () => {
               </div>
               <div className="p-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">Guía de implementación ágil</h3>
-                <p className="text-gray-500 mb-4">Aprende a implementar metodologías ágiles en tu organización y mejora la entrega de tus proyectos.</p>
+                <p className="text-gray-500 mb-4">
+                  Aprende a implementar metodologías ágiles en tu organización y mejora la entrega de tus proyectos.
+                </p>
                 <button type="button" className="text-blue-600 font-medium flex items-center hover:text-blue-800 focus:outline-none">
                   Leer más <Icon name="ArrowRightIcon" className="h-4 w-4 ml-1" />
                 </button>
@@ -615,7 +697,9 @@ const LandingPage: React.FC = () => {
               </div>
               <div className="p-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">Estrategias de digitalización</h3>
-                <p className="text-gray-500 mb-4">Descubre cómo transformar digitalmente tu empresa para mantener la competitividad en el mercado actual.</p>
+                <p className="text-gray-500 mb-4">
+                  Descubre cómo transformar digitalmente tu empresa para mantener la competitividad en el mercado actual.
+                </p>
                 <button type="button" className="text-blue-600 font-medium flex items-center hover:text-blue-800 focus:outline-none">
                   Leer más <Icon name="ArrowRightIcon" className="h-4 w-4 ml-1" />
                 </button>
@@ -631,7 +715,9 @@ const LandingPage: React.FC = () => {
               </div>
               <div className="p-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">Seguridad en aplicaciones web</h3>
-                <p className="text-gray-500 mb-4">Conoce las mejores prácticas para proteger tus aplicaciones web y los datos de tus usuarios.</p>
+                <p className="text-gray-500 mb-4">
+                  Conoce las mejores prácticas para proteger tus aplicaciones web y los datos de tus usuarios.
+                </p>
                 <button type="button" className="text-blue-600 font-medium flex items-center hover:text-blue-800 focus:outline-none">
                   Leer más <Icon name="ArrowRightIcon" className="h-4 w-4 ml-1" />
                 </button>
@@ -742,22 +828,53 @@ const LandingPage: React.FC = () => {
               <form className="space-y-6">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nombre</label>
-                  <input type="text" name="name" id="name" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  <input
+                    type="text"
+                    name="name"
+                    id="name"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    required
+                  />
                 </div>
+                
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-                  <input type="email" name="email" id="email" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  <input
+                    type="email"
+                    name="email"
+                    id="email"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    required
+                  />
                 </div>
+                
                 <div>
                   <label htmlFor="company" className="block text-sm font-medium text-gray-700">Empresa</label>
-                  <input type="text" name="company" id="company" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  <input
+                    type="text"
+                    name="company"
+                    id="company"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    required
+                  />
                 </div>
+                
                 <div>
                   <label htmlFor="message" className="block text-sm font-medium text-gray-700">Mensaje</label>
-                  <textarea name="message" id="message" rows={4} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+                  <textarea
+                    name="message"
+                    id="message"
+                    rows={4}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    required
+                  />
                 </div>
+                
                 <div>
-                  <button type="submit" className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                  <button
+                    type="submit"
+                    className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
                     Enviar mensaje
                   </button>
                 </div>
@@ -839,11 +956,118 @@ const LandingPage: React.FC = () => {
           
           <div className="mt-8 pt-8 border-t border-gray-700 text-center">
             <p className="text-gray-400 text-sm">
-              © {new Date().getFullYear()} EncoderGroup. Todos los derechos reservados.
+              &copy; {new Date().getFullYear()} EncoderGroup. Todos los derechos reservados.
             </p>
           </div>
         </div>
       </footer>
+
+      {/* Modal de inicio de sesión */}
+      {showLoginModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 overflow-hidden relative">
+            {/* Header del modal */}
+            <div className="flex justify-between items-center p-4 border-b">
+              <div className="flex items-center">
+                <Icon name="CommandLineIcon" className="h-6 w-6 text-blue-500 mr-2" />
+                <h2 className="text-xl font-semibold">Inicia sesión</h2>
+              </div>
+              <button
+                onClick={handleCloseModal}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <Icon name="XMarkIcon" className="h-6 w-6" />
+              </button>
+            </div>
+            
+            {/* Contenido del modal */}
+            <div className="p-6">
+              <p className="text-sm text-gray-700 mb-6">
+                Usa la misma cuenta para ingresar a <span className="font-semibold">EncoderGroup</span>
+              </p>
+              
+              {loginError && (
+                <div className="mb-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 text-sm text-yellow-800 flex items-start">
+                  <Icon name="ExclamationCircleIcon" className="h-5 w-5 text-yellow-400 mr-2 mt-0.5 flex-shrink-0" />
+                  <span>{loginError}</span>
+                </div>
+              )}
+              
+              <form onSubmit={handleLogin}>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (emailError) setEmailError(false);
+                    }}
+                    placeholder="Ingresa tu correo electrónico"
+                    className={`w-full px-3 py-2 border ${emailError ? 'border-red-500 ring-2 ring-red-500 bg-red-50' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 ${emailError ? 'focus:ring-red-500' : 'focus:ring-blue-500'}`}
+                    required
+                  />
+                  {emailError && (
+                    <p className="text-red-500 text-xs mt-1">Por favor, ingresa un correo electrónico válido.</p>
+                  )}
+                </div>
+                
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Ingresa tu contraseña"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                    <button 
+                      type="button" 
+                      onClick={togglePasswordVisibility}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                    >
+                      <Icon name={showPassword ? "EyeSlashIcon" : "EyeIcon"} className="h-5 w-5" />
+                    </button>
+                  </div>
+                  <div className="flex justify-between items-center mt-2">
+                    <div></div>
+                    <Link to="/forgot-password" className="text-sm text-blue-500 hover:text-blue-700">
+                      ¿Olvidaste tu contraseña?
+                    </Link>
+                  </div>
+                </div>
+                
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className={`w-full bg-blue-600 text-white py-2 px-4 rounded-md font-medium ${isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-blue-700'}`}
+                >
+                  {isLoading ? (
+                    <span className="flex items-center justify-center">
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Cargando...
+                    </span>
+                  ) : 'Ingresar'}
+                </button>
+              </form>
+              
+              <div className="mt-6 text-center">
+                <p className="text-sm text-gray-600">
+                  ¿Aún no tienes cuenta?{' '}
+                  <Link to="/register" className="text-blue-500 hover:text-blue-700 font-medium">
+                    Regístrate
+                  </Link>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

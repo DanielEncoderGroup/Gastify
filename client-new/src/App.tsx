@@ -19,7 +19,7 @@ import ResetPassword from './pages/auth/ResetPassword';
 import VerifyEmail from './pages/auth/VerifyEmail';
 
 // Dashboard and app pages
-import Dashboard from './pages/dashboard/Dashboard';
+// Dashboard eliminado
 import ProjectsList from './pages/projects/ProjectsList';
 import ProjectForm from './pages/projects/ProjectForm';
 import ProjectDetail from './pages/projects/ProjectDetail';
@@ -29,7 +29,7 @@ import RequestDetail from './pages/requests/RequestDetail';
 import RequestForm from './pages/requests/RequestForm';
 import NewProjectRequest from './pages/projects/NewProjectRequest';
 import ProjectRequestsAdmin from './pages/projects/ProjectRequestsAdmin';
-import Statistics from './pages/dashboard/Statistics';
+// Statistics eliminado
 import Profile from './pages/profile/Profile';
 import NotFound from './pages/NotFound';
 
@@ -50,8 +50,7 @@ function App() {
 
         {/* Protected routes - all under /app prefix */}
         <Route path="/app" element={<PrivateRoute element={<Layout />} />}>
-          <Route index element={<Dashboard />} />
-          <Route path="dashboard" element={<Dashboard />} />
+          <Route index element={<RequestsList />} />
           <Route path="projects" element={<ProjectsList />} />
           <Route path="projects/new" element={<ProjectForm />} />
           <Route path="projects/:id" element={<ProjectDetail />} />
@@ -72,7 +71,7 @@ function App() {
             {/* Nueva ruta para solicitudes de proyectos con el formulario mejorado */}
             <Route path="projects/request/new" element={<NewProjectRequest />} />
           </Route>
-          <Route path="stats" element={<Statistics />} />
+          {/* Ruta de Estadísticas eliminada */}
           <Route path="profile" element={<Profile />} />
         </Route>
 

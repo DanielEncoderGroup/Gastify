@@ -32,11 +32,16 @@ api.interceptors.response.use(
     return response;
   },
   async (error: AxiosError) => {
-    // Si el error es 401 (Unauthorized), limpiar el token y redirigir a login
+    // Si el error es 401 (Unauthorized), limpiar el token
+    // pero no redirigir automáticamente para permitir que los componentes manejen el error
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      // Solo limpiamos el token si ya existía (para no afectar el intento de login)
+      if (localStorage.getItem('token')) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        // Removemos la redirección automática para que el componente pueda manejar el error
+        // window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
@@ -77,7 +82,7 @@ export const authService = {
   logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.href = '/login';
+    window.location.href = '/';
   },
 
   // Verificar el token de correo electrónico
