@@ -15,10 +15,8 @@ interface SidebarProps {
  */
 const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   
-  // Ruta del logo
-  const logoIconPath = '/assets/encoder-logo.svg';
   
   // Elementos de navegación basados en el rol del usuario
   const baseNavigation = [
@@ -62,6 +60,20 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
 
   // Verificar si una ruta está activa (incluyendo subrutas)
   const isActive = (href: string) => {
+    // Para rutas específicas como '/app/requests/new', verificar una coincidencia exacta
+    if (href === '/app/requests/new' || href === '/app/projects/request/new') {
+      return location.pathname === href;
+    }
+    
+    // Para rutas base como '/app/requests', verificar que empiece con esta ruta
+    // pero no coincida con subrutas específicas que tienen sus propias entradas
+    if (href === '/app/requests') {
+      return location.pathname === href || 
+             (location.pathname.startsWith(href + '/') && 
+              location.pathname !== '/app/requests/new');
+    }
+    
+    // Para el resto de rutas, verificar coincidencia exacta o que empiece con la ruta + '/'
     return location.pathname === href || location.pathname.startsWith(href + '/');
   };
 
@@ -95,7 +107,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
             leaveFrom="translate-x-0"
             leaveTo="-translate-x-full"
           >
-            <div className="relative flex-1 flex flex-col max-w-xs w-full bg-[#0066b3]">
+            <div className="relative flex-1 flex flex-col max-w-xs w-full bg-[#0f172a]">
               <Transition.Child
                 as={Fragment}
                 enter="ease-in-out duration-300"
@@ -108,7 +120,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
                 <div className="absolute top-0 right-0 -mr-12 pt-2">
                   <button
                     type="button"
-                    className="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-600"
+                    className="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
                     onClick={() => setSidebarOpen(false)}
                   >
                     <span className="sr-only">Cerrar sidebar</span>
@@ -118,12 +130,12 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
               </Transition.Child>
               <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
                 <div className="flex-shrink-0 flex items-center px-4">
-                  <span className="flex items-center">
-                    <div className="flex items-center justify-center bg-[#4285f4] w-10 h-10 mr-3 rounded">
-                      <span className="text-white font-bold text-lg">&lt;/&gt;</span>
-                    </div>
-                    <span className="text-white font-bold text-lg">EncoderGroup</span>
-                  </span>
+                  <span className="text-white text-xl font-medium flex items-center">
+                        <div className="bg-blue-600 p-1.5 rounded mr-1.5">
+                          <Icon name="CommandLineIcon" className="h-5 w-5 text-white" />
+                        </div>
+                        <span className="text-blue-500 font-semibold">Encoder</span><span className="font-semibold">Group</span>
+                      </span>
                 </div>
                 <nav className="mt-5 px-2 space-y-1">
                   {navigation.map((item) => (
@@ -165,9 +177,9 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
                     </div>
                     <div className="ml-3">
                       <p className="text-sm font-medium text-white group-hover:text-gray-300">
-                        mario
+                        {user?.name || 'mario'}
                       </p>
-                      <p className="text-xs font-medium text-white group-hover:text-gray-300">
+                      <p className="text-xs font-medium text-gray-300 group-hover:text-white">
                         Ver perfil
                       </p>
                     </div>
@@ -182,14 +194,14 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
 
       {/* Sidebar estático para desktop */}
       <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
-        <div className="flex-1 flex flex-col min-h-0 border-r border-gray-800 bg-[#0066b3]">
-          <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto bg-[#0066b3]">
+        <div className="flex-1 flex flex-col min-h-0 border-r border-gray-800 bg-[#0f172a]">
+          <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto bg-[#0f172a]">
             <div className="flex-shrink-0 flex items-center px-4">
-              <span className="flex items-center">
-                <div className="flex items-center justify-center bg-[#4285f4] w-10 h-10 mr-3 rounded">
-                  <span className="text-white font-bold text-lg">&lt;/&gt;</span>
+              <span className="text-white text-xl font-medium flex items-center">
+                <div className="bg-blue-600 p-1.5 rounded mr-1.5">
+                  <Icon name="CommandLineIcon" className="h-5 w-5 text-white" />
                 </div>
-                <span className="text-white font-bold text-lg">EncoderGroup</span>
+                <span className="text-blue-500 font-semibold">Encoder</span><span className="font-semibold">Group</span>
               </span>
             </div>
             <nav className="mt-5 px-2 space-y-1">
@@ -222,32 +234,34 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
               ))}
             </nav>
           </div>
-          <div className="flex-shrink-0 flex border-t border-gray-800 p-4">
-            <div className="flex-shrink-0 w-full group block">
-              <div className="flex items-center">
-                <div>
-                  {user?.profileImage ? (
-                    <img
-                      className="inline-block h-9 w-9 rounded-full"
-                      src={user.profileImage}
-                      alt=""
-                    />
-                  ) : (
-                    <div className="h-9 w-9 rounded-full bg-blue-500 flex items-center justify-center">
-                      <span className="text-white font-bold">M</span>
-                    </div>
-                  )}
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-white group-hover:text-gray-200">
-                    mario
-                  </p>
-                  <p className="text-xs font-medium text-white group-hover:text-gray-300">
-                    Ver perfil
-                  </p>
+          <div className="flex-shrink-0 border-t border-blue-800 p-4">
+            <Link to="/app/profile" className="block">
+              <div className="flex-shrink-0 w-full group hover:bg-blue-700 rounded-md p-2 transition-all duration-200">
+                <div className="flex items-center">
+                  <div>
+                    {user?.profileImage ? (
+                      <img
+                        className="inline-block h-10 w-10 rounded-full shadow-md"
+                        src={user.profileImage}
+                        alt=""
+                      />
+                    ) : (
+                      <div className="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center shadow-md">
+                        <span className="text-white font-bold">{user?.name?.charAt(0) || 'M'}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-white">
+                      {user?.name || 'mario'}
+                    </p>
+                    <p className="text-xs font-medium text-gray-300 group-hover:text-white">
+                      Ver perfil
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            </Link>
           </div>
         </div>
       </div>

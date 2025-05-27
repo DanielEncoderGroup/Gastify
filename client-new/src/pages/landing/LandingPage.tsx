@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Icon from '../../components/ui/Icon';
 import { toast } from 'react-hot-toast';
 import { authService } from '../../services/api';
@@ -7,6 +7,7 @@ import { useAuth } from '../../contexts/AuthContext';
 
 const LandingPage: React.FC = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -15,6 +16,20 @@ const LandingPage: React.FC = () => {
   const [loginError, setLoginError] = useState('');
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  // Efecto para detectar el parámetro showLogin en la URL
+  useEffect(() => {
+    // Verificar si hay un parámetro showLogin=true en la URL
+    const searchParams = new URLSearchParams(location.search);
+    if (searchParams.get('showLogin') === 'true') {
+      setShowLoginModal(true);
+      // Eliminar el parámetro showLogin de la URL después de procesar
+      // para evitar que el modal se abra al navegar entre secciones
+      if (location.search) {
+        navigate('/', { replace: true });
+      }
+    }
+  }, [location, navigate]);
 
   // Efecto para bloquear el scroll cuando el modal está abierto
   useEffect(() => {
@@ -96,13 +111,37 @@ const LandingPage: React.FC = () => {
               </span>
             </div>
             <div className="hidden md:flex items-center justify-end md:flex-1 lg:w-0 space-x-8">
-              <a href="#metodologias" className="text-base font-medium text-gray-300 hover:text-white">
+              <a 
+                href="javascript:void(0)" 
+                onClick={() => {
+                  // Eliminar parámetros de URL y navegar a la sección
+                  navigate('/', { replace: true });
+                  document.getElementById('metodologias')?.scrollIntoView({ behavior: 'smooth' });
+                }} 
+                className="text-base font-medium text-gray-300 hover:text-white"
+              >
                 Metodologías
               </a>
-              <a href="#tecnologias" className="text-base font-medium text-gray-300 hover:text-white">
+              <a 
+                href="javascript:void(0)" 
+                onClick={() => {
+                  // Eliminar parámetros de URL y navegar a la sección
+                  navigate('/', { replace: true });
+                  document.getElementById('tecnologias')?.scrollIntoView({ behavior: 'smooth' });
+                }} 
+                className="text-base font-medium text-gray-300 hover:text-white"
+              >
                 Tecnologías
               </a>
-              <a href="#valores" className="text-base font-medium text-gray-300 hover:text-white">
+              <a 
+                href="javascript:void(0)" 
+                onClick={() => {
+                  // Eliminar parámetros de URL y navegar a la sección
+                  navigate('/', { replace: true });
+                  document.getElementById('valores')?.scrollIntoView({ behavior: 'smooth' });
+                }} 
+                className="text-base font-medium text-gray-300 hover:text-white"
+              >
                 Valores
               </a>
               <button
