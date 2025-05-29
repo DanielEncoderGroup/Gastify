@@ -33,8 +33,6 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
 
   // Elementos específicos para clientes
   const clientNavItems = [
-    { name: 'Mis Solicitudes', href: '/app/requests', iconName: 'ClipboardDocumentListIcon' },
-    { name: 'Nueva Solicitud', href: '/app/requests/new', iconName: 'PlusCircleIcon' },
     { name: 'Solicitar Proyecto IT', href: '/app/projects/request/new', iconName: 'ComputerDesktopIcon', isNew: true },
   ];
 

@@ -1,14 +1,17 @@
 import axios, { AxiosResponse, AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 // Configuración del API base
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL || '/api';
 
 // Crear una instancia de axios con la configuración base
 const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
+  withCredentials: true,
+  timeout: 30000, // 30 segundos de timeout
 });
 
 // Interceptor para agregar el token de autenticación a las peticiones
@@ -51,7 +54,8 @@ api.interceptors.response.use(
 export const authService = {
   // Registrar un nuevo usuario
   register: async (userData: {
-    name: string;
+    firstName: string;
+    lastName: string;
     email: string;
     password: string;
     confirmPassword: string;

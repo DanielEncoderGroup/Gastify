@@ -13,10 +13,22 @@ const Register: React.FC = () => {
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
   // Esquema de validación
+  // Definir el tipo para los valores del formulario
+  interface RegisterFormValues {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+  }
+
   const validationSchema = Yup.object({
-    name: Yup.string()
+    firstName: Yup.string()
       .required('El nombre es obligatorio')
-      .min(3, 'El nombre debe tener al menos 3 caracteres'),
+      .min(2, 'El nombre debe tener al menos 2 caracteres'),
+    lastName: Yup.string()
+      .required('El apellido es obligatorio')
+      .min(2, 'El apellido debe tener al menos 2 caracteres'),
     email: Yup.string()
       .email('Correo electrónico inválido')
       .required('El correo electrónico es obligatorio'),
@@ -33,9 +45,10 @@ const Register: React.FC = () => {
   });
 
   // Configuración de Formik
-  const formik = useFormik({
+  const formik = useFormik<RegisterFormValues>({
     initialValues: {
-      name: '',
+      firstName: '',
+      lastName: '',
       email: '',
       password: '',
       confirmPassword: ''
@@ -43,7 +56,7 @@ const Register: React.FC = () => {
     validationSchema,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
       try {
-        await register(values.name, values.email, values.password, values.confirmPassword);
+        await register(values.firstName, values.lastName, values.email, values.password, values.confirmPassword);
         setRegistrationSuccess(true);
         resetForm();
       } catch (err) {
@@ -147,27 +160,57 @@ const Register: React.FC = () => {
         ) : (
           <form className="mt-8 space-y-6" onSubmit={formik.handleSubmit}>
             <div className="space-y-4">
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  autoComplete="name"
-                  required
-                  className={`appearance-none relative block w-full px-3 py-2 border ${
-                    formik.touched.name && formik.errors.name 
-                      ? 'border-red-300 text-red-900 placeholder-red-300' 
-                      : 'border-gray-300 placeholder-gray-500 text-gray-900'
-                  } rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
-                  placeholder="Nombre completo"
-                  value={formik.values.name}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                />
-                {formik.touched.name && formik.errors.name && (
-                  <p className="mt-2 text-sm text-red-600">{formik.errors.name as string}</p>
-                )}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="mb-4">
+                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+                    Nombre
+                  </label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Icon name="UserIcon" className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      id="firstName"
+                      name="firstName"
+                      type="text"
+                      autoComplete="given-name"
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      value={formik.values.firstName}
+                      className={`focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md ${formik.touched.firstName && formik.errors.firstName ? 'border-red-300' : ''}`}
+                      placeholder="Tu nombre"
+                    />
+                  </div>
+                  {formik.touched.firstName && formik.errors.firstName && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {typeof formik.errors.firstName === 'string' ? formik.errors.firstName : ''}
+                    </p>
+                  )}
+                </div>
+
+                <div className="mb-4">
+                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+                    Apellido
+                  </label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <input
+                      id="lastName"
+                      name="lastName"
+                      type="text"
+                      autoComplete="family-name"
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      value={formik.values.lastName}
+                      className={`focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md ${formik.touched.lastName && formik.errors.lastName ? 'border-red-300' : ''}`}
+                      placeholder="Tu apellido"
+                    />
+                  </div>
+                  {formik.touched.lastName && formik.errors.lastName && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {typeof formik.errors.lastName === 'string' ? formik.errors.lastName : ''}
+                    </p>
+                  )}
+                </div>
               </div>
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
@@ -188,7 +231,9 @@ const Register: React.FC = () => {
                   onBlur={formik.handleBlur}
                 />
                 {formik.touched.email && formik.errors.email && (
-                  <p className="mt-2 text-sm text-red-600">{formik.errors.email as string}</p>
+                  <p className="mt-2 text-sm text-red-600">
+                    {typeof formik.errors.email === 'string' ? formik.errors.email : ''}
+                  </p>
                 )}
               </div>
               <div>
@@ -233,7 +278,9 @@ const Register: React.FC = () => {
                   </ul>
                 </div>
                 {formik.touched.password && formik.errors.password && (
-                  <p className="mt-2 text-sm text-red-600">{formik.errors.password as string}</p>
+                  <p className="mt-2 text-sm text-red-600">
+                    {typeof formik.errors.password === 'string' ? formik.errors.password : ''}
+                  </p>
                 )}
               </div>
               <div>
@@ -268,7 +315,9 @@ const Register: React.FC = () => {
                   </button>
                 </div>
                 {formik.touched.confirmPassword && formik.errors.confirmPassword && (
-                  <p className="mt-2 text-sm text-red-600">{formik.errors.confirmPassword as string}</p>
+                  <p className="mt-2 text-sm text-red-600">
+                    {typeof formik.errors.confirmPassword === 'string' ? formik.errors.confirmPassword : ''}
+                  </p>
                 )}
               </div>
             </div>

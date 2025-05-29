@@ -1,0 +1,71 @@
+[tool.poetry]
+name = "encodergroup-server"
+version = "0.1.0"
+description = "Backend para la aplicación de gestión de proyectos y solicitudes de EncoderGroup"
+authors = ["EncoderGroup <info@encodergroup.cl>"]
+readme = "README.md"
+packages = [{include = "app"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.103.1"
+uvicorn = {extras = ["standard"], version = "^0.23.2"}
+pydantic = "^2.3.0"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+motor = "^3.3.1"
+pymongo = "^4.5.0"
+python-multipart = "^0.0.6"
+python-dotenv = "^1.0.0"
+aiofiles = "^23.2.1"
+pydantic-settings = "^2.0.3"
+sendgrid = "^6.10.0"
+email-validator = "^2.0.0"
+python-slugify = "^8.0.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+pytest-cov = "^4.1.0"
+pytest-asyncio = "^0.21.1"
+httpx = "^0.24.1"
+black = "^23.7.0"
+isort = "^5.12.0"
+mypy = "^1.5.1"
+types-python-dateutil = "^2.8.19.13"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+target-version = ['py310']
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+
+[uvicorn]
+host = "0.0.0.0"
+port = 8000
+reload = true
+log_level = "info"
+
+[uvicorn.logging]
+level = "info"
+format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"

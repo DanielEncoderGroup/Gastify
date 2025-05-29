@@ -16,7 +16,7 @@ interface AuthContextType {
   loading: boolean;
   error: string | null;
   isAuthenticated: boolean;
-  register: (name: string, email: string, password: string, confirmPassword: string) => Promise<void>;
+  register: (firstName: string, lastName: string, email: string, password: string, confirmPassword: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   requestPasswordReset: (email: string) => Promise<void>;
@@ -95,7 +95,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Función para registrar un nuevo usuario
   const register = async (
-    name: string,
+    firstName: string,
+    lastName: string,
     email: string,
     password: string,
     confirmPassword: string
@@ -104,11 +105,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setError(null);
     
     try {
+      // Llamar al servicio de autenticación
       await authService.register({
-        name,
+        firstName,
+        lastName,
         email,
         password,
-        confirmPassword,
+        confirmPassword
       });
       // No autenticamos al usuario automáticamente, debe verificar su email
       setLoading(false);
