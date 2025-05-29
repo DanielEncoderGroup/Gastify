@@ -4,11 +4,13 @@ import { authService } from '../services/api';
 // Definición de tipos
 interface User {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   role: string;
   isVerified: boolean;
   profileImage?: string;
+  name?: string; // Keep for backward compatibility
 }
 
 interface AuthContextType {

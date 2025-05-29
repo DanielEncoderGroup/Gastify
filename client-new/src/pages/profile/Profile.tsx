@@ -66,10 +66,12 @@ const Profile: React.FC = () => {
               <div className="mb-6">
                 <div className="flex items-center">
                   <div className="h-20 w-20 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-2xl font-bold">
-                    {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                    {user?.firstName ? user.firstName.charAt(0).toUpperCase() : 'U'}
                   </div>
                   <div className="ml-6">
-                    <h3 className="text-lg font-medium text-gray-900">{user?.name || 'Usuario'}</h3>
+                    <h3 className="text-lg font-medium text-gray-900">
+                      {user?.firstName || user?.name || 'Usuario'} {user?.lastName || ''}
+                    </h3>
                     <p className="text-sm text-gray-500">{user?.email || 'email@ejemplo.com'}</p>
                   </div>
                 </div>
@@ -80,16 +82,32 @@ const Profile: React.FC = () => {
                   <h4 className="text-sm font-medium text-gray-900">Información Personal</h4>
                   <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2">
                     <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                        Nombre Completo
-                      </label>
-                      <input
-                        type="text"
-                        name="name"
-                        id="name"
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        defaultValue={user?.name || ''}
-                      />
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div>
+                          <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+                            Nombre
+                          </label>
+                          <input
+                            type="text"
+                            name="firstName"
+                            id="firstName"
+                            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            defaultValue={user?.firstName || ''}
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+                            Apellido
+                          </label>
+                          <input
+                            type="text"
+                            name="lastName"
+                            id="lastName"
+                            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            defaultValue={user?.lastName || ''}
+                          />
+                        </div>
+                      </div>
                     </div>
                     <div>
                       <label htmlFor="email" className="block text-sm font-medium text-gray-700">

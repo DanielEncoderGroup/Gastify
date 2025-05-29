@@ -43,7 +43,7 @@ const Dashboard: React.FC = () => {
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
         <p className="mt-1 text-sm text-gray-500">
-          Bienvenido{user?.name ? `, ${user.name}` : ''}. Aquí tienes un resumen de tu actividad reciente.
+          {user ? `Bienvenido, ${user.firstName || ''} ${user.lastName || user.name || ''}`.trim() : 'Bienvenido'}. Aquí tienes un resumen de tu actividad reciente.
         </p>
       </div>
 

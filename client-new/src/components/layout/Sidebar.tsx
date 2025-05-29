@@ -15,9 +15,11 @@ interface SidebarProps {
  */
 const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   
-  
+  // Get user's full name
+  const fullName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.name || 'Usuario' : 'Usuario';
+
   // Elementos de navegación basados en el rol del usuario
   const baseNavigation = [
     { name: 'Solicitudes', href: '/app/requests', iconName: 'DocumentTextIcon' },
@@ -175,7 +177,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
                     </div>
                     <div className="ml-3">
                       <p className="text-sm font-medium text-white group-hover:text-gray-300">
-                        {user?.name || 'mario'}
+                        {fullName}
                       </p>
                       <p className="text-xs font-medium text-gray-300 group-hover:text-white">
                         Ver perfil
