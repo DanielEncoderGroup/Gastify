@@ -12,11 +12,11 @@ const NewProjectRequest: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Verificar que el usuario es un cliente
+  // Verificar que el usuario es un cliente o usuario normal
   useEffect(() => {
-    if (user && user.role !== 'user') {
+    if (user && user.role !== 'user' && user.role !== 'client') {
       toast.error('No tienes permiso para acceder a esta página');
-      navigate('/app/dashboard');
+      navigate('/app/requests');
     }
   }, [user, navigate]);
 

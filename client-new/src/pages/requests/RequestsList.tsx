@@ -20,7 +20,7 @@ const RequestsList: React.FC = () => {
 
   const isAdmin = user?.role === 'admin';
 
-  // Cargar solicitudes
+  // Cargar solicitudes de proyectos
   const loadRequests = async (reset = false) => {
     try {
       setLoading(true);
@@ -30,35 +30,50 @@ const RequestsList: React.FC = () => {
       const status = selectedStatus !== 'all' ? selectedStatus : undefined;
       const search = searchTerm.trim() || undefined;
       
+      // Solo cargamos solicitudes de tipo proyecto
       const response = await requestService.getAll(
         status as RequestStatus | undefined,
-        undefined,
+        isAdmin ? undefined : user?.id, // Solo filtrar por cliente si no es admin
         search,
         page * itemsPerPage,
         itemsPerPage
       );
       
+      // Filtrar para mostrar solo solicitudes de proyecto (con projectType definido)
+      const projectRequests = response.requests.filter(
+        request => request.projectType
+      );
+      
       if (reset) {
-        setRequests(response.requests);
+        setRequests(projectRequests);
         setCurrentPage(0);
       } else {
-        setRequests(prev => [...prev, ...response.requests]);
+        setRequests(prev => [...prev, ...projectRequests]);
       }
       
+      // Actualizar el total basado en la respuesta del servidor
       setTotalRequests(response.total);
-      setHasMore(response.total > (page + 1) * itemsPerPage);
+      setHasMore((page + 1) * itemsPerPage < response.total);
       setLoading(false);
     } catch (error) {
-      console.error('Error loading requests:', error);
-      toast.error('Error al cargar las solicitudes');
+      console.error('Error al cargar solicitudes de proyecto:', error);
+      toast.error('Error al cargar las solicitudes de proyecto');
       setLoading(false);
+      // Inicializar con array vacío en caso de error
+      if (reset) {
+        setRequests([]);
+        setTotalRequests(0);
+      }
     }
   };
 
-  // Cargar solicitudes cuando cambien los filtros
+  // Cargar solicitudes cuando cambien los filtros o el usuario
   useEffect(() => {
-    loadRequests(true);
-  }, [selectedStatus]);
+    // Solo cargar si el usuario está autenticado
+    if (user) {
+      loadRequests(true);
+    }
+  }, [selectedStatus, user]);
 
   // Manejar búsqueda
   const handleSearch = (e: React.FormEvent) => {
@@ -94,28 +109,19 @@ const RequestsList: React.FC = () => {
 
   return (
     <div className="py-6 px-4 sm:px-6 lg:px-8">
-      {/* Banner promocional para clientes */}
+      {/* Banner informativo para clientes */}
       {!isAdmin && (
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg shadow-sm p-4 mb-6">
           <div className="flex items-start">
             <div className="flex-shrink-0">
-              <Icon name="SparklesIcon" className="h-6 w-6 text-blue-600" />
+              <Icon name="ComputerDesktopIcon" className="h-6 w-6 text-blue-600" />
             </div>
             <div className="ml-3 flex-1">
-              <h3 className="text-sm font-medium text-blue-800">¡Nueva funcionalidad disponible!</h3>
-              <div className="mt-2 text-sm text-blue-700">
+              <h3 className="text-sm font-medium text-blue-800">Solicita tu Proyecto IT</h3>
+              <div className="mt-1 text-sm text-blue-700">
                 <p>
-                  Ahora puedes solicitar proyectos informáticos con nuestro nuevo formulario especializado que incluye campos para requisitos técnicos, presupuesto, plazos e integraciones.
+                  Utiliza nuestro formulario especializado para solicitar proyectos informáticos. Incluye todos los campos necesarios para entender tus necesidades técnicas y de negocio.
                 </p>
-              </div>
-              <div className="mt-3">
-                <Link
-                  to="/app/projects/request/new"
-                  className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  <Icon name="ComputerDesktopIcon" className="-ml-0.5 mr-2 h-4 w-4" />
-                  Solicitar proyecto IT
-                </Link>
               </div>
             </div>
           </div>
@@ -124,31 +130,21 @@ const RequestsList: React.FC = () => {
       
       <div className="sm:flex sm:items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Solicitudes</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Solicitudes de Proyectos</h1>
           <p className="mt-1 text-sm text-gray-500">
             {isAdmin
-              ? 'Gestiona y revisa las solicitudes de los clientes'
-              : 'Administra tus solicitudes y revisa su estado'}
+              ? 'Gestiona y revisa las solicitudes de proyectos de los clientes'
+              : 'Revisa el estado de tus solicitudes de proyectos'}
           </p>
         </div>
         {!isAdmin && (
-          <div className="mt-4 sm:mt-0 flex space-x-3">
-            <button
-              onClick={() => navigate('/app/requests/new')}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <Icon name="PlusIcon" className="mr-2" />
-              Nueva solicitud
-            </button>
+          <div className="mt-4 sm:mt-0">
             <button
               onClick={() => navigate('/app/projects/request/new')}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
-              <Icon name="ComputerDesktopIcon" className="mr-2" />
-              Proyecto IT
-              <span className="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                Nuevo
-              </span>
+              <Icon name="ComputerDesktopIcon" className="mr-2 h-5 w-5" />
+              Solicitar Proyecto IT
             </button>
           </div>
         )}
@@ -199,23 +195,32 @@ const RequestsList: React.FC = () => {
         </div>
       </div>
 
-      {/* Lista de solicitudes */}
+      {/* Lista de solicitudes de proyecto */}
       <div className="bg-white shadow overflow-hidden sm:rounded-md">
         {loading && requests.length === 0 ? (
-          <div className="py-12 flex justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          <div className="py-12 flex flex-col items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+            <p className="text-gray-500">Cargando solicitudes...</p>
           </div>
         ) : requests.length === 0 ? (
           <div className="py-12 text-center">
-            <p className="text-gray-500">No hay solicitudes que mostrar</p>
+            <Icon name="DocumentTextIcon" className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-lg font-medium text-gray-900">No hay solicitudes de proyecto</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              {isAdmin 
+                ? 'No se encontraron solicitudes de proyecto.' 
+                : 'Aún no has creado ninguna solicitud de proyecto.'}
+            </p>
             {!isAdmin && (
-              <button
-                onClick={() => navigate('/app/requests/new')}
-                className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <Icon name="PlusIcon" className="mr-2" />
-                Crear nueva solicitud
-              </button>
+              <div className="mt-6">
+                <button
+                  onClick={() => navigate('/app/projects/request/new')}
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  <Icon name="PlusIcon" className="mr-2 h-5 w-5" />
+                  Crear nueva solicitud de proyecto
+                </button>
+              </div>
             )}
           </div>
         ) : (

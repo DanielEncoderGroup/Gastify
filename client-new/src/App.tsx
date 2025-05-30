@@ -25,11 +25,9 @@ import ProjectsList from './pages/projects/ProjectsList';
 import ProjectForm from './pages/projects/ProjectForm';
 import ProjectDetail from './pages/projects/ProjectDetail';
 import MeetingsScheduler from './pages/meetings/MeetingsScheduler';
-import RequestsList from './pages/requests/RequestsList';
-import RequestDetail from './pages/requests/RequestDetail';
-import RequestForm from './pages/requests/RequestForm';
-// import NewProjectRequest eliminado
 import ProjectRequestsAdmin from './pages/projects/ProjectRequestsAdmin';
+import NewProjectRequest from './pages/projects/NewProjectRequest';
+import RequestsList from './pages/requests/RequestsList';
 // Statistics eliminado
 import Profile from './pages/profile/Profile';
 import NotFound from './pages/NotFound';
@@ -96,14 +94,14 @@ function App() {
 
           {/* Protected routes - all under /app prefix */}
           <Route path="/app" element={<PrivateRoute element={<Layout />} />}>
-            <Route index element={<RequestsList />} />
+            <Route index element={<ProjectsList />} />
             <Route path="projects" element={<ProjectsList />} />
             <Route path="projects/new" element={<ProjectForm />} />
             <Route path="projects/:id" element={<ProjectDetail />} />
             <Route path="projects/:id/edit" element={<ProjectForm />} />
             <Route path="meetings" element={<MeetingsScheduler />} />
             <Route path="requests" element={<RequestsList />} />
-            <Route path="requests/:id" element={<RequestDetail />} />
+            <Route path="projects/request/new" element={<NewProjectRequest />} />
             
             {/* Rutas protegidas para administradores */}
             <Route element={<AdminRoute />}>
@@ -112,9 +110,7 @@ function App() {
             
             {/* Rutas protegidas para clientes */}
             <Route element={<ClientRoute />}>
-              <Route path="requests/new" element={<RequestForm />} />
-              <Route path="requests/edit/:id" element={<RequestForm />} />
-              {/* Ruta para solicitudes de proyectos eliminada */}
+              {/* No hay rutas específicas de cliente por el momento */}
             </Route>
             {/* Ruta de Estadísticas eliminada */}
             <Route path="profile" element={<Profile />} />
