@@ -149,28 +149,37 @@ const Register: React.FC = () => {
         )}
         
         {registrationSuccess ? (
-          <div className="rounded-md bg-green-50 p-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <Icon name="CheckCircleIcon" variant="solid" className="text-green-400" />
+          <div className="rounded-lg bg-gradient-to-r from-green-50 to-blue-50 p-8 shadow-sm border border-green-100">
+            <div className="text-center mb-4">
+              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+                <Icon name="CheckCircleIcon" variant="solid" className="h-10 w-10 text-green-500" />
               </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-green-800">Registro exitoso</h3>
-                <div className="mt-2 text-sm text-green-700">
-                  <p>Te has registrado correctamente. Por favor, verifica tu correo electrónico para activar tu cuenta.</p>
-                </div>
-                <div className="mt-4">
-                  <div className="-mx-2 -my-1.5 flex">
-                    <button
-                      type="button"
-                      onClick={() => navigate('/login')}
-                      className="bg-green-50 px-2 py-1.5 rounded-md text-sm font-medium text-green-800 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-600"
-                    >
-                      Ir a iniciar sesión
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <h3 className="text-xl font-semibold text-gray-800">¡Registro Completado con Éxito!</h3>
+            </div>
+            
+            <div className="bg-white rounded-lg p-5 border border-green-100 shadow-inner">
+              <p className="text-gray-700 text-center leading-relaxed">
+                Gracias por unirte a <span className="font-semibold">EncoderGroup</span>. <br/>
+                Hemos enviado un correo de confirmación a tu dirección de email.<br/>
+                <span className="font-medium text-blue-600">Por favor, verifica tu bandeja de entrada para activar tu cuenta.</span>
+              </p>
+            </div>
+            
+            <div className="mt-6 flex justify-center">
+              <button
+                type="button"
+                onClick={() => navigate('/login')}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+              >
+                <Icon name="ArrowRightOnRectangleIcon" className="-ml-1 mr-2 h-5 w-5" />
+                Ir a iniciar sesión
+              </button>
+            </div>
+            
+            <div className="mt-4 text-center">
+              <p className="text-sm text-gray-500">
+                ¿No recibiste el correo? Revisa tu carpeta de spam o <button onClick={() => alert('Funcionalidad pendiente de implementar')} className="text-blue-600 hover:text-blue-800 font-medium">solicita un nuevo enlace</button>
+              </p>
             </div>
           </div>
         ) : (

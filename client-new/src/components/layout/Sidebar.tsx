@@ -34,9 +34,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
   ];
 
   // Elementos específicos para clientes
-  const clientNavItems = [
-    { name: 'Solicitar Proyecto IT', href: '/app/projects/request/new', iconName: 'ComputerDesktopIcon', isNew: true },
-  ];
+  const clientNavItems: any[] = [];
 
   // Combinar elementos de navegación según el rol
   const navigation = [
@@ -247,13 +245,13 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
                       />
                     ) : (
                       <div className="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center shadow-md">
-                        <span className="text-white font-bold">{user?.name?.charAt(0) || 'M'}</span>
+                        <Icon name="UserIcon" className="h-6 w-6 text-white" />
                       </div>
                     )}
                   </div>
                   <div className="ml-3">
                     <p className="text-sm font-medium text-white">
-                      {user?.name || 'mario'}
+                      {fullName}
                     </p>
                     <p className="text-xs font-medium text-gray-300 group-hover:text-white">
                       Ver perfil

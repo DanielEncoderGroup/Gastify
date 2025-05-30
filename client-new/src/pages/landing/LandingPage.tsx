@@ -12,8 +12,10 @@ const LandingPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [resendingEmail, setResendingEmail] = useState(false);
   const [emailError, setEmailError] = useState(false);
   const [loginError, setLoginError] = useState('');
+  const [isVerificationError, setIsVerificationError] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -53,6 +55,26 @@ const LandingPage: React.FC = () => {
     return emailRegex.test(email);
   };
 
+  // Función para reenviar el correo de verificación
+  const handleResendVerification = async () => {
+    if (!isValidEmail(email)) {
+      setEmailError(true);
+      return;
+    }
+    
+    setResendingEmail(true);
+    try {
+      // Llamada al endpoint para reenviar el correo de verificación
+      await authService.resendVerificationEmail(email);
+      toast.success('Correo de verificación enviado. Por favor, revisa tu bandeja de entrada.');
+    } catch (error: any) {
+      console.error('Error al reenviar el correo de verificación:', error);
+      toast.error('No se pudo reenviar el correo de verificación. Inténtalo más tarde.');
+    } finally {
+      setResendingEmail(false);
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -65,6 +87,7 @@ const LandingPage: React.FC = () => {
     // Resetear el error si el correo es válido
     setEmailError(false);
     setIsLoading(true);
+    setIsVerificationError(false);
     
     try {
       console.log('Intentando iniciar sesión con:', { email, password });
@@ -83,6 +106,16 @@ const LandingPage: React.FC = () => {
       
       // Manejar el error de autenticación
       const errorMessage = error.response?.data?.message || 'Correo electrónico o contraseña incorrecta';
+      
+      // Detectar si es un error de verificación de correo
+      if (errorMessage.toLowerCase().includes('confirma tu correo') || 
+          errorMessage.toLowerCase().includes('verify') || 
+          errorMessage.toLowerCase().includes('verification')) {
+        setIsVerificationError(true);
+      } else {
+        setIsVerificationError(false);
+      }
+      
       setLoginError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -1028,13 +1061,36 @@ const LandingPage: React.FC = () => {
               </div>
               
               {loginError && (
-                <div className="mb-6 rounded-md bg-red-50 p-4">
+                <div className="bg-red-50 border-l-4 border-red-400 p-4 mt-4">
                   <div className="flex">
                     <div className="flex-shrink-0">
-                      <Icon name="XCircleIcon" variant="solid" className="h-5 w-5 text-red-400" />
+                      <Icon name="ExclamationCircleIcon" className="h-5 w-5 text-red-400" />
                     </div>
-                    <div className="ml-3">
-                      <p className="text-sm font-medium text-red-800">{loginError}</p>
+                    <div className="ml-3 flex-1">
+                      <p className="text-sm text-red-700">{loginError}</p>
+                      
+                      {isVerificationError && (
+                        <div className="mt-3">
+                          <button
+                            type="button"
+                            onClick={handleResendVerification}
+                            disabled={resendingEmail}
+                            className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500 focus:outline-none focus:underline disabled:opacity-50"
+                          >
+                            {resendingEmail ? (
+                              <>
+                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Enviando correo...
+                              </>
+                            ) : (
+                              <>Reenviar correo de verificación<Icon name="ArrowPathIcon" className="ml-1 h-4 w-4" /></>
+                            )}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

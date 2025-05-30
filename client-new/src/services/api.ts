@@ -17,14 +17,44 @@ const api = axios.create({
 // Interceptor para agregar el token de autenticación a las peticiones
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    // Obtener el token del localStorage cada vez que se hace una petición
+    // para asegurar que siempre tenemos el token más actualizado
     const token = localStorage.getItem('token');
+    
     if (token) {
+      // Configurar el encabezado de autorización con el token
       config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
+      console.log('API: Token añadido a la petición');
+    } else {
+      console.log('API: No hay token disponible para la petición');
     }
+    
     return config;
   },
   (error: AxiosError) => {
+    console.error('API: Error en interceptor de petición:', error);
+    return Promise.reject(error);
+  }
+);
+
+// Interceptor para manejar respuestas y errores
+api.interceptors.response.use(
+  (response) => {
+    // Procesar respuesta exitosa
+    return response;
+  },
+  (error: AxiosError) => {
+    // Manejar errores de autenticación (401)
+    if (error.response && error.response.status === 401) {
+      console.error('API: Error de autenticación 401, cerrando sesión');
+      // Limpiar localStorage en caso de token inválido o expirado
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      
+      // Opcionalmente, redirigir al login
+      // window.location.href = '/login';
+    }
     return Promise.reject(error);
   }
 );
@@ -71,13 +101,31 @@ export const authService = {
   // Iniciar sesión
   login: async (credentials: { email: string; password: string }) => {
     try {
+      console.log('Iniciando sesión con:', credentials.email);
       const response = await api.post('/auth/login', credentials);
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+      
+      // Verificar si el usuario ha confirmado su correo electrónico
+      if (response.data.user && !response.data.user.isVerified) {
+        console.error('Usuario no verificado');
+        throw { response: { data: { message: 'Por favor, confirma tu correo electrónico antes de iniciar sesión.' } } };
       }
+      
+      console.log('Login exitoso, guardando datos en localStorage');
+      
+      // Guardar el token y datos de usuario en localStorage
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+      
+      // Verificar que se hayan guardado correctamente
+      const savedToken = localStorage.getItem('token');
+      const savedUser = localStorage.getItem('user');
+      
+      console.log('Token guardado:', !!savedToken);
+      console.log('Usuario guardado:', !!savedUser);
+      
       return response.data;
     } catch (error) {
+      console.error('Error en login:', error);
       throw error;
     }
   },
@@ -93,6 +141,16 @@ export const authService = {
   verifyEmail: async (token: string) => {
     try {
       const response = await api.get(`/auth/verify-email/${token}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Reenviar correo de verificación
+  resendVerificationEmail: async (email: string) => {
+    try {
+      const response = await api.post('/auth/resend-verification', { email });
       return response.data;
     } catch (error) {
       throw error;
@@ -126,6 +184,12 @@ export const authService = {
   getCurrentUser: async () => {
     try {
       const response = await api.get('/auth/me');
+      
+      // Actualizar los datos del usuario en localStorage
+      if (response.data && response.data.data) {
+        localStorage.setItem('user', JSON.stringify(response.data.data));
+      }
+      
       return response.data;
     } catch (error) {
       throw error;
@@ -135,7 +199,32 @@ export const authService = {
   // Verificar si el usuario está autenticado
   isAuthenticated: () => {
     const token = localStorage.getItem('token');
-    return !!token;
+    if (!token) return false;
+    
+    // Verificar si el token ha expirado (opcional, dependiendo de si el token tiene fecha de expiración)
+    try {
+      // Decodificar el token JWT (asumiendo que es un JWT)
+      const base64Url = token.split('.')[1];
+      if (!base64Url) return false;
+      
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const payload = JSON.parse(window.atob(base64));
+      
+      // Comprobar si el token ha expirado
+      if (payload.exp && payload.exp * 1000 < Date.now()) {
+        // Token expirado, limpiar almacenamiento
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        return false;
+      }
+      
+      return true;
+    } catch (e) {
+      console.error('Error al verificar token:', e);
+      // En caso de error al analizar el token, consideramos que sigue siendo válido
+      // para evitar cerrar sesión por errores en la validación
+      return true;
+    }
   },
 
   // Obtener el token del localStorage

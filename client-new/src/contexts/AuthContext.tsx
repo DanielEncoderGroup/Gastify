@@ -64,23 +64,64 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const initAuth = async () => {
       setLoading(true);
+      console.log('Inicializando autenticación...');
       
       try {
         // Verificar si hay un token guardado
-        if (authService.isAuthenticated()) {
+        const token = localStorage.getItem('token');
+        
+        if (token) {
+          console.log('Token encontrado en localStorage');
+          
+          // Verificar validez del token
+          try {
+            // Decodificar el token JWT para verificar si ha expirado
+            const base64Url = token.split('.')[1];
+            if (base64Url) {
+              const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+              const payload = JSON.parse(window.atob(base64));
+              
+              console.log('Token decodificado:', { ...payload, exp: new Date(payload.exp * 1000).toISOString() });
+              
+              // Verificar si el token ha expirado
+              if (payload.exp && payload.exp * 1000 < Date.now()) {
+                console.log('Token expirado, cerrando sesión');
+                authService.logout();
+                setIsAuthenticated(false);
+                setUser(null);
+                setLoading(false);
+                return;
+              }
+            }
+          } catch (e) {
+            console.error('Error al decodificar token:', e);
+          }
+          
           // Obtener usuario del localStorage
           const userData = authService.getUser();
           
           if (userData) {
+            console.log('Datos de usuario encontrados en localStorage:', userData);
             setUser(userData);
             setIsAuthenticated(true);
           } else {
+            console.log('Token válido pero sin datos de usuario, consultando API...');
             // Si hay token pero no hay datos de usuario, intentar obtenerlos del backend
             try {
+              // Forzar una solicitud al servidor para verificar el token y obtener datos actualizados
               const response = await authService.getCurrentUser();
-              setUser(response.data);
-              setIsAuthenticated(true);
+              console.log('Respuesta del servidor para datos de usuario:', response);
+              
+              if (response && response.data) {
+                setUser(response.data);
+                setIsAuthenticated(true);
+                // Actualizar también el localStorage con los datos más recientes
+                localStorage.setItem('user', JSON.stringify(response.data));
+              } else {
+                throw new Error('No se recibieron datos de usuario del servidor');
+              }
             } catch (err) {
+              console.error('Error al obtener el usuario del servidor:', err);
               // Si hay error al obtener el usuario, limpiar la sesión
               authService.logout();
               setIsAuthenticated(false);
@@ -88,11 +129,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             }
           }
         } else {
+          console.log('No se encontró token en localStorage');
           setIsAuthenticated(false);
           setUser(null);
         }
       } catch (err) {
         console.error("Error al inicializar la autenticación:", err);
+        // En caso de error, limpiar todo para evitar estados inconsistentes
+        authService.logout();
+        setIsAuthenticated(false);
+        setUser(null);
       } finally {
         setLoading(false);
       }
@@ -136,11 +182,61 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setError(null);
     
     try {
+      console.log('AuthContext: Intentando login con', email);
       const response = await authService.login({ email, password });
-      setUser(response.user);
+      
+      // Verificar que tengamos datos de usuario y token
+      // La estructura de la respuesta puede variar, debemos adaptarnos a ella
+      console.log('Estructura de respuesta recibida:', response);
+      
+      // No hacemos verificación estricta aquí, confiamos en que authService.login ya validó
+      
+      console.log('AuthContext: Login exitoso, actualizando estado');
+      
+      // Actualizar el estado de la aplicación con la estructura correcta
+      // La estructura puede variar, así que manejamos diferentes posibilidades
+      if (response.user) {
+        setUser(response.user);
+      } else if (response.data && response.data.user) {
+        setUser(response.data.user);
+      } else {
+        // Si no podemos encontrar el usuario en la respuesta,
+        // intentamos obtenerlo del localStorage
+        try {
+          const userStr = localStorage.getItem('user');
+          if (userStr) {
+            const userData = JSON.parse(userStr);
+            setUser(userData);
+          }
+        } catch (e) {
+          console.error('Error al recuperar usuario del localStorage:', e);
+        }
+      }
+      
       setIsAuthenticated(true);
+      
+      // Verificar directamente que los datos se hayan guardado en localStorage
+      const token = localStorage.getItem('token');
+      const userStr = localStorage.getItem('user');
+      
+      console.log('AuthContext: Verificación después de login');
+      console.log('- Token en localStorage:', !!token);
+      console.log('- Usuario en localStorage:', !!userStr);
+      
+      // Verificación adicional de datos de usuario
+      if (userStr) {
+        try {
+          const userData = JSON.parse(userStr);
+          console.log('- ID de usuario guardado:', userData.id || userData._id);
+          console.log('- Email de usuario guardado:', userData.email);
+        } catch (e) {
+          console.error('Error al parsear datos de usuario:', e);
+        }
+      }
+      
       setLoading(false);
     } catch (err: any) {
+      console.error('AuthContext: Error en login:', err);
       setError(err.response?.data?.message || 'Credenciales inválidas');
       setLoading(false);
       throw err;
