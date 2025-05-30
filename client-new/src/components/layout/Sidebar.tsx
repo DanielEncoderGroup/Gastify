@@ -34,8 +34,8 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
   ];
 
   // Elementos específicos para clientes
-  const clientNavItems = [
-    { name: 'Solicitar Proyecto IT', href: '/app/projects/request/new', iconName: 'ComputerDesktopIcon', isNew: true },
+  const clientNavItems: { name: string; href: string; iconName: string; isNew?: boolean }[] = [
+    // No hay elementos específicos para clientes por el momento
   ];
 
   // Combinar elementos de navegación según el rol
