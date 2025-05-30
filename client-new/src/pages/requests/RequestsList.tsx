@@ -67,13 +67,13 @@ const RequestsList: React.FC = () => {
     }
   };
 
-  // Cargar solicitudes cuando cambien los filtros o el usuario
+  // Cargar solicitudes cuando cambien los filtros, el usuario o se actualice la lista
   useEffect(() => {
     // Solo cargar si el usuario está autenticado
     if (user) {
       loadRequests(true);
     }
-  }, [selectedStatus, user]);
+  }, [selectedStatus, user, searchTerm]); // Añadido searchTerm a las dependencias
 
   // Manejar búsqueda
   const handleSearch = (e: React.FormEvent) => {

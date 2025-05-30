@@ -27,7 +27,9 @@ const NewProjectRequest: React.FC = () => {
 
   // Manejar guardado exitoso
   const handleSaved = (id: string) => {
-    navigate(`/app/requests/${id}`);
+    toast.success('Solicitud de proyecto creada exitosamente');
+    // Navegar a la lista de solicitudes para ver la nueva solicitud
+    navigate('/app/requests');
   };
 
   return (

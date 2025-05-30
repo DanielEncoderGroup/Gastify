@@ -82,13 +82,17 @@ export const mockRequestService = {
     // Generamos un ID único para la nueva solicitud
     const newId = (mockRequests.length + 1).toString();
     
+    // Obtener el usuario actual del localStorage
+    const userStr = localStorage.getItem('user');
+    const currentUser = userStr ? JSON.parse(userStr) : null;
+    
     // Creamos una nueva solicitud con los datos proporcionados
     const newRequest: RequestSummary = {
       id: newId,
       title: request.title,
       description: request.description,
-      status: RequestStatus.DRAFT,
-      statusLabel: 'Borrador',
+      status: RequestStatus.SUBMITTED, // Cambiado a SUBMITTED para que sea visible en el admin
+      statusLabel: 'Enviado',
       projectType: request.projectType,
       projectTypeLabel: request.projectType === ProjectType.WEB_APP ? 'Aplicación Web' : 
                         request.projectType === ProjectType.MOBILE_APP ? 'Aplicación Móvil' : 
@@ -101,13 +105,19 @@ export const mockRequestService = {
                     request.priority === ProjectPriority.MEDIUM ? 'Media' : 
                     request.priority === ProjectPriority.LOW ? 'Baja' : 
                     request.priority === ProjectPriority.URGENT ? 'Urgente' : 'Media',
-      clientId: 'client1', // Usuario actual simulado
-      client: {
-        id: 'client1',
-        firstName: 'Cliente',
-        lastName: 'Actual',
-        email: 'cliente@example.com',
-        name: 'Cliente Actual'
+      clientId: currentUser?.id || 'unknown',
+      client: currentUser ? {
+        id: currentUser.id,
+        firstName: currentUser.firstName || '',
+        lastName: currentUser.lastName || '',
+        email: currentUser.email || '',
+        name: currentUser.name || `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim() || 'Usuario'
+      } : {
+        id: 'unknown',
+        firstName: 'Usuario',
+        lastName: '',
+        email: 'desconocido@ejemplo.com',
+        name: 'Usuario Desconocido'
       },
       budget: request.budget,
       timeframe: request.timeframe,
