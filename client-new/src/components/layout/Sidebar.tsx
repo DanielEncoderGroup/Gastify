@@ -34,7 +34,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
   ];
 
   // Elementos específicos para clientes
-  const clientNavItems: any[] = [];
+  const clientNavItems: { name: string; href: string; iconName: string; isNew?: boolean }[] = [];
 
   // Combinar elementos de navegación según el rol
   const navigation = [
