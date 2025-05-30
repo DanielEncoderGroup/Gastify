@@ -20,27 +20,27 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
   // Get user's full name
   const fullName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.name || 'Usuario' : 'Usuario';
 
-  // Elementos de navegación basados en el rol del usuario
-  const baseNavigation = [
-    { name: 'Solicitudes', href: '/app/requests', iconName: 'DocumentTextIcon' },
-    { name: 'Proyectos', href: '/app/projects', iconName: 'FolderIcon' },
+  // Elementos de navegación comunes para todos los usuarios
+  const commonNavigation = [
     { name: 'Reuniones', href: '/app/meetings', iconName: 'CalendarIcon' }
   ];
 
-  // Elementos específicos para administradores
-  const adminNavItems = [
+  // Elementos de navegación para administradores
+  const adminNavigation = [
     { name: 'Gestión de Solicitudes', href: '/app/requests', iconName: 'ClipboardDocumentListIcon' },
     { name: 'Proyectos Informáticos', href: '/app/projects/admin', iconName: 'ComputerDesktopIcon' },
   ];
 
-  // Elementos específicos para clientes
-  const clientNavItems: { name: string; href: string; iconName: string; isNew?: boolean }[] = [];
-
-  // Combinar elementos de navegación según el rol
-  const navigation = [
-    ...baseNavigation,
-    ...(user?.role === 'admin' ? adminNavItems : clientNavItems)
+  // Elementos de navegación para clientes
+  const clientNavigation = [
+    { name: 'Mis Solicitudes', href: '/app/requests', iconName: 'DocumentTextIcon' },
+    { name: 'Mis Proyectos', href: '/app/projects', iconName: 'FolderIcon' }
   ];
+
+  // Determinar la navegación según el rol del usuario
+  const navigation = user?.role === 'admin' 
+    ? [...adminNavigation, ...commonNavigation]
+    : [...clientNavigation, ...commonNavigation];
 
   // Cerrar el sidebar con tecla Escape
   useEffect(() => {
