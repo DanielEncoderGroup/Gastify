@@ -12,6 +12,13 @@ const Register: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
+  // Estados para validación visual de la contraseña
+  const [hasMinLength, setHasMinLength] = useState(false);
+  const [hasUpperCase, setHasUpperCase] = useState(false);
+  const [hasLowerCase, setHasLowerCase] = useState(false);
+  const [hasNumber, setHasNumber] = useState(false);
+  const [hasSpecialChar, setHasSpecialChar] = useState(false);
+
   // Esquema de validación
   // Definir el tipo para los valores del formulario
   interface RegisterFormValues {
@@ -43,6 +50,15 @@ const Register: React.FC = () => {
       .oneOf([Yup.ref('password')], 'Las contraseñas deben coincidir')
       .required('La confirmación de contraseña es obligatoria')
   });
+
+  // Función para validar requisitos de la contraseña en tiempo real
+  const validatePassword = (password: string) => {
+    setHasMinLength(password.length >= 8);
+    setHasUpperCase(/[A-Z]/.test(password));
+    setHasLowerCase(/[a-z]/.test(password));
+    setHasNumber(/[0-9]/.test(password));
+    setHasSpecialChar(/[@$!%*?&#]/.test(password));
+  };
 
   // Configuración de Formik
   const formik = useFormik<RegisterFormValues>({
@@ -162,14 +178,15 @@ const Register: React.FC = () => {
             <div className="space-y-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="mb-4">
-                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
                     Nombre
                   </label>
-                  <div className="mt-1 relative rounded-md shadow-sm">
+                  <div className="relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Icon name="UserIcon" className="h-5 w-5 text-gray-400" />
+                      <Icon name="UserIcon" className="h-5 w-5 text-blue-500" />
                     </div>
                     <input
+                      required
                       id="firstName"
                       name="firstName"
                       type="text"
@@ -177,23 +194,27 @@ const Register: React.FC = () => {
                       onChange={formik.handleChange}
                       onBlur={formik.handleBlur}
                       value={formik.values.firstName}
-                      className={`focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md ${formik.touched.firstName && formik.errors.firstName ? 'border-red-300' : ''}`}
+                      className={`appearance-none relative block w-full px-3 py-2 pl-10 border ${formik.touched.firstName && formik.errors.firstName ? 'border-red-300 text-red-900 placeholder-red-300' : 'border-gray-300 placeholder-gray-500 text-gray-900'} rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
                       placeholder="Tu nombre"
                     />
                   </div>
                   {formik.touched.firstName && formik.errors.firstName && (
-                    <p className="mt-1 text-sm text-red-600">
+                    <p className="mt-2 text-sm text-red-600">
                       {typeof formik.errors.firstName === 'string' ? formik.errors.firstName : ''}
                     </p>
                   )}
                 </div>
 
                 <div className="mb-4">
-                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
                     Apellido
                   </label>
-                  <div className="mt-1 relative rounded-md shadow-sm">
+                  <div className="relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Icon name="UserIcon" className="h-5 w-5 text-blue-500" />
+                    </div>
                     <input
+                      required
                       id="lastName"
                       name="lastName"
                       type="text"
@@ -201,12 +222,12 @@ const Register: React.FC = () => {
                       onChange={formik.handleChange}
                       onBlur={formik.handleBlur}
                       value={formik.values.lastName}
-                      className={`focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md ${formik.touched.lastName && formik.errors.lastName ? 'border-red-300' : ''}`}
+                      className={`appearance-none relative block w-full px-3 py-2 pl-10 border ${formik.touched.lastName && formik.errors.lastName ? 'border-red-300 text-red-900 placeholder-red-300' : 'border-gray-300 placeholder-gray-500 text-gray-900'} rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
                       placeholder="Tu apellido"
                     />
                   </div>
                   {formik.touched.lastName && formik.errors.lastName && (
-                    <p className="mt-1 text-sm text-red-600">
+                    <p className="mt-2 text-sm text-red-600">
                       {typeof formik.errors.lastName === 'string' ? formik.errors.lastName : ''}
                     </p>
                   )}
@@ -238,43 +259,45 @@ const Register: React.FC = () => {
               </div>
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
-                <div className="relative">
+                <div className="relative flex items-center">
                   <input
                     id="password"
                     name="password"
                     type={showPassword ? "text" : "password"}
                     autoComplete="new-password"
                     required
-                    className={`appearance-none relative block w-full px-3 py-2 border ${
+                    className={`appearance-none block w-full px-3 py-2 pr-10 border ${
                       formik.touched.password && formik.errors.password 
                         ? 'border-red-300 text-red-900 placeholder-red-300' 
                         : 'border-gray-300 placeholder-gray-500 text-gray-900'
-                    } rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
+                    } rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
                     placeholder="Contraseña"
                     value={formik.values.password}
-                    onChange={formik.handleChange}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      formik.handleChange(e);
+                      validatePassword(e.target.value);
+                    }}
                     onBlur={formik.handleBlur}
                   />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                  <div 
+                    className="absolute right-0 z-20 flex items-center pr-3 h-full cursor-pointer"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
-                      <Icon name="EyeSlashIcon" className="text-gray-500" />
+                      <Icon name="EyeSlashIcon" className="h-5 w-5 text-blue-500" />
                     ) : (
-                      <Icon name="EyeIcon" className="text-gray-500" />
+                      <Icon name="EyeIcon" className="h-5 w-5 text-blue-500" />
                     )}
-                  </button>
+                  </div>
                 </div>
                 <div className="mt-1 text-xs text-gray-500">
                   <p>La contraseña debe tener:</p>
                   <ul className="pl-4 mt-1 list-disc">
-                    <li>Al menos 8 caracteres</li>
-                    <li>Al menos 1 mayúscula</li>
-                    <li>Al menos 1 minúscula</li>
-                    <li>Al menos 1 número</li>
-                    <li>Al menos 1 carácter especial (@$!%*?&#)</li>
+                    <li className={hasMinLength ? 'text-green-500 font-medium' : 'text-gray-500'}>Al menos 8 caracteres</li>
+                    <li className={hasUpperCase ? 'text-green-500 font-medium' : 'text-gray-500'}>Al menos 1 mayúscula</li>
+                    <li className={hasLowerCase ? 'text-green-500 font-medium' : 'text-gray-500'}>Al menos 1 minúscula</li>
+                    <li className={hasNumber ? 'text-green-500 font-medium' : 'text-gray-500'}>Al menos 1 número</li>
+                    <li className={hasSpecialChar ? 'text-green-500 font-medium' : 'text-gray-500'}>Al menos 1 carácter especial (@$!%*?&#)</li>
                   </ul>
                 </div>
                 {formik.touched.password && formik.errors.password && (
@@ -285,34 +308,33 @@ const Register: React.FC = () => {
               </div>
               <div>
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">Confirmar contraseña</label>
-                <div className="relative">
+                <div className="relative flex items-center">
                   <input
                     id="confirmPassword"
                     name="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
                     autoComplete="new-password"
                     required
-                    className={`appearance-none relative block w-full px-3 py-2 border ${
+                    className={`appearance-none block w-full px-3 py-2 pr-10 border ${
                       formik.touched.confirmPassword && formik.errors.confirmPassword 
                         ? 'border-red-300 text-red-900 placeholder-red-300' 
                         : 'border-gray-300 placeholder-gray-500 text-gray-900'
-                    } rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
+                    } rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
                     placeholder="Confirmar contraseña"
                     value={formik.values.confirmPassword}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                   />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                  <div 
+                    className="absolute right-0 z-20 flex items-center pr-3 h-full cursor-pointer"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
                     {showConfirmPassword ? (
-                      <Icon name="EyeSlashIcon" className="text-gray-500" />
+                      <Icon name="EyeSlashIcon" className="h-5 w-5 text-blue-500" />
                     ) : (
-                      <Icon name="EyeIcon" className="text-gray-500" />
+                      <Icon name="EyeIcon" className="h-5 w-5 text-blue-500" />
                     )}
-                  </button>
+                  </div>
                 </div>
                 {formik.touched.confirmPassword && formik.errors.confirmPassword && (
                   <p className="mt-2 text-sm text-red-600">

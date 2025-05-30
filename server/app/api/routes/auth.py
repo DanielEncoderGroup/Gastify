@@ -6,6 +6,7 @@ import socket
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.header import Header
+from pydantic import BaseModel
 
 from fastapi import APIRouter, Depends, HTTPException, status, Body
 from fastapi.security import OAuth2PasswordRequestForm
@@ -117,9 +118,11 @@ async def login(login_data: UserLogin = Body(...)) -> Any:
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+    # Preparamos una advertencia si el correo no está verificado, pero permitimos iniciar sesión
+    verification_warning = None
     if not user.get("emailVerified", False):
         verification_token = user.get("emailVerificationToken")
-        if not verification_token or user.get("emailVerificationExpire") < datetime.utcnow():
+        if not verification_token or user.get("emailVerificationExpire", datetime.utcnow()) < datetime.utcnow():
             verification_token = create_email_verification_token(user["email"])
             await db.users.update_one(
                 {"_id": user["_id"]},
@@ -130,29 +133,57 @@ async def login(login_data: UserLogin = Body(...)) -> Any:
                     }
                 },
             )
+            
+            # Intenta reenviar el correo de verificación
+            verification_url = f"{settings.CLIENT_URL}/verify-email/{verification_token}"
+            # Usar get con valores predeterminados para firstName y lastName
+            first_name = user.get('firstName', user.get('first_name', ''))
+            last_name = user.get('lastName', user.get('last_name', ''))
+            user_name = f"{first_name} {last_name}".strip()
+            if not user_name:
+                user_name = user['email']
+            html_content, text_content = get_email_verification_template(
+                user_name, verification_url
+            )
+            
+            try:
+                send_email(
+                    to_email=user["email"],
+                    subject="Verifica tu correo electrónico - EncoderGroup",
+                    text_content=text_content,
+                    html_content=html_content,
+                )
+                print(f"Correo de verificación reenviado a {user['email']}")
+            except Exception as e:
+                print(f"Error enviando e-mail de verificación durante login: {e}")
+        
+        verification_warning = {
+            "message": "Tu correo electrónico no ha sido verificado. Por favor, revisa tu bandeja de entrada o carpeta de spam.",
+            "verification_url": f"{settings.CLIENT_URL}/verify-email/{verification_token}",
+            "email": user["email"],
+        }
 
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail={
-                "message": "Email not verified. Check your inbox.",
-                "verification_url": f"{settings.CLIENT_URL}/verify-email/{verification_token}",
-                "email": user["email"],
-            },
-        )
-
-    return {
+    response = {
         "success": True,
         "user": {
             "id": str(user["_id"]),
-            "firstName": user["firstName"],
-            "lastName": user["lastName"],
+            "firstName": user.get("firstName", user.get("first_name", "")),
+            "lastName": user.get("lastName", user.get("last_name", "")),
             "email": user["email"],
+            "role": user.get("role", "CLIENT"),
+            "isVerified": user.get("emailVerified", False),
             "token": create_access_token(user["_id"]),
         },
     }
+    
+    # Incluir advertencia de verificación si es necesario
+    if verification_warning:
+        response["verification_warning"] = verification_warning
+        
+    return response
 
 
-@router.post("/forgotpassword")
+@router.post("/forgot-password")
 async def forgot_password(email_data: ForgotPassword = Body(...)) -> Any:
     """
     Generates a reset token and sends the password-reset e-mail.
@@ -175,7 +206,16 @@ async def forgot_password(email_data: ForgotPassword = Body(...)) -> Any:
     )
 
     reset_url = f"{settings.CLIENT_URL}/reset-password/{reset_token}"
-    user_name = f"{user['firstName']} {user['lastName']}"
+    
+    # Manejar de forma segura los campos del nombre del usuario
+    first_name = user.get('firstName', user.get('first_name', ''))
+    last_name = user.get('lastName', user.get('last_name', ''))
+    user_name = f"{first_name} {last_name}".strip()
+    
+    # Si no hay nombre disponible, usar el correo electrónico
+    if not user_name:
+        user_name = user.get('email', 'Usuario')
+        
     html_content, text_content = get_password_reset_template(user_name, reset_url)
 
     # --- fallback opcional en texto plano ---
@@ -192,7 +232,7 @@ async def forgot_password(email_data: ForgotPassword = Body(...)) -> Any:
         smtp_server = smtp_ip or settings.SMTP_HOST
 
         msg = MIMEMultipart("alternative")
-        msg["Subject"] = Header("Recuperación de contraseña - MisViaticos", "utf-8")
+        msg["Subject"] = Header("Recuperación de contraseña - EncoderGroup", "utf-8")
         msg["From"] = settings.SMTP_USER
         msg["To"] = email_data.email
         msg.attach(MIMEText(text_content, "plain", "utf-8"))
@@ -212,7 +252,7 @@ async def forgot_password(email_data: ForgotPassword = Body(...)) -> Any:
     return {"success": True, "message": "Email sent with password reset instructions"}
 
 
-@router.put("/resetpassword/{reset_token}")
+@router.post("/reset-password/{reset_token}")
 async def reset_password(reset_token: str, data: ResetPassword = Body(...)) -> Any:
     """
     Sets a new password if the reset token is valid.
@@ -236,6 +276,32 @@ async def reset_password(reset_token: str, data: ResetPassword = Body(...)) -> A
             "$unset": {"resetPasswordToken": "", "resetPasswordExpire": ""},
         },
     )
+    
+    # Enviar correo de confirmación de cambio de contraseña
+    try:
+        # Usar get con valores predeterminados para firstName y lastName
+        first_name = user.get('firstName', user.get('first_name', ''))
+        last_name = user.get('lastName', user.get('last_name', ''))
+        user_name = f"{first_name} {last_name}".strip()
+        if not user_name:
+            user_name = user['email']
+            
+        # Importar la plantilla de correo de confirmación
+        from app.templates.password_changed import get_password_changed_template
+        
+        # Generar el contenido del correo
+        html_content, text_content = get_password_changed_template(user_name)
+        
+        # Enviar el correo
+        send_email(
+            to_email=user["email"],
+            subject="Tu contraseña ha sido actualizada - EncoderGroup",
+            text_content=text_content,
+            html_content=html_content,
+        )
+    except Exception as e:
+        print(f"Error enviando e-mail de confirmación de cambio de contraseña: {e}")
+        # No interrumpimos el flujo si falla el envío del correo
 
     return {
         "success": True,
@@ -340,4 +406,94 @@ async def get_current_user_info(current_user=Depends(get_current_user)) -> Any:
             "email": current_user.email,
             "role": current_user.role,  # Incluir el rol del usuario en la respuesta
         },
+    }
+
+
+class ChangePasswordData(BaseModel):
+    currentPassword: str
+    newPassword: str
+    confirmPassword: str
+
+
+@router.post("/change-password")
+async def change_password(data: ChangePasswordData = Body(...), current_user=Depends(get_current_user)) -> Any:
+    """
+    Change user password after verifying current password.
+    """
+    db = get_database()
+    
+    # Verificar que la nueva contraseña y la confirmación coincidan
+    if data.newPassword != data.confirmPassword:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password and confirmation do not match",
+        )
+    
+    # Verificar longitud mínima de la contraseña (8 caracteres)
+    if len(data.newPassword) < 8:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must be at least 8 characters long",
+        )
+    
+    # Obtener el usuario actual de la base de datos
+    user_id = current_user.id if hasattr(current_user, 'id') else getattr(current_user, '_id')
+    user = await db.users.find_one({"_id": user_id})
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+    
+    # Verificar la contraseña actual
+    if not verify_password(data.currentPassword, user["password"]):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Current password is incorrect",
+        )
+    
+    # Actualizar la contraseña
+    new_password_hash = get_password_hash(data.newPassword)
+    await db.users.update_one(
+        {"_id": user_id},
+        {"$set": {"password": new_password_hash, "updatedAt": datetime.utcnow()}}
+    )
+    
+    # Enviar correo de confirmación (opcional)
+    try:
+        html_content = f"""
+        <html>
+            <body>
+                <h2>Contraseña actualizada</h2>
+                <p>Hola {user['firstName']},</p>
+                <p>Tu contraseña ha sido actualizada con éxito.</p>
+                <p>Si no has realizado este cambio, por favor contacta con nosotros inmediatamente.</p>
+            </body>
+        </html>
+        """
+        
+        text_content = f"""
+        Contraseña actualizada
+        
+        Hola {user['firstName']},
+        
+        Tu contraseña ha sido actualizada con éxito.
+        
+        Si no has realizado este cambio, por favor contacta con nosotros inmediatamente.
+        """
+        
+        send_email(
+            to_email=user["email"],
+            subject="Tu contraseña ha sido actualizada - EncoderGroup",
+            text_content=text_content,
+            html_content=html_content,
+        )
+    except Exception as e:
+        print(f"Error enviando e-mail de confirmación de cambio de contraseña: {e}")
+        # No interrumpimos el flujo si falla el envío del correo
+    
+    return {
+        "success": True,
+        "message": "Password updated successfully",
     }

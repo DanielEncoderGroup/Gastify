@@ -11,6 +11,8 @@ interface User {
   isVerified: boolean;
   profileImage?: string;
   name?: string; // Keep for backward compatibility
+  position?: string;
+  department?: string;
 }
 
 interface AuthContextType {
@@ -24,6 +26,8 @@ interface AuthContextType {
   requestPasswordReset: (email: string) => Promise<void>;
   resetPassword: (token: string, password: string, confirmPassword: string) => Promise<void>;
   clearError: () => void;
+  updateUserProfile: (data: { firstName?: string; lastName?: string; position?: string; department?: string }) => Promise<void>;
+  changePassword: (currentPassword: string, newPassword: string, confirmPassword: string) => Promise<void>;
 }
 
 // Valor por defecto del contexto
@@ -38,6 +42,8 @@ const AuthContext = createContext<AuthContextType>({
   requestPasswordReset: async () => {},
   resetPassword: async () => {},
   clearError: () => {},
+  updateUserProfile: async () => {},
+  changePassword: async () => {},
 });
 
 // Hook personalizado para usar el contexto de autenticación
@@ -187,6 +193,48 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setError(null);
   };
 
+  // Función para actualizar el perfil del usuario
+  const updateUserProfile = async (data: { firstName?: string; lastName?: string; position?: string; department?: string }) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Por ahora, simplemente actualizamos el usuario en el estado local
+      // En una implementación real, aquí se haría una llamada a la API para actualizar el perfil
+      if (user) {
+        const updatedUser = {
+          ...user,
+          ...data
+        };
+        setUser(updatedUser);
+        
+        // Actualizar el usuario en localStorage
+        authService.updateLocalUser(updatedUser);
+      }
+      setLoading(false);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Error al actualizar el perfil');
+      setLoading(false);
+      throw err;
+    }
+  };
+  
+  // Función para cambiar la contraseña del usuario
+  const changePassword = async (currentPassword: string, newPassword: string, confirmPassword: string) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Llamar al servicio de autenticación para cambiar la contraseña
+      await authService.changePassword(currentPassword, newPassword, confirmPassword);
+      setLoading(false);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Error al cambiar la contraseña');
+      setLoading(false);
+      throw err;
+    }
+  };
+
   // Valores del contexto
   const value = {
     user,
@@ -199,6 +247,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     requestPasswordReset,
     resetPassword,
     clearError,
+    updateUserProfile,
+    changePassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

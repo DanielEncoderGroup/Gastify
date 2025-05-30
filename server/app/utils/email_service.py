@@ -40,7 +40,7 @@ class EmailService:
             <div class="container">
                 <h1>Recuperación de Contraseña</h1>
                 <p>Hola {recipient_name},</p>
-                <p>Has solicitado restablecer tu contraseña para tu cuenta de MisViaticos.</p>
+                <p>Has solicitado restablecer tu contraseña para tu cuenta de EncoderGroup.</p>
                 <p>Por favor, haz clic en el siguiente botón para establecer una nueva contraseña:</p>
                 <a href="{reset_url}" style="display: inline-block; background-color: #3498db; color: white; text-decoration: none; padding: 10px 20px; border-radius: 5px; margin: 20px 0;">Restablecer Contraseña</a>
                 <p>Si no solicitaste este cambio, puedes ignorar este correo y tu contraseña seguirá siendo la misma.</p>
@@ -59,7 +59,7 @@ class EmailService:
             message = Mail(
                 from_email=Email(settings.EMAIL_SENDER),
                 to_emails=To(recipient_email),
-                subject="Recuperación de Contraseña - MisViaticos",
+                subject="Recuperación de Contraseña - EncoderGroup",
                 html_content=HtmlContent(html_content)
             )
             

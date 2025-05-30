@@ -19,7 +19,7 @@ const ResetPassword: React.FC = () => {
       .required('La contraseña es obligatoria')
       .min(8, 'La contraseña debe tener al menos 8 caracteres')
       .matches(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]/,
         'La contraseña debe contener al menos una letra mayúscula, una letra minúscula, un número y un carácter especial'
       ),
     confirmPassword: Yup.string()
@@ -147,13 +147,13 @@ const ResetPassword: React.FC = () => {
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                   Nueva contraseña
                 </label>
-                <div className="mt-1 relative">
+                <div className="mt-1 relative flex items-center">
                   <input
                     id="password"
                     name="password"
                     type={showPassword ? "text" : "password"}
                     required
-                    className={`appearance-none block w-full px-3 py-2 border ${
+                    className={`appearance-none block w-full px-3 py-2 pr-10 border ${
                       formik.touched.password && formik.errors.password 
                         ? 'border-red-300 text-red-900 placeholder-red-300' 
                         : 'border-gray-300 placeholder-gray-500 text-gray-900'
@@ -162,17 +162,16 @@ const ResetPassword: React.FC = () => {
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                   />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                  <div 
+                    className="absolute right-0 z-20 flex items-center pr-3 h-full cursor-pointer"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
-                      <Icon name="EyeSlashIcon" className="text-gray-500" />
+                      <Icon name="EyeSlashIcon" className="h-5 w-5 text-blue-500" />
                     ) : (
-                      <Icon name="EyeIcon" className="text-gray-500" />
+                      <Icon name="EyeIcon" className="h-5 w-5 text-blue-500" />
                     )}
-                  </button>
+                  </div>
                 </div>
                 {formik.touched.password && formik.errors.password && (
                   <p className="mt-2 text-sm text-red-600">{formik.errors.password as string}</p>
@@ -183,13 +182,13 @@ const ResetPassword: React.FC = () => {
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
                   Confirmar contraseña
                 </label>
-                <div className="mt-1 relative">
+                <div className="mt-1 relative flex items-center">
                   <input
                     id="confirmPassword"
                     name="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
                     required
-                    className={`appearance-none block w-full px-3 py-2 border ${
+                    className={`appearance-none block w-full px-3 py-2 pr-10 border ${
                       formik.touched.confirmPassword && formik.errors.confirmPassword 
                         ? 'border-red-300 text-red-900 placeholder-red-300' 
                         : 'border-gray-300 placeholder-gray-500 text-gray-900'
@@ -198,17 +197,16 @@ const ResetPassword: React.FC = () => {
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                   />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                  <div 
+                    className="absolute right-0 z-20 flex items-center pr-3 h-full cursor-pointer"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
                     {showConfirmPassword ? (
-                      <Icon name="EyeSlashIcon" className="text-gray-500" />
+                      <Icon name="EyeSlashIcon" className="h-5 w-5 text-blue-500" />
                     ) : (
-                      <Icon name="EyeIcon" className="text-gray-500" />
+                      <Icon name="EyeIcon" className="h-5 w-5 text-blue-500" />
                     )}
-                  </button>
+                  </div>
                 </div>
                 {formik.touched.confirmPassword && formik.errors.confirmPassword && (
                   <p className="mt-2 text-sm text-red-600">{formik.errors.confirmPassword as string}</p>

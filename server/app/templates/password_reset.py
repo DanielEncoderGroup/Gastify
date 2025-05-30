@@ -15,23 +15,25 @@ def get_password_reset_template(user_name, reset_url):
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Restablecimiento de Contraseña - MisViaticos</title>
+        <title>Restablecimiento de Contraseña - EncoderGroup</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0;">
         <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 5px;">
             <div style="text-align: center; margin-bottom: 20px;">
-                <img src="https://i.imgur.com/VZF6Wzt.png" alt="MisViaticos Logo" style="max-width: 150px;">
-                <h1 style="color: #4F46E5; margin-top: 10px;">Restablecimiento de Contraseña</h1>
+                <div style="background-color: #111827; padding: 15px; border-radius: 5px; display: inline-block;">
+                    <span style="color: #2563EB; font-size: 24px; font-weight: bold;">Encoder</span><span style="color: white; font-size: 24px; font-weight: bold;">Group</span>
+                </div>
+                <h1 style="color: #2563EB; margin-top: 15px;">Restablecimiento de Contraseña</h1>
             </div>
             
             <div style="margin-bottom: 30px;">
                 <p>Hola {user_name},</p>
-                <p>Has solicitado restablecer tu contraseña para tu cuenta de MisViaticos. Haz clic en el siguiente botón para crear una nueva contraseña:</p>
+                <p>Has solicitado restablecer tu contraseña para tu cuenta de EncoderGroup. Haz clic en el siguiente botón para crear una nueva contraseña:</p>
                 
                 <div style="text-align: center; margin: 30px 0;">
-                    <a href="{reset_url}" style="display: inline-block; background-color: #4F46E5; color: white; font-weight: bold; padding: 12px 24px; text-decoration: none; border-radius: 4px;">
+                    <a href="{reset_url}" style="display: inline-block; background-color: #2563EB; color: white; font-weight: bold; padding: 12px 24px; text-decoration: none; border-radius: 4px;">
                         Restablecer mi contraseña
                     </a>
                 </div>
@@ -45,8 +47,8 @@ def get_password_reset_template(user_name, reset_url):
             </div>
             
             <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #777; font-size: 12px;">
-                <p>&copy; 2025 MisViaticos. Todos los derechos reservados.</p>
-                <p>Si tienes alguna pregunta, contáctanos en <a href="mailto:soporte@misviaticos.com" style="color: #4F46E5;">soporte@misviaticos.com</a></p>
+                <p>&copy; 2025 EncoderGroup. Todos los derechos reservados.</p>
+                <p>Si tienes alguna pregunta, contáctanos en <a href="mailto:soporte@encodergroup.cl" style="color: #2563EB;">soporte@encodergroup.cl</a></p>
             </div>
         </div>
     </body>
@@ -55,11 +57,11 @@ def get_password_reset_template(user_name, reset_url):
     
     # Versión de texto plano
     text_content = f"""
-    Restablecimiento de Contraseña - MisViaticos
+    Restablecimiento de Contraseña - EncoderGroup
     
     Hola {user_name},
     
-    Has solicitado restablecer tu contraseña para tu cuenta de MisViaticos. Por favor, visita el siguiente enlace para crear una nueva contraseña:
+    Has solicitado restablecer tu contraseña para tu cuenta de EncoderGroup. Por favor, visita el siguiente enlace para crear una nueva contraseña:
     
     {reset_url}
     
@@ -68,7 +70,7 @@ def get_password_reset_template(user_name, reset_url):
     Si no solicitaste este cambio, por favor ignora este correo o contáctanos si crees que alguien está intentando acceder a tu cuenta.
     
     --
-    © 2025 MisViaticos. Todos los derechos reservados.
+    2025 EncoderGroup. Todos los derechos reservados.
     """
     
     return (html_content, text_content)

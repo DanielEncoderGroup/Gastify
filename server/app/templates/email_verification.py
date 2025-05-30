@@ -22,8 +22,10 @@ def get_email_verification_template(user_name, verification_url):
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0;">
         <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 5px;">
             <div style="text-align: center; margin-bottom: 20px;">
-                <img src="https://i.imgur.com/VZF6Wzt.png" alt="EncoderGroup Logo" style="max-width: 150px;">
-                <h1 style="color: #4F46E5; margin-top: 10px;">Verificación de Correo Electrónico</h1>
+                <div style="background-color: #111827; padding: 15px; border-radius: 5px; display: inline-block;">
+                    <span style="color: #2563EB; font-size: 24px; font-weight: bold;">Encoder</span><span style="color: white; font-size: 24px; font-weight: bold;">Group</span>
+                </div>
+                <h1 style="color: #2563EB; margin-top: 15px;">Verificación de Correo Electrónico</h1>
             </div>
             
             <div style="margin-bottom: 30px;">
@@ -31,7 +33,7 @@ def get_email_verification_template(user_name, verification_url):
                 <p>¡Gracias por registrarte en EncoderGroup! Para completar tu registro y activar tu cuenta, por favor verifica tu dirección de correo electrónico haciendo clic en el siguiente botón:</p>
                 
                 <div style="text-align: center; margin: 30px 0;">
-                    <a href="{verification_url}" style="display: inline-block; background-color: #4F46E5; color: white; font-weight: bold; padding: 12px 24px; text-decoration: none; border-radius: 4px;">
+                    <a href="{verification_url}" style="display: inline-block; background-color: #2563EB; color: white; font-weight: bold; padding: 12px 24px; text-decoration: none; border-radius: 4px;">
                         Verificar mi correo electrónico
                     </a>
                 </div>
@@ -46,7 +48,7 @@ def get_email_verification_template(user_name, verification_url):
             
             <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #777; font-size: 12px;">
                 <p>&copy; 2025 EncoderGroup. Todos los derechos reservados.</p>
-                <p>Si tienes alguna pregunta, contáctanos en <a href="mailto:soporte@encodergroup.com" style="color: #4F46E5;">soporte@encodergroup.com</a></p>
+                <p>Si tienes alguna pregunta, contáctanos en <a href="mailto:soporte@encodergroup.cl" style="color: #2563EB;">soporte@encodergroup.cl</a></p>
             </div>
         </div>
     </body>

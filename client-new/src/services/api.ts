@@ -148,6 +148,27 @@ export const authService = {
     const userStr = localStorage.getItem('user');
     return userStr ? JSON.parse(userStr) : null;
   },
+
+  // Actualizar el usuario en localStorage
+  updateLocalUser: (userData: any) => {
+    localStorage.setItem('user', JSON.stringify(userData));
+    return userData;
+  },
+  
+  // Cambiar contraseña
+  changePassword: async (currentPassword: string, newPassword: string, confirmPassword: string) => {
+    try {
+      // Hacer la petición al backend para cambiar la contraseña
+      const response = await api.post('/auth/change-password', {
+        currentPassword,
+        newPassword,
+        confirmPassword
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
 };
 
 // Servicios para solicitudes

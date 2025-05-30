@@ -54,7 +54,7 @@ async def forgot_password(email_data: ForgotPassword = Body(...)) -> Any:
                 # Enviar el correo electrónico
                 send_email(
                     to_email=email_data.email,
-                    subject="Recuperación de contraseña - MisViaticos",
+                    subject="Recuperación de contraseña - EncoderGroup",
                     text_content=text_content,
                     html_content=html_content
                 )

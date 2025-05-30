@@ -67,19 +67,23 @@ const LandingPage: React.FC = () => {
     setIsLoading(true);
     
     try {
-      // Usar el AuthContext para la autenticación real con JWT
+      console.log('Intentando iniciar sesión con:', { email, password });
+      
+      // Usar el hook useAuth para iniciar sesión y actualizar el estado global
       await login(email, password);
       
       // Si llegamos aquí, el login fue exitoso
       setLoginError('');
       toast.success('Inicio de sesión exitoso');
-      // Usamos la ruta /app/projects que sí está correctamente configurada
+      
+      // Usar navigate en lugar de window.location para evitar recargas completas
       navigate('/app/projects');
     } catch (error: any) {
+      console.error('Error durante el login:', error);
+      
       // Manejar el error de autenticación
       const errorMessage = error.response?.data?.message || 'Correo electrónico o contraseña incorrecta';
       setLoginError(errorMessage);
-      // Eliminamos toast.error para quitar la notificación roja en la esquina superior derecha
     } finally {
       setIsLoading(false);
     }
@@ -1003,103 +1007,140 @@ const LandingPage: React.FC = () => {
 
       {/* Modal de inicio de sesión */}
       {showLoginModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 overflow-hidden relative">
-            {/* Header del modal */}
-            <div className="flex justify-between items-center p-4 border-b">
-              <div className="flex items-center">
-                <Icon name="CommandLineIcon" className="h-6 w-6 text-blue-500 mr-2" />
-                <h2 className="text-xl font-semibold">Inicia sesión</h2>
-              </div>
-              <button
-                onClick={handleCloseModal}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <Icon name="XMarkIcon" className="h-6 w-6" />
-              </button>
-            </div>
-            
-            {/* Contenido del modal */}
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full overflow-hidden relative">
+            <button
+              onClick={handleCloseModal}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 z-10"
+            >
+              <Icon name="XMarkIcon" className="h-6 w-6" />
+            </button>
+
             <div className="p-6">
-              <p className="text-sm text-gray-700 mb-6">
-                Usa la misma cuenta para ingresar a <span className="font-semibold">EncoderGroup</span>
-              </p>
+              <div className="text-center mb-6">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
+                  <Icon name="LockClosedIcon" className="h-6 w-6 text-blue-600" />
+                </div>
+                <h2 className="text-2xl font-semibold text-gray-900">Iniciar sesión</h2>
+                <p className="mt-2 text-sm text-gray-600">
+                  Ingresa tus credenciales para acceder a tu cuenta de EncoderGroup
+                </p>
+              </div>
               
               {loginError && (
-                <div className="mb-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 text-sm text-yellow-800 flex items-start">
-                  <Icon name="ExclamationCircleIcon" className="h-5 w-5 text-yellow-400 mr-2 mt-0.5 flex-shrink-0" />
-                  <span>{loginError}</span>
+                <div className="mb-6 rounded-md bg-red-50 p-4">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <Icon name="XCircleIcon" variant="solid" className="h-5 w-5 text-red-400" />
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm font-medium text-red-800">{loginError}</p>
+                    </div>
+                  </div>
                 </div>
               )}
               
-              <form onSubmit={handleLogin}>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      if (emailError) setEmailError(false);
-                    }}
-                    placeholder="Ingresa tu correo electrónico"
-                    className={`w-full px-3 py-2 border ${emailError ? 'border-red-500 ring-2 ring-red-500 bg-red-50' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 ${emailError ? 'focus:ring-red-500' : 'focus:ring-blue-500'}`}
-                    required
-                  />
+              <form onSubmit={handleLogin} className="space-y-6">
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                    Correo electrónico
+                  </label>
+                  <div className="mt-1 relative">
+                    <input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (emailError) setEmailError(false);
+                      }}
+                      placeholder="Ingresa tu correo electrónico"
+                      className={`appearance-none block w-full px-3 py-2 border ${
+                        emailError 
+                          ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500' 
+                          : 'border-gray-300 placeholder-gray-500 text-gray-900 focus:ring-blue-500 focus:border-blue-500'
+                      } rounded-md shadow-sm focus:outline-none sm:text-sm`}
+                      required
+                    />
+                    {emailError && (
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <Icon name="ExclamationCircleIcon" className="h-5 w-5 text-red-500" />
+                      </div>
+                    )}
+                  </div>
                   {emailError && (
-                    <p className="text-red-500 text-xs mt-1">Por favor, ingresa un correo electrónico válido.</p>
+                    <p className="mt-2 text-sm text-red-600">Por favor, ingresa un correo electrónico válido.</p>
                   )}
                 </div>
                 
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
-                  <div className="relative">
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                    Contraseña
+                  </label>
+                  <div className="mt-1 relative">
                     <input
+                      id="password"
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Ingresa tu contraseña"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       required
                     />
                     <button 
                       type="button" 
                       onClick={togglePasswordVisibility}
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                      aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                     >
                       <Icon name={showPassword ? "EyeSlashIcon" : "EyeIcon"} className="h-5 w-5" />
                     </button>
                   </div>
-                  <div className="flex justify-between items-center mt-2">
-                    <div></div>
-                    <Link to="/forgot-password" className="text-sm text-blue-500 hover:text-blue-700">
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <input
+                      id="remember-me"
+                      name="remember-me"
+                      type="checkbox"
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+                      Recordar sesión
+                    </label>
+                  </div>
+                  <div className="text-sm">
+                    <Link to="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
                       ¿Olvidaste tu contraseña?
                     </Link>
                   </div>
                 </div>
                 
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className={`w-full bg-blue-600 text-white py-2 px-4 rounded-md font-medium ${isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-blue-700'}`}
-                >
-                  {isLoading ? (
-                    <span className="flex items-center justify-center">
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Cargando...
-                    </span>
-                  ) : 'Ingresar'}
-                </button>
+                <div>
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                  >
+                    {isLoading ? (
+                      <span className="flex items-center justify-center">
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Cargando...
+                      </span>
+                    ) : 'Iniciar sesión'}
+                  </button>
+                </div>
               </form>
               
               <div className="mt-6 text-center">
                 <p className="text-sm text-gray-600">
-                  ¿Aún no tienes cuenta?{' '}
-                  <Link to="/register" className="text-blue-500 hover:text-blue-700 font-medium">
-                    Regístrate
+                  ¿No tienes una cuenta?{' '}
+                  <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
+                    Regístrate ahora
                   </Link>
                 </p>
               </div>
