@@ -1,161 +1,249 @@
-from typing import Any, List, Optional
+# server/app/api/routes/requests.py
+
+from typing import Any, List, Optional, Dict, Set
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status, Body, Query, Path
 from bson import ObjectId
 
 from app.models.user import UserPublic, UserRole
 from app.models.request import (
-    Request, 
-    RequestCreate, 
-    RequestUpdate, 
-    StatusChangeRequest,
-    CommentCreate,
-    RequestStatus,
-    RequestResponse,
+    RequestCreate,
+    RequestUpdate,
     StatusChange,
-    RequestComment
+    RequestStatus,
+    CreateRequestResponse,
+    PaginatedRequestsResponse,
+    RequestSummary,
+    RequestDetail,
+    RequestResponse,
+    UpdateRequestResponse,
+    DeleteRequestResponse,
+    AddCommentResponse,
+    CommentResponse,
+    FileResponse,
+    StatusHistoryEntry,
+    RequestComment,
+    RequestFile
 )
 from app.core.database import get_database
-from app.api.deps import get_current_user, get_admin_user, get_client_user, get_any_user
+from app.api.deps import get_admin_user, get_client_user, get_any_user
 
-router = APIRouter()
+router = APIRouter(tags=["Requests"])
 
-@router.post("/", response_model=dict, status_code=status.HTTP_201_CREATED)
+
+# ────────────────────────────────────────────────────────────────────────────────
+#  POST /api/requests/  → Crear nueva solicitud
+# ────────────────────────────────────────────────────────────────────────────────
+@router.post(
+    "/",
+    response_model=CreateRequestResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Crear nueva solicitud",
+    description=(
+        "Permite a un cliente autenticado (rol=client) crear una nueva solicitud de proyecto.\n\n"
+        "Body (JSON):\n"
+        "  - title (str, obligatoria)\n"
+        "  - description (str, obligatoria)\n"
+        "  - projectType (str, obligatoria)\n"
+        "  - priority (str, opcional)\n"
+        "  - budget (float, opcional)\n"
+        "  - timeframe (str, opcional)\n"
+        "  - businessGoals (str, opcional)\n"
+        "  - targetAudience (str, opcional)\n"
+        "  - additionalInfo (str, opcional)\n\n"
+        "Al crearse, la solicitud se guarda con estado `draft` y se registra el primer cambio "
+        "en el historial de estados."
+    )
+)
 async def create_request(
-    request_in: RequestCreate,
-    current_user: UserPublic = Depends(get_client_user)
+    request_in: RequestCreate = Body(
+        ...,
+        description="Datos completos de la nueva solicitud de proyecto"
+    ),
+    current_user: UserPublic = Depends(get_client_user),
 ) -> Any:
-    """
-    Crear una nueva solicitud (solo clientes).
-    """
     db = get_database()
-    
-    # Crear la solicitud con los datos proporcionados
-    request_data = request_in.model_dump()
-    request_data.update({
+
+    # 1) Volcar el body a un diccionario
+    payload: Dict[str, Any] = request_in.model_dump()
+
+    # 2) Insertar todos los metadatos que faltan
+    payload.update({
         "clientId": ObjectId(current_user.id),
         "status": RequestStatus.DRAFT,
+        "assignedTo": None,
         "comments": [],
         "files": [],
-        "statusHistory": [{
-            "fromStatus": None,
-            "toStatus": RequestStatus.DRAFT,
-            "changedBy": ObjectId(current_user.id),
-            "changedAt": datetime.utcnow(),
-            "reason": "Creación de la solicitud"
-        }],
+        "statusHistory": [
+            {
+                "fromStatus": None,
+                "toStatus": RequestStatus.DRAFT,
+                "changedBy": ObjectId(current_user.id),
+                "changedAt": datetime.utcnow(),
+                "reason": "Creación de la solicitud"
+            }
+        ],
         "createdAt": datetime.utcnow(),
         "updatedAt": None
     })
-    
-    result = await db.requests.insert_one(request_data)
-    created_request = await db.requests.find_one({"_id": result.inserted_id})
-    
-    if created_request is None:
+
+    # 3) Insertar en Mongo
+    result = await db.requests.insert_one(payload)
+    created = await db.requests.find_one({"_id": result.inserted_id})
+    if not created:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error al crear la solicitud"
         )
-    
-    return {
-        "success": True,
-        "message": "Solicitud creada correctamente",
-        "requestId": str(created_request["_id"])
-    }
 
-@router.get("/", response_model=dict)
+    return CreateRequestResponse(
+        success=True,
+        message="Solicitud creada correctamente",
+        requestId=str(created["_id"])
+    )
+
+
+# ────────────────────────────────────────────────────────────────────────────────
+#  GET /api/requests/  → Listar solicitudes con paginación y filtros
+# ────────────────────────────────────────────────────────────────────────────────
+@router.get(
+    "/",
+    response_model=PaginatedRequestsResponse,
+    summary="Listar solicitudes",
+    description=(
+        "Obtiene un listado de solicitudes con paginación y filtros:\n"
+        "- **status**: filtrar por estado.\n"
+        "- **search**: buscar por término en título o descripción.\n"
+        "- **skip**: offset.\n"
+        "- **limit**: número máximo de resultados.\n\n"
+        "Si el usuario es cliente, sólo retorna sus propias solicitudes. "
+        "Si es admin, puede filtrar opcionalmente por **client_id**."
+    )
+)
 async def get_requests(
-    status: Optional[str] = Query(None, description="Filtrar por estado"),
-    client_id: Optional[str] = Query(None, description="Filtrar por cliente (solo para administradores)"),
-    search: Optional[str] = Query(None, description="Buscar en título o descripción"),
-    skip: int = Query(0, ge=0, description="Número de elementos a omitir"),
-    limit: int = Query(10, ge=1, le=100, description="Número máximo de elementos a devolver"),
-    current_user: UserPublic = Depends(get_any_user)
-) -> dict:
-    """
-    Obtener lista de solicitudes según los filtros.
-    Los administradores pueden ver todas las solicitudes.
-    Los clientes solo pueden ver sus propias solicitudes.
-    """
+    status: Optional[str] = Query(
+        None,
+        description="Filtrar por estado. Valores válidos: " + ", ".join(RequestStatus.all_statuses())
+    ),
+    client_id: Optional[str] = Query(
+        None,
+        description="(Solo admin) Filtrar por ID de cliente"
+    ),
+    search: Optional[str] = Query(
+        None,
+        description="Texto libre a buscar en título o descripción"
+    ),
+    skip: int = Query(
+        0,
+        ge=0,
+        description="Número de elementos a omitir"
+    ),
+    limit: int = Query(
+        10,
+        ge=1,
+        le=100,
+        description="Número máximo de elementos a devolver"
+    ),
+    current_user: UserPublic = Depends(get_any_user),
+) -> Any:
     db = get_database()
-    
-    # Construir la consulta según los filtros
-    query = {}
-    
-    # Filtrar por estado si se proporciona
+    query: Dict[str, Any] = {}
+
+    # 1) Filtrar por estado
     if status and status in RequestStatus.all_statuses():
         query["status"] = status
-    
-    # Filtrar por cliente
+
+    # 2) Filtrar por cliente según rol
     if current_user.role == UserRole.CLIENT:
-        # Los clientes solo pueden ver sus propias solicitudes
         query["clientId"] = ObjectId(current_user.id)
     elif current_user.role == UserRole.ADMIN and client_id:
-        # Los administradores pueden filtrar por cliente
         query["clientId"] = ObjectId(client_id)
-    
-    # Buscar en título o descripción
+
+    # 3) Búsqueda en título/descripcion
     if search:
         query["$or"] = [
             {"title": {"$regex": search, "$options": "i"}},
             {"description": {"$regex": search, "$options": "i"}}
         ]
-    
-    # Obtener el total de elementos que coinciden con la consulta
+
+    # 4) Contar total y paginar
     total = await db.requests.count_documents(query)
-    
-    # Obtener las solicitudes paginadas
     cursor = db.requests.find(query).sort("createdAt", -1).skip(skip).limit(limit)
-    requests_list = []
-    
-    async for request in cursor:
-        # Obtener información del cliente
-        client = await db.users.find_one({"_id": request["clientId"]})
+
+    # 5) Reunir todos los IDs de usuarios en un solo batch
+    user_ids: Set[ObjectId] = set()
+    docs_raw: List[Dict[str, Any]] = []
+    async for doc in cursor:
+        docs_raw.append(doc)
+        user_ids.add(doc["clientId"])
+        if doc.get("assignedTo"):
+            user_ids.add(doc["assignedTo"])
+        # NOTA: no contamos comentarios aquí, sólo necesitamos length de arrays
+        # porque RequestSummary incluye commentsCount y filesCount
+
+    # 6) Buscar usuarios por lotes
+    users_map: Dict[str, Dict[str, Any]] = {}
+    if user_ids:
+        users_list = await db.users.find({"_id": {"$in": list(user_ids)}}).to_list(length=None)
+        users_map = {str(u["_id"]): u for u in users_list}
+
+    # 7) Construir la lista de RequestSummary
+    requests_list: List[RequestSummary] = []
+    for doc in docs_raw:
+        # Cliente
+        client_doc = users_map.get(str(doc["clientId"]))
         client_data = None
-        if client:
-            client_data = {
-                "id": str(client["_id"]),
-                "firstName": client["firstName"],
-                "lastName": client["lastName"],
-                "email": client["email"],
-                "role": client.get("role", UserRole.CLIENT)
-            }
-        
-        # Obtener información del administrador asignado si existe
+        if client_doc:
+            client_data = UserPublic(
+                id=str(client_doc["_id"]),
+                firstName=client_doc["firstName"],
+                lastName=client_doc["lastName"],
+                email=client_doc["email"],
+                role=client_doc.get("role", UserRole.CLIENT),
+                createdAt=client_doc["createdAt"]
+            )
+
+        # Admin asignado (opcional)
         admin_data = None
-        if request.get("assignedTo"):
-            admin = await db.users.find_one({"_id": request["assignedTo"]})
-            if admin:
-                admin_data = {
-                    "id": str(admin["_id"]),
-                    "firstName": admin["firstName"],
-                    "lastName": admin["lastName"],
-                    "email": admin["email"],
-                    "role": admin.get("role", UserRole.ADMIN)
-                }
-        
-        # Preparar respuesta
-        request_response = {
-            "id": str(request["_id"]),
-            "title": request["title"],
-            "description": request["description"],
-            "status": request["status"],
-            "statusLabel": RequestStatus.status_labels().get(request["status"], request["status"]),
-            "clientId": str(request["clientId"]),
-            "client": client_data,
-            "assignedTo": str(request["assignedTo"]) if request.get("assignedTo") else None,
-            "assignedAdmin": admin_data,
-            "amount": request.get("amount"),
-            "dueDate": request.get("dueDate"),
-            "tags": request.get("tags", []),
-            "commentsCount": len(request.get("comments", [])),
-            "filesCount": len(request.get("files", [])),
-            "createdAt": request["createdAt"],
-            "updatedAt": request.get("updatedAt")
-        }
-        
-        requests_list.append(request_response)
-    
+        if doc.get("assignedTo"):
+            adm_doc = users_map.get(str(doc["assignedTo"]))
+            if adm_doc:
+                admin_data = UserPublic(
+                    id=str(adm_doc["_id"]),
+                    firstName=adm_doc["firstName"],
+                    lastName=adm_doc["lastName"],
+                    email=adm_doc["email"],
+                    role=adm_doc.get("role", UserRole.ADMIN),
+                    createdAt=adm_doc["createdAt"]
+                )
+
+        summary = RequestSummary(
+            id=str(doc["_id"]),
+            title=doc["title"],
+            description=doc["description"],
+            status=doc["status"],
+            statusLabel=RequestStatus.status_labels().get(doc["status"], doc["status"]),
+            projectType=doc.get("projectType"),
+            projectTypeLabel=None,  # El frontend utilizará ProjectTypeLabels[projectType]
+            priority=doc.get("priority"),
+            priorityLabel=None,     # El frontend utilizará PriorityLabels[priority]
+            clientId=str(doc["clientId"]),
+            client=client_data,
+            assignedTo=str(doc["assignedTo"]) if doc.get("assignedTo") else None,
+            assignedAdmin=admin_data,
+            budget=doc.get("budget"),
+            timeframe=doc.get("timeframe"),
+            businessGoals=doc.get("businessGoals"),
+            targetAudience=doc.get("targetAudience"),
+            additionalInfo=doc.get("additionalInfo"),
+            commentsCount=len(doc.get("comments", [])),
+            filesCount=len(doc.get("files", [])),
+            createdAt=doc["createdAt"],
+            updatedAt=doc.get("updatedAt"),
+            progress=doc.get("progress", 0)
+        )
+        requests_list.append(summary)
+
     return {
         "success": True,
         "total": total,
@@ -164,373 +252,493 @@ async def get_requests(
         "requests": requests_list
     }
 
-@router.get("/{request_id}", response_model=dict)
+
+# ────────────────────────────────────────────────────────────────────────────────
+#  GET /api/requests/{request_id}  → Obtener detalle de una solicitud
+# ────────────────────────────────────────────────────────────────────────────────
+@router.get(
+    "/{request_id}",
+    response_model=RequestResponse,
+    summary="Obtener detalle de una solicitud",
+    description=(
+        "Devuelve toda la información (RequestDetail) de la solicitud con ID válido.\n"
+        "- Solo el cliente dueño o un admin pueden verla.\n"
+        "- Incluye comentarios, archivos e historial de estado."
+    )
+)
 async def get_request(
     request_id: str = Path(..., description="ID de la solicitud"),
-    current_user: UserPublic = Depends(get_any_user)
-) -> dict:
-    """
-    Obtener una solicitud específica por su ID.
-    Los administradores pueden ver cualquier solicitud.
-    Los clientes solo pueden ver sus propias solicitudes.
-    """
+    current_user: UserPublic = Depends(get_any_user),
+) -> Any:
     db = get_database()
-    
+
     try:
-        request = await db.requests.find_one({"_id": ObjectId(request_id)})
+        doc = await db.requests.find_one({"_id": ObjectId(request_id)})
     except:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="ID de solicitud inválido"
         )
-    
-    if not request:
+
+    if not doc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Solicitud no encontrada"
         )
-    
+
     # Verificar permisos
-    if current_user.role == UserRole.CLIENT and str(request["clientId"]) != current_user.id:
+    if current_user.role == UserRole.CLIENT and str(doc["clientId"]) != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="No tienes permiso para ver esta solicitud"
         )
-    
-    # Obtener información del cliente
-    client = await db.users.find_one({"_id": request["clientId"]})
-    client_data = None
-    if client:
-        client_data = {
-            "id": str(client["_id"]),
-            "firstName": client["firstName"],
-            "lastName": client["lastName"],
-            "email": client["email"],
-            "role": client.get("role", UserRole.CLIENT)
-        }
-    
-    # Obtener información del administrador asignado si existe
-    admin_data = None
-    if request.get("assignedTo"):
-        admin = await db.users.find_one({"_id": request["assignedTo"]})
-        if admin:
-            admin_data = {
-                "id": str(admin["_id"]),
-                "firstName": admin["firstName"],
-                "lastName": admin["lastName"],
-                "email": admin["email"],
-                "role": admin.get("role", UserRole.ADMIN)
-            }
-    
-    # Preparar comentarios con información de usuario
-    comments = []
-    for comment in request.get("comments", []):
-        user = await db.users.find_one({"_id": comment["userId"]})
-        user_data = None
-        if user:
-            user_data = {
-                "id": str(user["_id"]),
-                "firstName": user["firstName"],
-                "lastName": user["lastName"],
-                "email": user["email"],
-                "role": user.get("role", UserRole.CLIENT)
-            }
-        
-        comments.append({
-            "id": str(comment.get("_id", "")),
-            "content": comment["content"],
-            "createdAt": comment["createdAt"],
-            "user": user_data
-        })
-    
-    # Preparar historial de estados con información de usuario
-    status_history = []
-    for status_change in request.get("statusHistory", []):
-        user = await db.users.find_one({"_id": status_change["changedBy"]})
-        user_data = None
-        if user:
-            user_data = {
-                "id": str(user["_id"]),
-                "firstName": user["firstName"],
-                "lastName": user["lastName"],
-                "role": user.get("role", UserRole.CLIENT)
-            }
-        
-        status_history.append({
-            "fromStatus": status_change["fromStatus"],
-            "fromStatusLabel": RequestStatus.status_labels().get(status_change["fromStatus"], status_change["fromStatus"]) if status_change["fromStatus"] else None,
-            "toStatus": status_change["toStatus"],
-            "toStatusLabel": RequestStatus.status_labels().get(status_change["toStatus"], status_change["toStatus"]),
-            "changedAt": status_change["changedAt"],
-            "reason": status_change.get("reason"),
-            "changedBy": user_data
-        })
-    
-    # Preparar archivos con información de usuario
-    files = []
-    for file in request.get("files", []):
-        user = await db.users.find_one({"_id": file["userId"]})
-        user_data = None
-        if user:
-            user_data = {
-                "id": str(user["_id"]),
-                "firstName": user["firstName"],
-                "lastName": user["lastName"],
-                "role": user.get("role", UserRole.CLIENT)
-            }
-        
-        files.append({
-            "id": str(file.get("_id", "")),
-            "filename": file["filename"],
-            "fileSize": file["fileSize"],
-            "fileType": file["fileType"],
-            "uploadedAt": file["uploadedAt"],
-            "user": user_data
-        })
-    
-    # Preparar respuesta detallada
-    response = {
-        "id": str(request["_id"]),
-        "title": request["title"],
-        "description": request["description"],
-        "status": request["status"],
-        "statusLabel": RequestStatus.status_labels().get(request["status"], request["status"]),
-        "clientId": str(request["clientId"]),
-        "client": client_data,
-        "assignedTo": str(request["assignedTo"]) if request.get("assignedTo") else None,
-        "assignedAdmin": admin_data,
-        "amount": request.get("amount"),
-        "dueDate": request.get("dueDate"),
-        "tags": request.get("tags", []),
-        "comments": comments,
-        "files": files,
-        "statusHistory": status_history,
-        "createdAt": request["createdAt"],
-        "updatedAt": request.get("updatedAt")
-    }
-    
-    return {
-        "success": True,
-        "request": response
-    }
 
-@router.put("/{request_id}", response_model=dict)
+    # 1) Reunir todos los IDs de usuarios involucrados
+    user_ids: Set[ObjectId] = {doc["clientId"]}
+    if doc.get("assignedTo"):
+        user_ids.add(doc["assignedTo"])
+    for c in doc.get("comments", []):
+        user_ids.add(c["userId"])
+    for h in doc.get("statusHistory", []):
+        user_ids.add(h["changedBy"])
+    for f in doc.get("files", []):
+        user_ids.add(f["userId"])
+
+    users_map: Dict[str, Dict[str, Any]] = {}
+    if user_ids:
+        users_list = await db.users.find({"_id": {"$in": list(user_ids)}}).to_list(length=None)
+        users_map = {str(u["_id"]): u for u in users_list}
+
+    # 2) Cliente
+    client_doc = users_map.get(str(doc["clientId"]))
+    client_data = None
+    if client_doc:
+        client_data = UserPublic(
+            id=str(client_doc["_id"]),
+            firstName=client_doc["firstName"],
+            lastName=client_doc["lastName"],
+            email=client_doc["email"],
+            role=client_doc.get("role", UserRole.CLIENT),
+            createdAt=client_doc["createdAt"]
+        )
+
+    # 3) Admin asignado
+    assigned_admin_data = None
+    if doc.get("assignedTo"):
+        adm_doc = users_map.get(str(doc["assignedTo"]))
+        if adm_doc:
+            assigned_admin_data = UserPublic(
+                id=str(adm_doc["_id"]),
+                firstName=adm_doc["firstName"],
+                lastName=adm_doc["lastName"],
+                email=adm_doc["email"],
+                role=adm_doc.get("role", UserRole.ADMIN),
+                createdAt=adm_doc["createdAt"]
+            )
+
+    # 4) Comentarios
+    comments_resp: List[CommentResponse] = []
+    for c in doc.get("comments", []):
+        u_doc = users_map.get(str(c["userId"]))
+        user_info = None
+        if u_doc:
+            user_info = UserPublic(
+                id=str(u_doc["_id"]),
+                firstName=u_doc["firstName"],
+                lastName=u_doc["lastName"],
+                email=u_doc["email"],
+                role=u_doc.get("role", UserRole.CLIENT),
+                createdAt=u_doc["createdAt"]
+            )
+        comments_resp.append(
+            CommentResponse(
+                id=str(c.get("_id", "")),
+                content=c["content"],
+                createdAt=c["createdAt"],
+                user=user_info
+            )
+        )
+
+    # 5) Historial de estados
+    history_resp: List[StatusHistoryEntry] = []
+    for h in doc.get("statusHistory", []):
+        u_doc = users_map.get(str(h["changedBy"]))
+        user_info = None
+        if u_doc:
+            user_info = UserPublic(
+                id=str(u_doc["_id"]),
+                firstName=u_doc["firstName"],
+                lastName=u_doc["lastName"],
+                email=u_doc["email"],
+                role=u_doc.get("role", UserRole.CLIENT),
+                createdAt=u_doc["createdAt"]
+            )
+        history_resp.append(
+            StatusHistoryEntry(
+                fromStatus=h.get("fromStatus"),
+                fromStatusLabel=(
+                    RequestStatus.status_labels().get(h["fromStatus"])
+                    if h.get("fromStatus") else None
+                ),
+                toStatus=h["toStatus"],
+                toStatusLabel=RequestStatus.status_labels().get(h["toStatus"], h["toStatus"]),
+                changedAt=h["changedAt"],
+                reason=h.get("reason"),
+                changedBy=user_info
+            )
+        )
+
+    # 6) Archivos adjuntos
+    files_resp: List[FileResponse] = []
+    for f in doc.get("files", []):
+        u_doc = users_map.get(str(f["userId"]))
+        user_info = None
+        if u_doc:
+            user_info = UserPublic(
+                id=str(u_doc["_id"]),
+                firstName=u_doc["firstName"],
+                lastName=u_doc["lastName"],
+                email=u_doc["email"],
+                role=u_doc.get("role", UserRole.CLIENT),
+                createdAt=u_doc["createdAt"]
+            )
+        files_resp.append(
+            FileResponse(
+                id=str(f.get("_id", "")),
+                filename=f["filename"],
+                fileSize=f["fileSize"],
+                fileType=f["fileType"],
+                uploadedAt=f["uploadedAt"],
+                user=user_info
+            )
+        )
+
+    # 7) Construir RequestDetail
+    detail = RequestDetail(
+        id=str(doc["_id"]),
+        title=doc["title"],
+        description=doc["description"],
+        status=doc["status"],
+        statusLabel=RequestStatus.status_labels().get(doc["status"], doc["status"]),
+        projectType=doc.get("projectType"),
+        projectTypeLabel=None,      # El frontend lo completa con ProjectTypeLabels
+        priority=doc.get("priority"),
+        priorityLabel=None,         # El frontend lo completa con PriorityLabels
+        clientId=str(doc["clientId"]),
+        client=client_data,
+        assignedTo=str(doc["assignedTo"]) if doc.get("assignedTo") else None,
+        assignedAdmin=assigned_admin_data,
+        budget=doc.get("budget"),
+        timeframe=doc.get("timeframe"),
+        businessGoals=doc.get("businessGoals"),
+        targetAudience=doc.get("targetAudience"),
+        additionalInfo=doc.get("additionalInfo"),
+        commentsCount=len(doc.get("comments", [])),
+        filesCount=len(doc.get("files", [])),
+        createdAt=doc["createdAt"],
+        updatedAt=doc.get("updatedAt"),
+        progress=doc.get("progress", 0),
+        comments=comments_resp,
+        files=files_resp,
+        statusHistory=history_resp
+    )
+
+    return RequestResponse(success=True, request=detail)
+
+
+# ────────────────────────────────────────────────────────────────────────────────
+#  PUT /api/requests/{request_id}  → Actualizar una solicitud existente
+# ────────────────────────────────────────────────────────────────────────────────
+@router.put(
+    "/{request_id}",
+    response_model=UpdateRequestResponse,
+    summary="Actualizar una solicitud existente",
+    description=(
+        "Permite actualizar cualquier campo (para admin) o solo ciertos campos "
+        "(para cliente si está en estado `draft`).\n"
+        "El body es de tipo RequestUpdate y puede incluir cualquiera de las propiedades definidas en el modelo.\n"
+        "Ejemplo de JSON (RequestUpdate):\n"
+        "{\n"
+        "  \"title\": \"Portal Web v2\",\n"
+        "  \"priority\": \"high\",\n"
+        "  \"budget\": 300000.0,\n"
+        "  \"businessGoals\": \"Agregar módulo de e-commerce\"\n"
+        "}\n"
+    )
+)
 async def update_request(
-    request_id: str = Path(..., description="ID de la solicitud"),
+    request_id: str = Path(..., description="ID de la solicitud a actualizar"),
     request_update: RequestUpdate = Body(...),
-    current_user: UserPublic = Depends(get_any_user)
-) -> dict:
-    """
-    Actualizar una solicitud existente.
-    Los clientes solo pueden actualizar sus propias solicitudes y solo ciertos campos.
-    Los administradores pueden actualizar cualquier solicitud y todos los campos.
-    """
+    current_user: UserPublic = Depends(get_any_user),
+) -> Any:
     db = get_database()
-    
+
     try:
-        request = await db.requests.find_one({"_id": ObjectId(request_id)})
+        doc = await db.requests.find_one({"_id": ObjectId(request_id)})
     except:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="ID de solicitud inválido"
         )
-    
-    if not request:
+
+    if not doc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Solicitud no encontrada"
         )
-    
-    # Verificar permisos
+
+    # 1) Permisos para cliente
     if current_user.role == UserRole.CLIENT:
-        # Los clientes solo pueden actualizar sus propias solicitudes
-        if str(request["clientId"]) != current_user.id:
+        if str(doc["clientId"]) != current_user.id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="No tienes permiso para actualizar esta solicitud"
+                detail="No tienes permiso para modificar esta solicitud"
             )
-        
-        # Los clientes solo pueden actualizar solicitudes en estado DRAFT
-        if request["status"] != RequestStatus.DRAFT:
+        if doc["status"] != RequestStatus.DRAFT:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Solo puedes modificar solicitudes en estado de borrador"
+                detail="Solo puedes modificar solicitudes en estado Borrador"
             )
-        
-        # Los clientes no pueden cambiar ciertos campos
         if request_update.status or request_update.assignedTo:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="No tienes permiso para modificar estos campos"
+                detail="No puedes cambiar el estado ni asignar admin"
             )
-    
-    # Preparar datos para actualizar
-    update_data = {}
-    update_fields = request_update.model_dump(exclude_unset=True)
-    
-    for field, value in update_fields.items():
+
+    # 2) Construir objeto de UPDATE
+    update_data: Dict[str, Any] = {}
+    fields = request_update.model_dump(exclude_unset=True)
+
+    for field_name, value in fields.items():
         if value is not None:
-            # Manejar campos especiales
-            if field == "assignedTo" and value:
+            if field_name == "assignedTo" and value:
                 try:
-                    # Verificar que el usuario asignado exista y sea admin
-                    admin = await db.users.find_one({"_id": ObjectId(value), "role": UserRole.ADMIN})
-                    if not admin:
+                    admin_doc = await db.users.find_one({
+                        "_id": ObjectId(value),
+                        "role": UserRole.ADMIN
+                    })
+                    if not admin_doc:
                         raise HTTPException(
                             status_code=status.HTTP_400_BAD_REQUEST,
-                            detail="El usuario asignado debe ser un administrador válido"
+                            detail="El usuario asignado debe ser un admin válido"
                         )
-                    update_data[field] = ObjectId(value)
+                    update_data["assignedTo"] = ObjectId(value)
                 except:
                     raise HTTPException(
                         status_code=status.HTTP_400_BAD_REQUEST,
-                        detail="ID de administrador inválido"
+                        detail="ID de admin inválido"
                     )
-            elif field == "status":
-                # Verificar que el estado sea válido
+            elif field_name == "status":
                 if value not in RequestStatus.all_statuses():
                     raise HTTPException(
                         status_code=status.HTTP_400_BAD_REQUEST,
                         detail="Estado no válido"
                     )
-                
-                # Registrar cambio de estado en el historial
-                status_change = {
-                    "fromStatus": request["status"],
+                # Insertar en historial
+                status_entry = {
+                    "fromStatus": doc["status"],
                     "toStatus": value,
                     "changedBy": ObjectId(current_user.id),
                     "changedAt": datetime.utcnow(),
-                    "reason": "Actualización de solicitud"
+                    "reason": "Cambio de estado vía PUT"
                 }
-                
-                update_data[field] = value
-                update_data["$push"] = {"statusHistory": status_change}
+                update_data["status"] = value
+                existing_push = update_data.get("$push", {})
+                existing_push["statusHistory"] = status_entry
+                update_data["$push"] = existing_push
             else:
-                update_data[field] = value
-    
-    # Actualizar timestamp
-    update_data["updatedAt"] = datetime.utcnow()
-    
-    # Actualizar la solicitud
-    await db.requests.update_one(
-        {"_id": ObjectId(request_id)},
-        {"$set": update_data}
-    )
-    
-    return {
-        "success": True,
-        "message": "Solicitud actualizada correctamente"
-    }
+                update_data[field_name] = value
 
-@router.patch("/{request_id}/status", response_model=dict)
-async def change_request_status(
-    request_id: str = Path(..., description="ID de la solicitud"),
-    status_change: StatusChangeRequest = Body(...),
-    current_user: UserPublic = Depends(get_admin_user)
-) -> dict:
-    """
-    Cambiar el estado de una solicitud (solo administradores).
-    """
+    update_data["updatedAt"] = datetime.utcnow()
+
+    # 3) Ejecutar el update en Mongo
+    if update_data:
+        await db.requests.update_one(
+            {"_id": ObjectId(request_id)},
+            {"$set": update_data}
+        )
+
+    return UpdateRequestResponse(
+        success=True,
+        message="Solicitud actualizada correctamente"
+    )
+
+
+# ────────────────────────────────────────────────────────────────────────────────
+#  DELETE /api/requests/{request_id}  → Eliminar una solicitud
+# ────────────────────────────────────────────────────────────────────────────────
+@router.delete(
+    "/{request_id}",
+    response_model=DeleteRequestResponse,
+    summary="Eliminar una solicitud",
+    description=(
+        "Permite eliminar una solicitud existente.\n"
+        "- Si el usuario es CLIENT, solo puede eliminar sus propias solicitudes en estado `draft`.\n"
+        "- Si el usuario es ADMIN, puede eliminarla en cualquier estado."
+    )
+)
+async def delete_request(
+    request_id: str = Path(..., description="ID de la solicitud a eliminar"),
+    current_user: UserPublic = Depends(get_any_user),
+) -> Any:
     db = get_database()
-    
+
     try:
-        request = await db.requests.find_one({"_id": ObjectId(request_id)})
+        doc = await db.requests.find_one({"_id": ObjectId(request_id)})
     except:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="ID de solicitud inválido"
         )
-    
-    if not request:
+
+    if not doc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Solicitud no encontrada"
         )
-    
-    # Verificar que el estado sea válido
-    if status_change.status not in RequestStatus.all_statuses():
+
+    if current_user.role == UserRole.CLIENT:
+        if str(doc["clientId"]) != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="No tienes permiso para eliminar esta solicitud"
+            )
+        if doc["status"] != RequestStatus.DRAFT:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Solo puedes eliminar solicitudes en estado Borrador"
+            )
+
+    await db.requests.delete_one({"_id": ObjectId(request_id)})
+
+    return DeleteRequestResponse(
+        success=True,
+        message="Solicitud eliminada correctamente"
+    )
+
+
+# ────────────────────────────────────────────────────────────────────────────────
+#  PATCH /api/requests/{request_id}/status  → Cambiar estado
+# ────────────────────────────────────────────────────────────────────────────────
+@router.patch(
+    "/{request_id}/status",
+    response_model=UpdateRequestResponse,
+    summary="Cambiar estado de una solicitud",
+    description=(
+        "Solo ADMIN puede cambiar el estado de una solicitud.\n"
+        "Body (StatusChange): {\n"
+        '   "toStatus": "planning",\n'
+        '   "reason": "Revisado y aprobado por director del proyecto"\n'
+        "}"
+    )
+)
+async def change_request_status(
+    request_id: str = Path(..., description="ID de la solicitud"),
+    status_change: StatusChange = Body(...),
+    current_user: UserPublic = Depends(get_admin_user),
+) -> Any:
+    db = get_database()
+
+    try:
+        doc = await db.requests.find_one({"_id": ObjectId(request_id)})
+    except:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="ID de solicitud inválido"
+        )
+
+    if not doc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Solicitud no encontrada"
+        )
+
+    if status_change.toStatus not in RequestStatus.all_statuses():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Estado no válido"
         )
-    
-    # No permitir cambiar a un estado igual al actual
-    if request["status"] == status_change.status:
+
+    if doc["status"] == status_change.toStatus:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"La solicitud ya está en estado {status_change.status}"
+            detail=f"La solicitud ya está en estado {status_change.toStatus}"
         )
-    
-    # Registrar cambio de estado en el historial
-    status_history_entry = {
-        "fromStatus": request["status"],
-        "toStatus": status_change.status,
+
+    history_entry = {
+        "fromStatus": doc["status"],
+        "toStatus": status_change.toStatus,
         "changedBy": ObjectId(current_user.id),
         "changedAt": datetime.utcnow(),
         "reason": status_change.reason
     }
-    
-    # Actualizar la solicitud
+
     await db.requests.update_one(
         {"_id": ObjectId(request_id)},
         {
             "$set": {
-                "status": status_change.status,
+                "status": status_change.toStatus,
                 "updatedAt": datetime.utcnow()
             },
             "$push": {
-                "statusHistory": status_history_entry
+                "statusHistory": history_entry
             }
         }
     )
-    
-    return {
-        "success": True,
-        "message": f"Estado de la solicitud actualizado a {status_change.status}"
-    }
 
-@router.post("/{request_id}/comments", response_model=dict)
+    return UpdateRequestResponse(
+        success=True,
+        message=f"Estado actualizado a {status_change.toStatus}"
+    )
+
+
+# ────────────────────────────────────────────────────────────────────────────────
+#  POST /api/requests/{request_id}/comments  → Agregar comentario
+# ────────────────────────────────────────────────────────────────────────────────
+@router.post(
+    "/{request_id}/comments",
+    response_model=AddCommentResponse,
+    summary="Agregar comentario a una solicitud",
+    description=(
+        "Tanto CLIENT como ADMIN pueden agregar comentarios a la solicitud.\n"
+        "Body: { \"content\": \"Texto del comentario\" }\n"
+        "Se devuelve el comentario recién creado con sus datos de usuario."
+    )
+)
 async def add_comment(
     request_id: str = Path(..., description="ID de la solicitud"),
-    comment: CommentCreate = Body(...),
-    current_user: UserPublic = Depends(get_any_user)
-) -> dict:
-    """
-    Añadir un comentario a una solicitud.
-    Tanto clientes como administradores pueden añadir comentarios.
-    """
+    comment: RequestComment = Body(...),
+    current_user: UserPublic = Depends(get_any_user),
+) -> Any:
     db = get_database()
-    
+
     try:
-        request = await db.requests.find_one({"_id": ObjectId(request_id)})
+        doc = await db.requests.find_one({"_id": ObjectId(request_id)})
     except:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="ID de solicitud inválido"
         )
-    
-    if not request:
+
+    if not doc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Solicitud no encontrada"
         )
-    
-    # Si es cliente, verificar que sea su solicitud
-    if current_user.role == UserRole.CLIENT and str(request["clientId"]) != current_user.id:
+
+    if current_user.role == UserRole.CLIENT and str(doc["clientId"]) != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="No tienes permiso para comentar en esta solicitud"
+            detail="No tienes permiso para comentar esta solicitud"
         )
-    
-    # Crear el comentario
+
     new_comment = {
         "_id": ObjectId(),
         "userId": ObjectId(current_user.id),
         "content": comment.content,
         "createdAt": datetime.utcnow()
     }
-    
-    # Añadir el comentario a la solicitud
+
     await db.requests.update_one(
         {"_id": ObjectId(request_id)},
         {
@@ -538,116 +746,74 @@ async def add_comment(
             "$set": {"updatedAt": datetime.utcnow()}
         }
     )
-    
-    # Obtener información del usuario para la respuesta
-    user_data = {
-        "id": current_user.id,
-        "firstName": current_user.firstName,
-        "lastName": current_user.lastName,
-        "role": current_user.role
-    }
-    
-    return {
-        "success": True,
-        "message": "Comentario añadido correctamente",
-        "comment": {
-            "id": str(new_comment["_id"]),
-            "content": new_comment["content"],
-            "createdAt": new_comment["createdAt"],
-            "user": user_data
-        }
-    }
 
-@router.delete("/{request_id}", response_model=dict)
-async def delete_request(
-    request_id: str = Path(..., description="ID de la solicitud"),
-    current_user: UserPublic = Depends(get_any_user)
-) -> dict:
-    """
-    Eliminar una solicitud.
-    Los clientes solo pueden eliminar sus propias solicitudes en estado DRAFT.
-    Los administradores pueden eliminar cualquier solicitud.
-    """
-    db = get_database()
-    
-    try:
-        request = await db.requests.find_one({"_id": ObjectId(request_id)})
-    except:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="ID de solicitud inválido"
-        )
-    
-    if not request:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Solicitud no encontrada"
-        )
-    
-    # Verificar permisos
-    if current_user.role == UserRole.CLIENT:
-        # Los clientes solo pueden eliminar sus propias solicitudes
-        if str(request["clientId"]) != current_user.id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="No tienes permiso para eliminar esta solicitud"
-            )
-        
-        # Los clientes solo pueden eliminar solicitudes en estado DRAFT
-        if request["status"] != RequestStatus.DRAFT:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Solo puedes eliminar solicitudes en estado de borrador"
-            )
-    
-    # Eliminar la solicitud
-    await db.requests.delete_one({"_id": ObjectId(request_id)})
-    
-    return {
-        "success": True,
-        "message": "Solicitud eliminada correctamente"
-    }
+    user_data = UserPublic(
+        id=current_user.id,
+        firstName=current_user.firstName,
+        lastName=current_user.lastName,
+        email=current_user.email,
+        role=current_user.role,
+        createdAt=current_user.createdAt
+    )
 
-@router.post("/{request_id}/submit", response_model=dict)
+    comment_resp = CommentResponse(
+        id=str(new_comment["_id"]),
+        content=new_comment["content"],
+        createdAt=new_comment["createdAt"],
+        user=user_data
+    )
+
+    return AddCommentResponse(
+        success=True,
+        message="Comentario añadido correctamente",
+        comment=comment_resp
+    )
+
+
+# ────────────────────────────────────────────────────────────────────────────────
+#  POST /api/requests/{request_id}/submit  → Enviar para revisión
+# ────────────────────────────────────────────────────────────────────────────────
+@router.post(
+    "/{request_id}/submit",
+    response_model=UpdateRequestResponse,
+    summary="Enviar solicitud para revisión",
+    description=(
+        "Solo CLIENT puede enviar la solicitud. \n"
+        "Cambia estado de `draft` a `in_process` y registra en historial."
+    )
+)
 async def submit_request(
     request_id: str = Path(..., description="ID de la solicitud"),
-    current_user: UserPublic = Depends(get_client_user)
-) -> dict:
-    """
-    Enviar una solicitud para revisión (solo clientes).
-    Cambia el estado de DRAFT a IN_PROCESS.
-    """
+    current_user: UserPublic = Depends(get_client_user),
+) -> Any:
     db = get_database()
-    
+
     try:
-        request = await db.requests.find_one({"_id": ObjectId(request_id)})
+        req_doc = await db.requests.find_one({"_id": ObjectId(request_id)})
     except:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="ID de solicitud inválido"
         )
-    
-    if not request:
+
+    if not req_doc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Solicitud no encontrada"
         )
-    
-    # Verificar que sea la solicitud del cliente
-    if str(request["clientId"]) != current_user.id:
+
+    if str(req_doc["clientId"]) != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="No tienes permiso para enviar esta solicitud"
         )
-    
-    # Verificar que esté en estado DRAFT
-    if request["status"] != RequestStatus.DRAFT:
+
+    if req_doc["status"] != RequestStatus.DRAFT:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Solo puedes enviar solicitudes en estado de borrador"
         )
-    
-    # Registrar cambio de estado en el historial
+
     status_history_entry = {
         "fromStatus": RequestStatus.DRAFT,
         "toStatus": RequestStatus.IN_PROCESS,
@@ -655,8 +821,7 @@ async def submit_request(
         "changedAt": datetime.utcnow(),
         "reason": "Solicitud enviada para revisión"
     }
-    
-    # Actualizar la solicitud
+
     await db.requests.update_one(
         {"_id": ObjectId(request_id)},
         {
@@ -669,8 +834,8 @@ async def submit_request(
             }
         }
     )
-    
-    return {
-        "success": True,
-        "message": "Solicitud enviada correctamente para revisión"
-    }
+
+    return UpdateRequestResponse(
+        success=True,
+        message="Solicitud enviada correctamente para revisión"
+    )

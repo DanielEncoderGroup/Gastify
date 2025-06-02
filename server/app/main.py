@@ -8,7 +8,7 @@ from app.core.config import settings
 from app.core.database import connect_to_mongo, close_mongo_connection
 
 app = FastAPI(
-    title="MisViaticos API",
+    title="Encodergroup API",
     description="API para gestión de boletas de gastos",
     version="2.0.0"
 )
@@ -42,7 +42,7 @@ async def shutdown_db_client():
 
 @app.get("/", tags=["Health"])
 def health_check():
-    return {"message": "MisViaticos API is running..."}
+    return {"message": "Encodergroup API is running..."}
 
 if __name__ == "__main__":
     uvicorn.run(

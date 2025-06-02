@@ -1,24 +1,28 @@
 import { User } from './index';
 
-// Estados posibles de una solicitud
+/**
+ *  Estados posibles de una solicitud
+ */
 export enum RequestStatus {
   DRAFT = 'draft',
-  SUBMITTED = 'submitted', // Enviado para evaluación inicial
-  REQUIREMENTS_ANALYSIS = 'requirements_analysis', // Análisis de requisitos
-  PLANNING = 'planning', // Planificación técnica
-  ESTIMATION = 'estimation', // Estimación de recursos
-  PROPOSAL_READY = 'proposal_ready', // Propuesta lista para presentación
-  APPROVED = 'approved', // Proyecto aprobado
-  REJECTED = 'rejected', // Proyecto rechazado
-  IN_DEVELOPMENT = 'in_development', // En desarrollo (seguimiento)
-  COMPLETED = 'completed', // Completado
-  // Estados legacy para compatibilidad
+  SUBMITTED = 'submitted',
+  REQUIREMENTS_ANALYSIS = 'requirements_analysis',
+  PLANNING = 'planning',
+  ESTIMATION = 'estimation',
+  PROPOSAL_READY = 'proposal_ready',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+  IN_DEVELOPMENT = 'in_development',
+  COMPLETED = 'completed',
+  CANCELED = 'canceled',
+  // Legacy / compatibilidad
   IN_PROCESS = 'in_process',
   IN_REVIEW = 'in_review',
-  CANCELED = 'canceled' // Cancelado por el cliente o admin
 }
 
-// Etiquetas para los estados
+/**
+ * Etiquetas legibles para cada estado
+ */
 export const RequestStatusLabels: Record<RequestStatus, string> = {
   [RequestStatus.DRAFT]: 'Borrador',
   [RequestStatus.SUBMITTED]: 'Enviado',
@@ -30,13 +34,16 @@ export const RequestStatusLabels: Record<RequestStatus, string> = {
   [RequestStatus.REJECTED]: 'Rechazado',
   [RequestStatus.IN_DEVELOPMENT]: 'En Desarrollo',
   [RequestStatus.COMPLETED]: 'Completado',
-  // Estados legacy
+  [RequestStatus.CANCELED]: 'Cancelado',
+  // Legacy
   [RequestStatus.IN_PROCESS]: 'En Proceso',
   [RequestStatus.IN_REVIEW]: 'En Revisión',
-  [RequestStatus.CANCELED]: 'Cancelado'
 };
 
-// Colores para los estados
+/**
+ * Colores base (sin sufijo -100 / -800) para cada estado
+ * Útil si alguna lógica necesita solo el color base, pero no suele usarse en el JSX directamente.
+ */
 export const RequestStatusColors: Record<RequestStatus, string> = {
   [RequestStatus.DRAFT]: 'gray',
   [RequestStatus.SUBMITTED]: 'blue',
@@ -48,13 +55,37 @@ export const RequestStatusColors: Record<RequestStatus, string> = {
   [RequestStatus.REJECTED]: 'red',
   [RequestStatus.IN_DEVELOPMENT]: 'teal',
   [RequestStatus.COMPLETED]: 'emerald',
-  // Estados legacy
+  [RequestStatus.CANCELED]: 'gray',
+  // Legacy
   [RequestStatus.IN_PROCESS]: 'blue',
   [RequestStatus.IN_REVIEW]: 'purple',
-  [RequestStatus.CANCELED]: 'gray'
 };
 
-// Modelo para comentarios
+/**
+ * Mapeo de cada estado a las clases completas de Tailwind para el badge.
+ * - bg-<color>-100  (fondo claro)
+ * - text-<color>-800 (texto oscuro)
+ */
+export const StatusBadgeClasses: Record<RequestStatus, string> = {
+  [RequestStatus.DRAFT]: 'bg-gray-100 text-gray-800',
+  [RequestStatus.SUBMITTED]: 'bg-blue-100 text-blue-800',
+  [RequestStatus.REQUIREMENTS_ANALYSIS]: 'bg-purple-100 text-purple-800',
+  [RequestStatus.PLANNING]: 'bg-indigo-100 text-indigo-800',
+  [RequestStatus.ESTIMATION]: 'bg-orange-100 text-orange-800',
+  [RequestStatus.PROPOSAL_READY]: 'bg-cyan-100 text-cyan-800',
+  [RequestStatus.APPROVED]: 'bg-green-100 text-green-800',
+  [RequestStatus.REJECTED]: 'bg-red-100 text-red-800',
+  [RequestStatus.IN_DEVELOPMENT]: 'bg-teal-100 text-teal-800',
+  [RequestStatus.COMPLETED]: 'bg-emerald-100 text-emerald-800',
+  [RequestStatus.CANCELED]: 'bg-gray-100 text-gray-800',
+  // Legacy
+  [RequestStatus.IN_PROCESS]: 'bg-blue-100 text-blue-800',
+  [RequestStatus.IN_REVIEW]: 'bg-purple-100 text-purple-800',
+};
+
+/**
+ * Modelo para comentarios (parte del detalle)
+ */
 export interface RequestComment {
   id: string;
   content: string;
@@ -62,7 +93,9 @@ export interface RequestComment {
   user?: User;
 }
 
-// Modelo para archivos adjuntos
+/**
+ * Modelo para archivos adjuntos (parte del detalle)
+ */
 export interface RequestFile {
   id: string;
   filename: string;
@@ -72,7 +105,9 @@ export interface RequestFile {
   user?: User;
 }
 
-// Modelo para cambios de estado
+/**
+ * Modelo para cambios de estado (parte del detalle)
+ */
 export interface StatusChange {
   fromStatus: RequestStatus | null;
   fromStatusLabel?: string;
@@ -83,7 +118,9 @@ export interface StatusChange {
   changedBy?: User;
 }
 
-// Modelo de solicitud (resumido para listados)
+/**
+ * Modelo de solicitud (resumido para listados)
+ */
 export interface RequestSummary {
   id: string;
   title: string;
@@ -100,40 +137,33 @@ export interface RequestSummary {
   assignedAdmin?: User;
   budget?: number;
   timeframe?: string;
-  estimatedHours?: number;
-  costEstimate?: number;
-  proposedStartDate?: string;
-  proposedEndDate?: string;
   tags: string[];
   commentsCount: number;
   filesCount: number;
   createdAt: string;
   updatedAt?: string;
-  progress?: number; // Porcentaje de progreso (0-100)
-  // Campos adicionales para proyectos IT
-  technicalRequirements?: string; // Requisitos técnicos específicos
-  businessGoals?: string; // Objetivos de negocio del proyecto
-  integrationsNeeded?: string; // Sistemas con los que debe integrarse
-  targetAudience?: string; // Público objetivo del proyecto
-  additionalInfo?: string; // Información adicional relevante
-  // Campos legacy para compatibilidad
-  amount?: number; // Campo legacy para presupuesto
-  dueDate?: string; // Campo legacy para fecha límite
-}
-
-// Modelo de solicitud detallada
-export interface RequestDetail extends RequestSummary {
-  comments: RequestComment[];
-  files: RequestFile[];
-  statusHistory: StatusChange[];
+  progress?: number;
   technicalRequirements?: string;
   businessGoals?: string;
   integrationsNeeded?: string;
   targetAudience?: string;
   additionalInfo?: string;
+  amount?: number;  // legacy
+  dueDate?: string; // legacy
 }
 
-// Tipos de proyectos tecnológicos
+/**
+ * Modelo de solicitud detallada (incluye arreglos de comentarios, archivos e historial)
+ */
+export interface RequestDetail extends RequestSummary {
+  comments: RequestComment[];
+  files: RequestFile[];
+  statusHistory: StatusChange[];
+}
+
+/**
+ * Tipos de proyectos tecnológicos
+ */
 export enum ProjectType {
   WEB_APP = 'web_app',
   MOBILE_APP = 'mobile_app',
@@ -143,10 +173,12 @@ export enum ProjectType {
   CLOUD_MIGRATION = 'cloud_migration',
   DATA_ANALYTICS = 'data_analytics',
   AUTOMATION = 'automation',
-  CUSTOM = 'custom'
+  CUSTOM = 'custom',
 }
 
-// Etiquetas para tipos de proyectos
+/**
+ * Etiquetas legibles para cada tipo de proyecto
+ */
 export const ProjectTypeLabels: Record<ProjectType, string> = {
   [ProjectType.WEB_APP]: 'Aplicación Web',
   [ProjectType.MOBILE_APP]: 'Aplicación Móvil',
@@ -156,45 +188,52 @@ export const ProjectTypeLabels: Record<ProjectType, string> = {
   [ProjectType.CLOUD_MIGRATION]: 'Migración a la Nube',
   [ProjectType.DATA_ANALYTICS]: 'Análisis de Datos',
   [ProjectType.AUTOMATION]: 'Automatización de Procesos',
-  [ProjectType.CUSTOM]: 'Proyecto Personalizado'
-}
+  [ProjectType.CUSTOM]: 'Proyecto Personalizado',
+};
 
-// Prioridades de proyecto
+/**
+ * Prioridades de proyecto
+ */
 export enum ProjectPriority {
   LOW = 'low',
   MEDIUM = 'medium',
   HIGH = 'high',
-  URGENT = 'urgent'
+  URGENT = 'urgent',
 }
 
-// Etiquetas para prioridades
+/**
+ * Etiquetas legibles para prioridades
+ */
 export const PriorityLabels: Record<ProjectPriority, string> = {
   [ProjectPriority.LOW]: 'Baja',
   [ProjectPriority.MEDIUM]: 'Media',
   [ProjectPriority.HIGH]: 'Alta',
-  [ProjectPriority.URGENT]: 'Urgente'
-}
+  [ProjectPriority.URGENT]: 'Urgente',
+};
 
-// Modelo para crear una solicitud
+/**
+ * Modelo para crear una solicitud (RequestCreate)
+ */
 export interface RequestCreate {
   title: string;
   description: string;
   projectType: ProjectType;
   priority?: ProjectPriority;
   budget?: number;
-  timeframe?: string; // Plazo deseado para completar el proyecto
-  technicalRequirements?: string; // Requisitos técnicos específicos
-  businessGoals?: string; // Objetivos de negocio del proyecto
-  integrationsNeeded?: string; // Sistemas con los que debe integrarse
-  targetAudience?: string; // Público objetivo del proyecto
-  additionalInfo?: string; // Información adicional relevante
+  timeframe?: string;            // Plazo deseado
+  technicalRequirements?: string;
+  businessGoals?: string;
+  integrationsNeeded?: string;
+  targetAudience?: string;
+  additionalInfo?: string;
   tags?: string[];
-  // Campos legacy para compatibilidad
-  amount?: number; // Campo legacy para presupuesto
-  dueDate?: string; // Campo legacy para fecha límite
+  amount?: number;               // legacy
+  dueDate?: string;              // legacy (ISO string)
 }
 
-// Modelo para actualizar una solicitud
+/**
+ * Modelo para actualizar una solicitud (RequestUpdate)
+ */
 export interface RequestUpdate {
   title?: string;
   description?: string;
@@ -209,42 +248,43 @@ export interface RequestUpdate {
   integrationsNeeded?: string;
   targetAudience?: string;
   additionalInfo?: string;
-  estimatedHours?: number; // Horas estimadas para el desarrollo
-  costEstimate?: number; // Estimación de costo total
-  proposedStartDate?: string; // Fecha propuesta para inicio
-  proposedEndDate?: string; // Fecha propuesta para finalización
   tags?: string[];
-  // Campos legacy para compatibilidad
-  amount?: number; // Campo legacy para presupuesto
-  dueDate?: string; // Campo legacy para fecha límite
+  amount?: number;               // legacy
+  dueDate?: string;              // legacy (ISO string)
 }
 
-// Modelo para cambiar el estado
+/**
+ * Modelo para cambiar el estado (StatusChangeRequest)
+ */
 export interface StatusChangeRequest {
   status: RequestStatus;
   reason?: string;
 }
 
-// Modelo para crear un comentario
+/**
+ * Modelo para crear un comentario (CommentCreate)
+ */
 export interface CommentCreate {
   content: string;
 }
 
-// Respuesta de listado de solicitudes
+/**
+ * Respuesta de listado de solicitudes (GET /api/requests)
+ */
 export interface RequestsListResponse {
   success: boolean;
   total: number;
   skip: number;
   limit: number;
   requests: RequestSummary[];
-  // Alias para compatibilidad con componentes que esperan 'items'
-  items?: RequestSummary[];
-  // Campos adicionales para paginación
-  page?: number;
-  pages?: number;
+  items?: RequestSummary[];      // alias opcional (para compatibilidad)
+  page?: number;                 // opcional
+  pages?: number;                // opcional
 }
 
-// Respuesta de una solicitud individual
+/**
+ * Respuesta de una solicitud individual (GET /api/requests/{id})
+ */
 export interface RequestResponse {
   success: boolean;
   request: RequestDetail;

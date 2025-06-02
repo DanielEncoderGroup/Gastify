@@ -2,7 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { requestService } from '../../services/requestService';
-import { RequestSummary, RequestStatus, RequestStatusColors, RequestStatusLabels } from '../../types/request';
+import {
+  RequestSummary,
+  RequestStatus,
+  RequestStatusLabels,
+  StatusBadgeClasses
+} from '../../types/request';
 import { Icon } from '../../components/ui';
 import { toast } from 'react-hot-toast';
 
@@ -20,38 +25,66 @@ const RequestsList: React.FC = () => {
 
   const isAdmin = user?.role === 'admin';
 
-  // Cargar solicitudes de proyectos
+  // Iconos para cada estado
+  const getStatusIcon = (status: RequestStatus) => {
+    switch (status) {
+      case RequestStatus.DRAFT:
+        return <Icon name="ClockIcon" className="text-gray-500" />;
+      case RequestStatus.SUBMITTED:
+        return <Icon name="InboxArrowDownIcon" className="text-blue-500" />;
+      case RequestStatus.REQUIREMENTS_ANALYSIS:
+        return <Icon name="DocumentSearchIcon" className="text-purple-500" />;
+      case RequestStatus.PLANNING:
+        return <Icon name="CalendarDaysIcon" className="text-indigo-500" />;
+      case RequestStatus.ESTIMATION:
+        return <Icon name="CalculatorIcon" className="text-orange-500" />;
+      case RequestStatus.PROPOSAL_READY:
+        return <Icon name="PresentationChartBarIcon" className="text-cyan-500" />;
+      case RequestStatus.APPROVED:
+        return <Icon name="CheckCircleIcon" className="text-green-500" />;
+      case RequestStatus.REJECTED:
+        return <Icon name="XCircleIcon" className="text-red-500" />;
+      case RequestStatus.IN_DEVELOPMENT:
+        return <Icon name="ComputerDesktopIcon" className="text-teal-500" />;
+      case RequestStatus.COMPLETED:
+        return <Icon name="FlagIcon" className="text-emerald-500" />;
+      case RequestStatus.CANCELED:
+        return <Icon name="MinusCircleIcon" className="text-gray-500" />;
+      // Legacy:
+      case RequestStatus.IN_PROCESS:
+        return <Icon name="ArrowRightIcon" className="text-blue-500" />;
+      case RequestStatus.IN_REVIEW:
+        return <Icon name="MagnifyingGlassIcon" className="text-yellow-500" />;
+      default:
+        return <Icon name="ClockIcon" className="text-gray-500" />;
+    }
+  };
+
   const loadRequests = async (reset = false) => {
     try {
       setLoading(true);
       const page = reset ? 0 : currentPage;
-      
-      // Preparar parámetros de filtrado
       const status = selectedStatus !== 'all' ? selectedStatus : undefined;
       const search = searchTerm.trim() || undefined;
-      
-      // Solo cargamos solicitudes de tipo proyecto
+
       const response = await requestService.getAll(
         status as RequestStatus | undefined,
-        isAdmin ? undefined : user?.id, // Solo filtrar por cliente si no es admin
+        isAdmin ? undefined : user?.id,
         search,
         page * itemsPerPage,
         itemsPerPage
       );
-      
-      // Filtrar para mostrar solo solicitudes de proyecto (con projectType definido)
-      const projectRequests = response.requests.filter(
-        request => request.projectType
-      );
-      
+
+      // Filtrar sólo los que tengan projectType definido
+      const projectRequests = response.requests.filter(r => !!r.projectType);
+
       if (reset) {
         setRequests(projectRequests);
         setCurrentPage(0);
       } else {
         setRequests(prev => [...prev, ...projectRequests]);
       }
-      
-      // Actualizar el total basado en la respuesta del servidor
+
       setTotalRequests(response.total);
       setHasMore((page + 1) * itemsPerPage < response.total);
       setLoading(false);
@@ -59,7 +92,6 @@ const RequestsList: React.FC = () => {
       console.error('Error al cargar solicitudes de proyecto:', error);
       toast.error('Error al cargar las solicitudes de proyecto');
       setLoading(false);
-      // Inicializar con array vacío en caso de error
       if (reset) {
         setRequests([]);
         setTotalRequests(0);
@@ -67,21 +99,18 @@ const RequestsList: React.FC = () => {
     }
   };
 
-  // Cargar solicitudes cuando cambien los filtros, el usuario o se actualice la lista
   useEffect(() => {
-    // Solo cargar si el usuario está autenticado
     if (user) {
       loadRequests(true);
     }
-  }, [selectedStatus, user, searchTerm]); // Añadido searchTerm a las dependencias
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedStatus, user, searchTerm]);
 
-  // Manejar búsqueda
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     loadRequests(true);
   };
 
-  // Cargar más solicitudes
   const loadMore = () => {
     if (!loading && hasMore) {
       setCurrentPage(prev => prev + 1);
@@ -89,27 +118,8 @@ const RequestsList: React.FC = () => {
     }
   };
 
-  // Función para obtener el icono de estado
-  const getStatusIcon = (status: RequestStatus) => {
-    switch (status) {
-      case RequestStatus.DRAFT:
-        return <Icon name="ClockIcon" className="text-gray-500" />;
-      case RequestStatus.IN_PROCESS:
-        return <Icon name="ArrowRightIcon" className="text-blue-500" />;
-      case RequestStatus.IN_REVIEW:
-        return <Icon name="MagnifyingGlassIcon" className="text-yellow-500" />;
-      case RequestStatus.APPROVED:
-        return <Icon name="CheckCircleIcon" className="text-green-500" />;
-      case RequestStatus.REJECTED:
-        return <Icon name="XCircleIcon" className="text-red-500" />;
-      default:
-        return <Icon name="ClockIcon" className="text-gray-500" />;
-    }
-  };
-
   return (
     <div className="py-6 px-4 sm:px-6 lg:px-8">
-      {/* Banner informativo para clientes */}
       {!isAdmin && (
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg shadow-sm p-4 mb-6">
           <div className="flex items-start">
@@ -127,7 +137,7 @@ const RequestsList: React.FC = () => {
           </div>
         </div>
       )}
-      
+
       <div className="sm:flex sm:items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Solicitudes de Proyectos</h1>
@@ -207,8 +217,8 @@ const RequestsList: React.FC = () => {
             <Icon name="DocumentTextIcon" className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-lg font-medium text-gray-900">No hay solicitudes de proyecto</h3>
             <p className="mt-1 text-sm text-gray-500">
-              {isAdmin 
-                ? 'No se encontraron solicitudes de proyecto.' 
+              {isAdmin
+                ? 'No se encontraron solicitudes de proyecto.'
                 : 'Aún no has creado ninguna solicitud de proyecto.'}
             </p>
             {!isAdmin && (
@@ -240,9 +250,11 @@ const RequestsList: React.FC = () => {
                         </p>
                       </div>
                       <div className="ml-2 flex-shrink-0 flex">
-                        <p className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-${RequestStatusColors[request.status]}-100 text-${RequestStatusColors[request.status]}-800`}>
+                        <span
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${StatusBadgeClasses[request.status]}`}
+                        >
                           {request.statusLabel}
-                        </p>
+                        </span>
                       </div>
                     </div>
                     <div className="mt-2 sm:flex sm:justify-between">
@@ -254,19 +266,13 @@ const RequestsList: React.FC = () => {
                       </div>
                       <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
                         <div className="flex space-x-4">
-                          {request.amount && (
+                          {request.budget !== undefined && (
                             <span className="flex items-center">
                               <Icon name="CurrencyDollarIcon" className="flex-shrink-0 mr-1.5 text-gray-400" />
-                              ${request.amount.toLocaleString()}
+                              ${request.budget.toLocaleString()}
                             </span>
                           )}
-                          {request.tags.length > 0 && (
-                            <span className="flex items-center">
-                              <Icon name="TagIcon" className="flex-shrink-0 mr-1.5 text-gray-400" />
-                              {request.tags.slice(0, 2).join(', ')}
-                              {request.tags.length > 2 ? ', ...' : ''}
-                            </span>
-                          )}
+                          {/* Ya no hay tags */}
                         </div>
                       </div>
                     </div>
@@ -284,7 +290,7 @@ const RequestsList: React.FC = () => {
           </ul>
         )}
 
-        {/* Botón de cargar más */}
+        {/* Botón “Cargar más” */}
         {hasMore && (
           <div className="px-4 py-3 bg-gray-50 text-center sm:px-6">
             <button

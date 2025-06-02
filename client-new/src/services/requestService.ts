@@ -1,3 +1,5 @@
+// client-new/src/services/requestService.ts
+
 import api from './api';
 import {
   RequestCreate,
@@ -8,56 +10,67 @@ import {
   RequestResponse,
   RequestStatus
 } from '../types/request';
+
 // Importamos el servicio mock para desarrollo
 import { mockRequestService } from './mockRequestService';
 
 // Flag para activar o desactivar el modo mock (desarrollo)
-const USE_MOCK_SERVICE = true;
+const USE_MOCK_SERVICE = false;
 
-// Servicio para gestión de solicitudes
+/**
+ * Servicio para gestión de solicitudes
+ */
 export const requestService = {
-  // Obtener listado de solicitudes con filtros opcionales
+  /**
+   * Obtener listado de solicitudes con filtros opcionales
+   * @param status Filtro por estado
+   * @param clientId (solo admin) filtrar por ID de cliente
+   * @param search Texto libre para buscar en título/descripcion
+   * @param skip Offset de paginación
+   * @param limit Cantidad máxima a devolver
+   */
   getAll: async (
     status?: RequestStatus,
     clientId?: string,
     search?: string,
     skip: number = 0,
     limit: number = 10
-  ) => {
-    // Si estamos en modo mock, usamos el servicio mock
+  ): Promise<RequestsListResponse> => {
     if (USE_MOCK_SERVICE) {
       return mockRequestService.getAll(status, clientId, search, skip, limit);
     }
-    
+
     try {
+      // La baseURL de `api` ya apunta a "/api"
       let url = `/requests?skip=${skip}&limit=${limit}`;
-      
+
       if (status) {
         url += `&status=${status}`;
       }
-      
       if (clientId) {
+        // El backend espera "client_id" como query param
         url += `&client_id=${clientId}`;
       }
-      
       if (search) {
         url += `&search=${encodeURIComponent(search)}`;
       }
-      
+
       const response = await api.get<RequestsListResponse>(url);
       return response.data;
     } catch (error) {
       throw error;
     }
   },
-  
-  // Obtener una solicitud por su ID
-  getById: async (id: string) => {
-    // Si estamos en modo mock, usamos el servicio mock
+
+  /**
+   * Obtener una solicitud por su ID
+   * @param id ID de la solicitud
+   */
+  getById: async (id: string): Promise<RequestResponse> => {
     if (USE_MOCK_SERVICE) {
       return mockRequestService.getById(id);
     }
-    
+
     try {
       const response = await api.get<RequestResponse>(`/requests/${id}`);
       return response.data;
@@ -65,94 +78,122 @@ export const requestService = {
       throw error;
     }
   },
-  
-  // Crear una nueva solicitud
-  create: async (request: RequestCreate) => {
-    // Si estamos en modo mock, usamos el servicio mock
+
+  /**
+   * Crear una nueva solicitud
+   * @param request RequestCreate (todos los campos que definimos en el modelo)
+   */
+  create: async (request: RequestCreate): Promise<{ requestId: string }> => {
     if (USE_MOCK_SERVICE) {
-      return mockRequestService.create(request);
+      // En el mockService devolvemos un objeto RequestResponse, 
+      // pero para alinearlo con el backend real, retornamos { requestId }.
+      const mockResult = await mockRequestService.create(request);
+      return { requestId: mockResult.request.id };
     }
-    
+
     try {
-      const response = await api.post('/requests', request);
-      return response.data;
+      // El backend retorna: { success: true, message: "...", requestId: "abc123" }
+      const response = await api.post<{
+        success: boolean;
+        message: string;
+        requestId: string;
+      }>('/requests', request);
+
+      return { requestId: response.data.requestId };
     } catch (error) {
       throw error;
     }
   },
-  
-  // Actualizar una solicitud existente
-  update: async (id: string, request: RequestUpdate) => {
-    // Si estamos en modo mock, usamos el servicio mock
+
+  /**
+   * Actualizar una solicitud existente
+   * @param id ID de la solicitud
+   * @param request Datos de RequestUpdate (todos opcionales)
+   */
+  update: async (id: string, request: RequestUpdate): Promise<void> => {
     if (USE_MOCK_SERVICE) {
-      return mockRequestService.update(id, request);
+      return mockRequestService.update(id, request).then(() => {});
     }
-    
+
     try {
-      const response = await api.put(`/requests/${id}`, request);
-      return response.data;
+      await api.put(`/requests/${id}`, request);
     } catch (error) {
       throw error;
     }
   },
-  
-  // Eliminar una solicitud
-  delete: async (id: string) => {
-    // Si estamos en modo mock, usamos el servicio mock
+
+  /**
+   * Eliminar una solicitud
+   * @param id ID de la solicitud
+   */
+  delete: async (id: string): Promise<{ success: boolean; message: string }> => {
     if (USE_MOCK_SERVICE) {
-      // No implementamos delete en el mock, pero devolvemos un objeto de éxito
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Simulamos un delete en el mock
+      await new Promise((resolve) => setTimeout(resolve, 500));
       return { success: true, message: 'Solicitud eliminada correctamente' };
     }
-    
+
     try {
-      const response = await api.delete(`/requests/${id}`);
+      const response = await api.delete<{ success: boolean; message: string }>(
+        `/requests/${id}`
+      );
       return response.data;
     } catch (error) {
       throw error;
     }
   },
-  
-  // Cambiar el estado de una solicitud (solo admin)
-  changeStatus: async (id: string, statusChange: StatusChangeRequest) => {
-    // Si estamos en modo mock, usamos el servicio mock
+
+  /**
+   * Cambiar el estado de una solicitud (solo admin)
+   * @param id ID de la solicitud
+   * @param statusChange Objeto StatusChangeRequest { status, reason? }
+   */
+  changeStatus: async (
+    id: string,
+    statusChange: StatusChangeRequest
+  ): Promise<void> => {
     if (USE_MOCK_SERVICE) {
-      return mockRequestService.changeStatus(id, statusChange);
+      return mockRequestService.changeStatus(id, statusChange).then(() => {});
     }
-    
+
     try {
-      const response = await api.patch(`/requests/${id}/status`, statusChange);
-      return response.data;
+      await api.patch(`/requests/${id}/status`, statusChange);
     } catch (error) {
       throw error;
     }
   },
-  
-  // Añadir un comentario a una solicitud
-  addComment: async (id: string, comment: CommentCreate) => {
-    // Si estamos en modo mock, usamos el servicio mock
+
+  /**
+   * Añadir un comentario a una solicitud
+   * @param id ID de la solicitud
+   * @param comment Objeto CommentCreate { content }
+   */
+  addComment: async (
+    id: string,
+    comment: CommentCreate
+  ): Promise<void> => {
     if (USE_MOCK_SERVICE) {
-      return mockRequestService.addComment(id, comment);
+      return mockRequestService.addComment(id, comment).then(() => {});
     }
-    
+
     try {
-      const response = await api.post(`/requests/${id}/comments`, comment);
-      return response.data;
+      await api.post(`/requests/${id}/comments`, comment);
     } catch (error) {
       throw error;
     }
   },
-  
-  // Enviar una solicitud para revisión (cambiar de DRAFT a SUBMITTED)
-  submitRequest: async (id: string) => {
-    // Si estamos en modo mock, usamos el servicio mock
+
+  /**
+   * Enviar una solicitud para revisión (cambiar de DRAFT a SUBMITTED)
+   * @param id ID de la solicitud
+   */
+  submitRequest: async (id: string): Promise<void> => {
     if (USE_MOCK_SERVICE) {
-      return mockRequestService.submitRequest(id);
+      return mockRequestService.submitRequest(id).then(() => {});
     }
-    
+
     try {
-      const response = await api.post(`/requests/${id}/submit`);
-      return response.data;
+      await api.post(`/requests/${id}/submit`);
     } catch (error) {
       throw error;
     }
