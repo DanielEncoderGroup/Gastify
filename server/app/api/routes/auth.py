@@ -404,7 +404,8 @@ async def get_current_user_info(current_user=Depends(get_current_user)) -> Any:
             "firstName": current_user.firstName if hasattr(current_user, 'firstName') else getattr(current_user, 'first_name', ''),
             "lastName": current_user.lastName if hasattr(current_user, 'lastName') else getattr(current_user, 'last_name', ''),
             "email": current_user.email,
-            "role": current_user.role,  # Incluir el rol del usuario en la respuesta
+            "role": current_user.role,
+            "isVerified": current_user.emailVerified,# Incluir el rol del usuario en la respuesta
         },
     }
 

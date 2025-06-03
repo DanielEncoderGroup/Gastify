@@ -24,98 +24,52 @@ const Profile: React.FC = () => {
   const refreshUserData = async () => {
     try {
       setIsRefreshing(true);
-      console.log('Iniciando obtención de datos del usuario...');
+      console.log('Iniciando obtención de datos del usuario desde /api/auth/me...');
       
-      // Intento 1: Obtener datos del localStorage (donde se guardan durante el login)
-      const storedUser = localStorage.getItem('user');
-      let userFromStorage = null;
+      // Llamamos al endpoint /me para obtener { success: true, user: { …, isVerified, … } }
+      const response = await fetch('/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+      });
       
-      if (storedUser) {
-        try {
-          userFromStorage = JSON.parse(storedUser);
-          console.log('Usuario obtenido de localStorage:', userFromStorage);
-        } catch (e) {
-          console.error('Error al parsear usuario de localStorage:', e);
-        }
-      }
-      
-      // Intento 2: Obtener datos desde el contexto de autenticación
-      console.log('Usuario desde el contexto de autenticación:', user);
-      
-      // Intento 3: Obtener datos directamente desde el servidor
-      try {
-        const response = await fetch('/api/auth/me', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json'
-          }
-        });
+      if (response.ok) {
+        const body = await response.json();
+        console.log('Datos obtenidos del servidor:', body);
         
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Datos obtenidos del servidor:', data);
-          
-          // Extraer datos del usuario desde cualquiera de las posibles estructuras
-          const serverUserData = data.data || data.user || data;
-          
-          if (serverUserData) {
-            console.log('Datos extraídos del servidor:', serverUserData);
-            
-            // Actualizar datos en localStorage
-            localStorage.setItem('user', JSON.stringify(serverUserData));
-            
-            // Usar estos datos del servidor
-            setUserData(serverUserData);
-            return;
-          }
+        // Aseguramos que venga body.user
+        if (body.user) {
+          // Guardamos solo el objeto user
+          setUserData(body.user);
+          localStorage.setItem('user', JSON.stringify(body.user));
+          return;
         }
-      } catch (serverError) {
-        console.error('Error al obtener datos del servidor:', serverError);
-      }
-      
-      // Si llegamos aquí, intentemos usar los datos del localStorage o del contexto
-      if (userFromStorage) {
-        setUserData(userFromStorage);
-      } else if (user) {
-        setUserData(user);
       } else {
-        // Intentemos construir un objeto de usuario a partir de los datos disponibles en el localStorage
-        // Esta es una solución de respaldo por si la estructura no coincide con lo esperado
-        const token = localStorage.getItem('token');
-        if (token) {
-          try {
-            // Intentar extraer información del token JWT (si es posible)
-            const base64Url = token.split('.')[1];
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const payload = JSON.parse(window.atob(base64));
-            console.log('Payload del token:', payload);
-            
-            if (payload.email) {
-              // Construir un usuario completo con valores por defecto para cumplir con la interfaz User
-              const minimalUser = {
-                id: payload.sub || 'unknown-id',
-                firstName: payload.given_name || 'Usuario',
-                lastName: payload.family_name || '',
-                email: payload.email,
-                role: payload.role || 'user',
-                isVerified: true, // Asumimos que está verificado si tiene token
-                // Campos opcionales
-                name: payload.name,
-                position: payload.position,
-                department: payload.department,
-                profileImage: payload.profileImage
-              };
-              setUserData(minimalUser);
-            }
-          } catch (e) {
-            console.error('Error al extraer datos del token:', e);
-          }
-        }
+        console.warn('Respuesta no OK de /api/auth/me:', response.status);
       }
-    } catch (error) {
-      console.error('Error general al obtener datos de usuario:', error);
-    } finally {
-      setIsRefreshing(false);
+    } catch (serverError) {
+      console.error('Error al obtener datos del servidor:', serverError);
+    }
+  
+    // --- Fallback si /me falla o no devuelve user ---
+    console.log('FALLBACK: usando datos de localStorage o del contexto de Auth');
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const parsed = JSON.parse(storedUser);
+        console.log('Usuario obtenido de localStorage:', parsed);
+        setUserData(parsed);
+        return;
+      } catch (e) {
+        console.error('Error al parsear usuario de localStorage:', e);
+      }
+    }
+  
+    // Si ni localStorage ni /me funcionaron, usamos el `user` que venga del contexto
+    if (user) {
+      console.log('Usando usuario proveniente del contexto de Auth:', user);
+      setUserData(user);
     }
   };
   
@@ -509,7 +463,8 @@ const Profile: React.FC = () => {
                   
                   <div>
                     <p className="text-sm font-medium text-gray-500 mb-1">Estado de verificación</p>
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${userData?.isVerified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
+                      ${userData?.isVerified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
                       {userData?.isVerified ? 'Verificado' : 'Pendiente de verificación'}
                     </span>
                   </div>

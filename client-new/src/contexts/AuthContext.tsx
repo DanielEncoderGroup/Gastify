@@ -112,11 +112,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               const response = await authService.getCurrentUser();
               console.log('Respuesta del servidor para datos de usuario:', response);
               
-              if (response && response.data) {
-                setUser(response.data);
+              if (response && response.data && response.data.user) {
+                setUser(response.data.user);
                 setIsAuthenticated(true);
                 // Actualizar también el localStorage con los datos más recientes
-                localStorage.setItem('user', JSON.stringify(response.data));
+                localStorage.setItem('user', JSON.stringify(response.data.user));
               } else {
                 throw new Error('No se recibieron datos de usuario del servidor');
               }
