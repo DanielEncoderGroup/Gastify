@@ -750,7 +750,7 @@ const LandingPage: React.FC = () => {
             <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl">
               <div className="h-48 bg-blue-600 relative">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Icon name="DocumentTextIcon" className="h-20 w-20 text-white opacity-20" />
+                  <Icon name="DocumentTextIcon" className="h-24 w-24 text-white opacity-60" />
                 </div>
               </div>
               <div className="p-6">
@@ -768,7 +768,7 @@ const LandingPage: React.FC = () => {
             <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl">
               <div className="h-48 bg-blue-600 relative">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Icon name="PresentationChartLineIcon" className="h-20 w-20 text-white opacity-20" />
+                  <Icon name="PresentationChartLineIcon" className="h-24 w-24 text-white opacity-60" />
                 </div>
               </div>
               <div className="p-6">
@@ -786,7 +786,7 @@ const LandingPage: React.FC = () => {
             <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl">
               <div className="h-48 bg-blue-600 relative">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Icon name="ShieldCheckIcon" className="h-20 w-20 text-white opacity-20" />
+                  <Icon name="ShieldCheckIcon" className="h-24 w-24 text-white opacity-60" />
                 </div>
               </div>
               <div className="p-6">
@@ -879,15 +879,17 @@ const LandingPage: React.FC = () => {
                     <Icon name="EnvelopeIcon" className="h-6 w-6 text-blue-500" />
                   </div>
                   <div className="ml-3 text-base text-gray-500">
-                    <p>info@encodergroup.com</p>
+                    <p>info@encodergroup.cl</p>
                   </div>
                 </div>
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <Icon name="PhoneIcon" className="h-6 w-6 text-blue-500" />
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" className="h-6 w-6 fill-current text-blue-500">
+                      <path d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z"/>
+                    </svg>
                   </div>
                   <div className="ml-3 text-base text-gray-500">
-                    <p>+1 (555) 123-4567</p>
+                    <p>@encodegroup.cl</p>
                   </div>
                 </div>
                 <div className="flex items-center">
@@ -895,7 +897,7 @@ const LandingPage: React.FC = () => {
                     <Icon name="MapPinIcon" className="h-6 w-6 text-blue-500" />
                   </div>
                   <div className="ml-3 text-base text-gray-500">
-                    <p>Silicon Valley, California</p>
+                    <p>Puerto Montt, Chile</p>
                   </div>
                 </div>
               </div>
@@ -1016,15 +1018,17 @@ const LandingPage: React.FC = () => {
               <div className="flex flex-col space-y-2 text-gray-400">
                 <div className="flex items-center">
                   <Icon name="EnvelopeIcon" className="h-5 w-5 mr-2 text-blue-500" />
-                  <span>info@encodergroup.com</span>
+                  <span>info@encodergroup.cl</span>
                 </div>
                 <div className="flex items-center">
-                  <Icon name="PhoneIcon" className="h-5 w-5 mr-2 text-blue-500" />
-                  <span>+1 (555) 123-4567</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" className="h-5 w-5 mr-2 fill-current text-blue-500">
+                    <path d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z"/>
+                  </svg>
+                  <span>@encodegroup.cl</span>
                 </div>
                 <div className="flex items-center">
                   <Icon name="MapPinIcon" className="h-5 w-5 mr-2 text-blue-500" />
-                  <span>Silicon Valley, California</span>
+                  <span>Puerto Montt, Chile</span>
                 </div>
               </div>
             </div>
