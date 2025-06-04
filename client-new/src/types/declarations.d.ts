@@ -50,6 +50,14 @@ declare module '@heroicons/react/24/outline' {
   export const VideoCameraIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   export const XCircleIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   export const XMarkIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  export const CubeIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  export const CurrencyDollarIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  export const LightBulbIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  export const InformationCircleIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  export const SparklesIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  export const RocketLaunchIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  export const CogIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  export const ComputerDesktopIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
 }
 
 declare module '@heroicons/react/24/solid' {
