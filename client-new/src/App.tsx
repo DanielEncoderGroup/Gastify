@@ -36,7 +36,7 @@ import NotFound from './pages/NotFound';
 // Componente de inicialización para garantizar que se revisa la autenticación
 // antes de renderizar las rutas
 const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, logout } = useAuth();
   const [isInitialized, setIsInitialized] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -45,24 +45,54 @@ const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) =
   useEffect(() => {
     console.log('AppInitializer: Inicializando la aplicación...');
     console.log('Estado actual: isAuthenticated =', isAuthenticated, 'loading =', loading);
+    console.log('Ruta actual:', location.pathname);
     
     // Esta lógica se ejecuta después de que AuthContext haya terminado su inicialización
     if (!loading) {
       console.log('AppInitializer: Inicialización completada');
       setIsInitialized(true);
       
-      // Si hay un token en localStorage pero no se ha autenticado correctamente, forzar recarga
+      // Si hay un token en localStorage pero no se ha autenticado correctamente
+      // (posiblemente porque el usuario no está verificado o el token es inválido)
       const token = localStorage.getItem('token');
-      if (token && !isAuthenticated && !location.pathname.includes('/login')) {
-        console.log('AppInitializer: Se encontró token pero no está autenticado, intentando recargar datos');
-        // Opción 1: Forzar recarga de la página para reinicializar correctamente
-        // window.location.reload();
+      if (token && !isAuthenticated) {
+        console.log('AppInitializer: Se encontró token pero no está autenticado, verificando validez');
         
-        // Opción 2: Redirigir a la página de inicio para que se inicialice correctamente
-        navigate('/app/projects');
+        // Verificar si el token parece válido antes de limpiar
+        try {
+          // Decodificar el token JWT
+          const base64Url = token.split('.')[1];
+          if (base64Url) {
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const payload = JSON.parse(window.atob(base64));
+            
+            // Verificar si el token ha expirado
+            if (payload.exp && payload.exp * 1000 > Date.now()) {
+              console.log('AppInitializer: Token parece válido pero isAuthenticated es falso, manteniendo sesión');
+              
+              // Este puede ser un caso donde la página se recargó y el estado no se actualizó aún
+              // No hacemos nada más y dejamos que la aplicación continúe intentando inicializar
+              
+              // Si estamos en el perfil o en una ruta protegida y el token parece válido, no redirigimos
+              return;
+            }
+          }
+        } catch (e) {
+          console.error('Error al verificar token:', e);
+        }
+        
+        // Si llegamos aquí es porque el token no es válido
+        console.log('AppInitializer: Token no válido, limpiando datos de sesión');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        
+        // Si el usuario está intentando acceder a una ruta protegida, redirigir al login
+        if (location.pathname.startsWith('/app')) {
+          navigate('/?showLogin=true');
+        }
       }
     }
-  }, [isAuthenticated, loading, navigate, location]);
+  }, [isAuthenticated, loading, navigate, location, logout]);
   
   // Mostrar un spinner mientras se inicializa
   if (!isInitialized) {

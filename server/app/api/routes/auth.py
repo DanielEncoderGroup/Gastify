@@ -118,8 +118,7 @@ async def login(login_data: UserLogin = Body(...)) -> Any:
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    # Preparamos una advertencia si el correo no está verificado, pero permitimos iniciar sesión
-    verification_warning = None
+    # Verificar si el correo está verificado
     if not user.get("emailVerified", False):
         verification_token = user.get("emailVerificationToken")
         if not verification_token or user.get("emailVerificationExpire", datetime.utcnow()) < datetime.utcnow():
@@ -157,11 +156,11 @@ async def login(login_data: UserLogin = Body(...)) -> Any:
             except Exception as e:
                 print(f"Error enviando e-mail de verificación durante login: {e}")
         
-        verification_warning = {
-            "message": "Tu correo electrónico no ha sido verificado. Por favor, revisa tu bandeja de entrada o carpeta de spam.",
-            "verification_url": f"{settings.CLIENT_URL}/verify-email/{verification_token}",
-            "email": user["email"],
-        }
+        # Rechazar el inicio de sesión si el correo no está verificado
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Por favor, verifica tu correo electrónico antes de iniciar sesión",
+        )
 
     response = {
         "success": True,
@@ -176,10 +175,6 @@ async def login(login_data: UserLogin = Body(...)) -> Any:
         },
     }
     
-    # Incluir advertencia de verificación si es necesario
-    if verification_warning:
-        response["verification_warning"] = verification_warning
-        
     return response
 
 

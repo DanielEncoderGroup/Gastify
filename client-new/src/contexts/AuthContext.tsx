@@ -102,6 +102,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           
           if (userData) {
             console.log('Datos de usuario encontrados en localStorage:', userData);
+            
+            // Verificar si el usuario ha confirmado su email
+            if (!userData.isVerified) {
+              console.log('Usuario no verificado, limpiando sesión');
+              authService.logout();
+              setIsAuthenticated(false);
+              setUser(null);
+              setError('Por favor, verifica tu correo electrónico antes de iniciar sesión');
+              setLoading(false);
+              return;
+            }
+            
             setUser(userData);
             setIsAuthenticated(true);
           } else {
@@ -193,26 +205,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       console.log('AuthContext: Login exitoso, actualizando estado');
       
-      // Actualizar el estado de la aplicación con la estructura correcta
-      // La estructura puede variar, así que manejamos diferentes posibilidades
+      // Obtener información del usuario de la respuesta
+      let userData = null;
       if (response.user) {
-        setUser(response.user);
+        userData = response.user;
       } else if (response.data && response.data.user) {
-        setUser(response.data.user);
+        userData = response.data.user;
       } else {
         // Si no podemos encontrar el usuario en la respuesta,
         // intentamos obtenerlo del localStorage
         try {
           const userStr = localStorage.getItem('user');
           if (userStr) {
-            const userData = JSON.parse(userStr);
-            setUser(userData);
+            userData = JSON.parse(userStr);
           }
         } catch (e) {
           console.error('Error al recuperar usuario del localStorage:', e);
         }
       }
       
+      // Verificar si el usuario ha confirmado su email
+      if (userData && !userData.isVerified) {
+        setError('Por favor, verifica tu correo electrónico antes de iniciar sesión');
+        setLoading(false);
+        throw new Error('Usuario no verificado');
+      }
+      
+      // Usuario verificado, continuar con el login
+      setUser(userData);
       setIsAuthenticated(true);
       
       // Verificar directamente que los datos se hayan guardado en localStorage

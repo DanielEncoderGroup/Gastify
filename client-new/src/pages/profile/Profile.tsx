@@ -13,81 +13,19 @@ interface PasswordData {
 }
 
 const Profile: React.FC = () => {
-  const { user, changePassword } = useAuth();
-  const [userData, setUserData] = useState(user);
+  const { user, loading, isAuthenticated, changePassword } = useAuth();
+
+  // Todos los hooks useState DEBEN ir al inicio del componente
+  const [userData, setUserData] = useState<any>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  
-  // Depuración para ver los datos del usuario
-  console.log('Datos del usuario en Profile:', user);
-  
-  // Función para actualizar los datos del usuario desde el servidor
-  const refreshUserData = async () => {
-    try {
-      setIsRefreshing(true);
-      console.log('Iniciando obtención de datos del usuario desde /api/auth/me...');
-      
-      // Llamamos al endpoint /me para obtener { success: true, user: { …, isVerified, … } }
-      const response = await fetch('/api/auth/me', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      if (response.ok) {
-        const body = await response.json();
-        console.log('Datos obtenidos del servidor:', body);
-        
-        // Aseguramos que venga body.user
-        if (body.user) {
-          // Guardamos solo el objeto user
-          setUserData(body.user);
-          localStorage.setItem('user', JSON.stringify(body.user));
-          return;
-        }
-      } else {
-        console.warn('Respuesta no OK de /api/auth/me:', response.status);
-      }
-    } catch (serverError) {
-      console.error('Error al obtener datos del servidor:', serverError);
-    }
-  
-    // --- Fallback si /me falla o no devuelve user ---
-    console.log('FALLBACK: usando datos de localStorage o del contexto de Auth');
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      try {
-        const parsed = JSON.parse(storedUser);
-        console.log('Usuario obtenido de localStorage:', parsed);
-        setUserData(parsed);
-        return;
-      } catch (e) {
-        console.error('Error al parsear usuario de localStorage:', e);
-      }
-    }
-  
-    // Si ni localStorage ni /me funcionaron, usamos el `user` que venga del contexto
-    if (user) {
-      console.log('Usando usuario proveniente del contexto de Auth:', user);
-      setUserData(user);
-    }
-  };
-  
-  // Cargar datos al montar el componente
-  useEffect(() => {
-    refreshUserData();
-  }, []);
-  
   const [activeTab, setActiveTab] = useState<'profile' | 'password'>('profile');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [notification, setNotification] = useState<NotificationType>({ type: '', message: '' });
-  
   const [passwordData, setPasswordData] = useState<PasswordData>({
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
-
   const [passwordValidation, setPasswordValidation] = useState({
     minLength: false,
     hasUpperCase: false,
@@ -96,6 +34,80 @@ const Profile: React.FC = () => {
     hasSpecialChar: false,
     passwordsMatch: false
   });
+
+  // Depuración para ver los datos del usuario
+  console.log('Datos del usuario en Profile:', user, 'isAuthenticated:', isAuthenticated, 'loading:', loading);
+
+  // Función para actualizar los datos del usuario desde el servidor
+  const refreshUserData = async () => {
+    // Si no hay token, no hacemos la solicitud
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.log('No hay token disponible, no se puede actualizar datos');
+      return;
+    }
+
+    try {
+      setIsRefreshing(true);
+      console.log('Iniciando obtención de datos del usuario desde /api/auth/me...');
+
+      // Llamamos al endpoint /me para obtener { success: true, user: { …, isVerified, … } }
+      const response = await fetch('/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const body = await response.json();
+        console.log('Datos obtenidos del servidor:', body);
+
+        // Aseguramos que venga body.user
+        if (body.user) {
+          // Actualizamos el localStorage con los datos más recientes
+          localStorage.setItem('user', JSON.stringify(body.user));
+
+          // Y actualizamos el estado local
+          setUserData(body.user);
+
+          // También actualizamos el contexto de autenticación si está disponible
+          localStorage.setItem('user_verified', body.user.isVerified ? 'true' : 'false');
+        }
+      } else {
+        console.warn('Respuesta no OK de /api/auth/me:', response.status);
+        // Si el servidor responde con error de autenticación, usamos los datos del contexto
+        if (user) {
+          setUserData(user);
+        }
+      }
+    } catch (serverError) {
+      console.error('Error al obtener datos del servidor:', serverError);
+      // Fallback a datos locales si hay error con el servidor
+      if (user) {
+        setUserData(user);
+      }
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  // Esperar a que la autenticación esté completa antes de cargar datos
+  useEffect(() => {
+    // Solo actualizamos los datos cuando:
+    // 1. La autenticación esté completa (loading sea false)
+    // 2. El usuario esté autenticado
+    // 3. El objeto user esté disponible
+    if (!loading && isAuthenticated && user) {
+      console.log('Autenticación completa, actualizando datos del perfil');
+      // Primero establecemos los datos del contexto
+      setUserData(user);
+      // Luego solicitamos datos actualizados del servidor
+      refreshUserData();
+    } else if (!loading && !isAuthenticated) {
+      console.log('No autenticado, no se cargan datos de perfil');
+    }
+  }, [loading, isAuthenticated, user]);
 
   // Maneja cambios en los campos de contraseña
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -179,6 +191,15 @@ const Profile: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  // Si estamos cargando o no hay datos de usuario, mostrar spinner
+  if (loading || (!userData && isAuthenticated)) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white shadow sm:rounded-lg">
@@ -369,7 +390,7 @@ const Profile: React.FC = () => {
       {activeTab === 'profile' && (
         <div className="px-6 py-6 sm:p-8">
           <h3 className="text-xl leading-6 font-semibold text-gray-900 mb-4">Información de perfil</h3>
-          
+
           <div className="mt-5 max-w-3xl mx-auto">
             <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm mb-6">
               <div className="flex flex-col sm:flex-row items-center justify-between">
@@ -378,9 +399,9 @@ const Profile: React.FC = () => {
                   <p className="text-sm text-gray-500">Esta imagen se mostrará en tu perfil y comentarios</p>
                 </div>
                 <div className="flex items-center">
-                  {user?.profileImage ? (
+                  {userData?.profileImage ? (
                     <img
-                      src={user.profileImage}
+                      src={userData.profileImage}
                       alt="Foto de perfil"
                       className="h-24 w-24 rounded-full object-cover border-2 border-blue-500 shadow-md"
                     />
@@ -391,7 +412,7 @@ const Profile: React.FC = () => {
                       </svg>
                     </div>
                   )}
-                  <button 
+                  <button
                     type="button"
                     className="ml-4 bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
                     onClick={() => alert('Funcionalidad en desarrollo')}
@@ -401,7 +422,7 @@ const Profile: React.FC = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden divide-y divide-gray-200">
               {/* Datos personales */}
               <div className="p-6">
@@ -413,14 +434,14 @@ const Profile: React.FC = () => {
                       {userData && userData.firstName ? userData.firstName : (userData && userData.name ? userData.name.split(' ')[0] : 'No disponible')}
                     </p>
                   </div>
-                  
+
                   <div>
                     <p className="text-sm font-medium text-gray-500 mb-1">Apellido</p>
                     <p className="text-base text-gray-900">
                       {userData && userData.lastName ? userData.lastName : (userData && userData.name && userData.name.split(' ').length > 1 ? userData.name.split(' ').slice(1).join(' ') : 'No disponible')}
                     </p>
                   </div>
-                  
+
                   <div>
                     <p className="text-sm font-medium text-gray-500 mb-1">Correo electrónico</p>
                     <p className="text-base text-gray-900">
@@ -429,7 +450,7 @@ const Profile: React.FC = () => {
                   </div>
                 </div>
               </div>
-              
+
               {/* Información laboral */}
               <div className="p-6">
                 <h4 className="text-base font-medium text-gray-800 mb-4">Información laboral</h4>
@@ -440,7 +461,7 @@ const Profile: React.FC = () => {
                       {userData?.position || 'No especificada'}
                     </p>
                   </div>
-                  
+
                   <div>
                     <p className="text-sm font-medium text-gray-500 mb-1">Departamento</p>
                     <p className="text-base text-gray-900">
@@ -449,7 +470,7 @@ const Profile: React.FC = () => {
                   </div>
                 </div>
               </div>
-              
+
               {/* Estado de la cuenta */}
               <div className="p-6">
                 <h4 className="text-base font-medium text-gray-800 mb-4">Estado de la cuenta</h4>
@@ -460,7 +481,7 @@ const Profile: React.FC = () => {
                       {userData?.role === 'admin' ? 'Administrador' : 'Usuario'}
                     </span>
                   </div>
-                  
+
                   <div>
                     <p className="text-sm font-medium text-gray-500 mb-1">Estado de verificación</p>
                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
@@ -471,7 +492,7 @@ const Profile: React.FC = () => {
                 </div>
               </div>
             </div>
-            
+
             {isRefreshing && (
               <div className="mt-4 p-4 text-center text-sm text-gray-600 bg-gray-50 rounded-md">
                 <svg className="animate-spin inline h-5 w-5 mr-2 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -481,14 +502,30 @@ const Profile: React.FC = () => {
                 Actualizando datos...
               </div>
             )}
-            
-            <div className="mt-8 flex justify-center">
+
+            <div className="mt-8 flex justify-center space-x-4">
               <button
                 type="button"
                 className="inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 min-w-[200px] justify-center transition-all duration-200"
                 onClick={() => alert('Funcionalidad en desarrollo')}
               >
                 Editar información
+              </button>
+              <button
+                type="button"
+                className="inline-flex items-center px-6 py-3 border border-gray-300 rounded-md shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 min-w-[200px] justify-center transition-all duration-200"
+                onClick={refreshUserData}
+                disabled={isRefreshing}
+              >
+                {isRefreshing ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-gray-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Actualizando...
+                  </>
+                ) : "Actualizar datos"}
               </button>
             </div>
           </div>

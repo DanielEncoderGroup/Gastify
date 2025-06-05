@@ -105,10 +105,10 @@ const LandingPage: React.FC = () => {
       console.error('Error durante el login:', error);
       
       // Manejar el error de autenticación
-      const errorMessage = error.response?.data?.message || 'Correo electrónico o contraseña incorrecta';
+      const errorMessage = error.response?.data?.detail || error.response?.data?.message || error.message || 'Correo electrónico o contraseña incorrecta';
       
       // Detectar si es un error de verificación de correo
-      if (errorMessage.toLowerCase().includes('confirma tu correo') || 
+      if (errorMessage.toLowerCase().includes('verifica') || 
           errorMessage.toLowerCase().includes('verify') || 
           errorMessage.toLowerCase().includes('verification')) {
         setIsVerificationError(true);
@@ -117,6 +117,7 @@ const LandingPage: React.FC = () => {
       }
       
       setLoginError(errorMessage);
+      // No redirigir a /app/projects cuando hay error
     } finally {
       setIsLoading(false);
     }
@@ -660,9 +661,7 @@ const LandingPage: React.FC = () => {
       <div id="testimonios" className="bg-white py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-              Lo que nuestros clientes dicen
-            </h2>
+            <h2 className="text-3xl font-extrabold text-gray-900">Lo que nuestros clientes dicen</h2>
             <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-500">
               Empresas que han transformado sus procesos con nuestras soluciones
             </p>
@@ -1021,7 +1020,7 @@ const LandingPage: React.FC = () => {
                   <span>info@encodergroup.cl</span>
                 </div>
                 <div className="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" className="h-5 w-5 mr-2 fill-current text-blue-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" className="h-5 w-5 fill-current text-blue-500">
                     <path d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z"/>
                   </svg>
                   <span>@encodegroup.cl</span>
@@ -1065,34 +1064,59 @@ const LandingPage: React.FC = () => {
               </div>
               
               {loginError && (
-                <div className="bg-red-50 border-l-4 border-red-400 p-4 mt-4">
+                <div className={`rounded-md p-4 mb-4 ${isVerificationError ? 'bg-yellow-50 border border-yellow-200' : 'bg-red-50 border-l-4 border-red-400'}`}>
                   <div className="flex">
                     <div className="flex-shrink-0">
-                      <Icon name="ExclamationCircleIcon" className="h-5 w-5 text-red-400" />
+                      {isVerificationError ? (
+                        <Icon name="ExclamationTriangleIcon" className="h-5 w-5 text-yellow-400" />
+                      ) : (
+                        <Icon name="ExclamationCircleIcon" className="h-5 w-5 text-red-400" />
+                      )}
                     </div>
                     <div className="ml-3 flex-1">
-                      <p className="text-sm text-red-700">{loginError}</p>
+                      <h3 className={`text-sm font-medium ${isVerificationError ? 'text-yellow-800' : 'text-red-800'}`}>
+                        {isVerificationError ? 'Verificación de correo pendiente' : 'Error de inicio de sesión'}
+                      </h3>
+                      <div className={`mt-2 text-sm ${isVerificationError ? 'text-yellow-700' : 'text-red-700'}`}>
+                        <p>{loginError}</p>
+                      </div>
                       
                       {isVerificationError && (
-                        <div className="mt-3">
-                          <button
-                            type="button"
-                            onClick={handleResendVerification}
-                            disabled={resendingEmail}
-                            className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500 focus:outline-none focus:underline disabled:opacity-50"
-                          >
-                            {resendingEmail ? (
-                              <>
-                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                Enviando correo...
-                              </>
-                            ) : (
-                              <>Reenviar correo de verificación<Icon name="ArrowPathIcon" className="ml-1 h-4 w-4" /></>
-                            )}
-                          </button>
+                        <div className="mt-4 bg-yellow-100 p-3 rounded-md border border-yellow-300">
+                          <div className="flex items-start">
+                            <div className="flex-shrink-0 pt-0.5">
+                              <Icon name="InformationCircleIcon" className="h-5 w-5 text-yellow-500" />
+                            </div>
+                            <div className="ml-3 text-sm text-yellow-800">
+                              <p>
+                                Se requiere verificar tu correo electrónico para continuar. 
+                                Por favor revisa tu bandeja de entrada y spam para encontrar el correo de verificación.
+                              </p>
+                            </div>
+                          </div>
+                          <div className="mt-3 flex justify-end">
+                            <button
+                              type="button"
+                              onClick={handleResendVerification}
+                              disabled={resendingEmail}
+                              className="inline-flex items-center px-3 py-1.5 border border-yellow-300 text-sm leading-4 font-medium rounded-md text-yellow-700 bg-yellow-50 hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 disabled:opacity-50"
+                            >
+                              {resendingEmail ? (
+                                <>
+                                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-yellow-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                  </svg>
+                                  Enviando correo...
+                                </>
+                              ) : (
+                                <>
+                                  <Icon name="EnvelopeIcon" className="mr-2 h-4 w-4" />
+                                  Reenviar correo de verificación
+                                </>
+                              )}
+                            </button>
+                          </div>
                         </div>
                       )}
                     </div>
