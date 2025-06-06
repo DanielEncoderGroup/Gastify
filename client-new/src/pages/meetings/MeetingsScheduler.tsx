@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import {
+  CalendarDaysIcon,
+  ClockIcon,
+  MapPinIcon,
+  UserGroupIcon,
+  SparklesIcon,
+  RocketLaunchIcon,
+  PlusIcon,
+  CalendarIcon,
+  ListBulletIcon
+} from '@heroicons/react/24/outline';
+import HeaderActions from '../../components/layout/HeaderActions';
 
 interface Meeting {
   id: string;
@@ -70,189 +81,205 @@ const MeetingsScheduler: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  // Función para crear nueva reunión (placeholder)
+  const handleNewMeeting = () => {
+    console.log('Crear nueva reunión');
+    // Aquí iría la lógica para crear una nueva reunión
+  };
+
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl mb-6 shadow-lg animate-pulse">
+            <SparklesIcon className="w-8 h-8 text-white" />
+          </div>
+          <div className="w-10 h-10 border-4 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando reuniones...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="py-6 px-4 sm:px-6 lg:px-8">
-      <div className="md:flex md:items-center md:justify-between mb-6">
-        <div className="flex-1 min-w-0">
-          <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-            Reuniones
-          </h2>
-          <p className="mt-1 text-sm text-gray-500">
-            Agenda y administra tus reuniones de proyecto.
-          </p>
-        </div>
-        <div className="mt-4 flex md:mt-0 md:ml-4">
-          <Link
-            to="/app/meetings/new"
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            Nueva reunión
-          </Link>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      {/* Header Superior */}
+      <header className="bg-white/80 backdrop-blur-sm border-b border-white/20 shadow-sm sticky top-0 z-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between">
+            {/* Left side - Title and icon */}
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl shadow-lg">
+                <CalendarDaysIcon className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-700">
+                  Gestión de Reuniones
+                </h1>
+                <p className="text-gray-600 mt-1">
+                  Programa y coordina reuniones con tu equipo
+                </p>
+              </div>
+            </div>
 
-      {/* Vista conmutador */}
-      <div className="bg-white shadow rounded-lg mb-6">
-        <div className="border-b border-gray-200">
-          <nav className="-mb-px flex" aria-label="Tabs">
-            <button
-              className={`${
-                view === 'list'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              } w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm`}
-              onClick={() => setView('list')}
-            >
-              Lista
-            </button>
-            <button
-              className={`${
-                view === 'calendar'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              } w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm`}
-              onClick={() => setView('calendar')}
-            >
-              Calendario
-            </button>
-          </nav>
+            {/* Right side - Actions and Header Actions */}
+            <div className="flex items-center space-x-4">
+              {/* Nuevo Meeting Button */}
+              <button
+                onClick={handleNewMeeting}
+                className="inline-flex items-center px-6 py-3 text-white font-medium bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500"
+              >
+                <PlusIcon className="w-5 h-5 mr-2" />
+                Nueva Reunión
+              </button>
+              
+              {/* Header Actions */}
+              <HeaderActions />
+            </div>
+          </div>
         </div>
-      </div>
+      </header>
 
-      {view === 'list' ? (
-        <div className="bg-white shadow overflow-hidden sm:rounded-md">
-          <ul role="list" className="divide-y divide-gray-200">
-            {meetings.map((meeting) => (
-              <li key={meeting.id}>
-                <Link to={`/app/meetings/${meeting.id}`} className="block hover:bg-gray-50">
-                  <div className="px-4 py-4 sm:px-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <p className="text-sm font-medium text-indigo-600 truncate">
-                          {meeting.title}
-                        </p>
-                        <div className="ml-2 flex-shrink-0 flex">
-                          <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+      {/* Contenido Principal */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Vista conmutador */}
+        <div className="bg-white/60 backdrop-blur-sm rounded-2xl shadow-md border border-white/20 mb-8">
+          <div className="border-b border-gray-200/50">
+            <nav className="-mb-px flex" aria-label="Tabs">
+              <button
+                className={`${
+                  view === 'list'
+                    ? 'border-green-500 text-green-600 bg-green-50/50'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                } flex-1 py-4 px-6 text-center border-b-2 font-medium text-sm transition-all duration-200 flex items-center justify-center space-x-2`}
+                onClick={() => setView('list')}
+              >
+                <ListBulletIcon className="w-5 h-5" />
+                <span>Lista</span>
+              </button>
+              <button
+                className={`${
+                  view === 'calendar'
+                    ? 'border-green-500 text-green-600 bg-green-50/50'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                } flex-1 py-4 px-6 text-center border-b-2 font-medium text-sm transition-all duration-200 flex items-center justify-center space-x-2`}
+                onClick={() => setView('calendar')}
+              >
+                <CalendarIcon className="w-5 h-5" />
+                <span>Calendario</span>
+              </button>
+            </nav>
+          </div>
+        </div>
+
+        {view === 'list' ? (
+          <div className="bg-white/60 backdrop-blur-sm rounded-2xl shadow-md border border-white/20 overflow-hidden">
+            <div className="divide-y divide-gray-200/50">
+              {meetings.map((meeting) => (
+                <div
+                  key={meeting.id}
+                  className="group p-6 hover:bg-white/80 transition-all duration-200 cursor-pointer"
+                  onClick={() => console.log(`Ver reunión ${meeting.id}`)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-start space-x-4 flex-1">
+                      {/* Icono */}
+                      <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl shadow-lg group-hover:shadow-xl transition-shadow duration-200">
+                        <CalendarDaysIcon className="w-6 h-6 text-white" />
+                      </div>
+                      
+                      {/* Contenido principal */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="text-lg font-semibold text-gray-900 group-hover:text-green-700 transition-colors duration-200 truncate">
+                            {meeting.title}
+                          </h3>
+                          <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200 flex-shrink-0 ml-4">
+                            <RocketLaunchIcon className="w-3 h-3 mr-1" />
                             {meeting.status === 'scheduled'
                               ? 'Programada'
                               : meeting.status === 'completed'
                               ? 'Completada'
                               : 'Cancelada'}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="ml-2 flex-shrink-0 flex">
-                        <svg
-                          className="mr-1.5 h-5 w-5 text-gray-400"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                          aria-hidden="true"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                        <p className="text-sm text-gray-500">
-                          {new Date(meeting.date).toLocaleDateString()} a las {meeting.time}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="mt-2 sm:flex sm:justify-between">
-                      <div className="sm:flex">
-                        <p className="flex items-center text-sm text-gray-500">
-                          <svg
-                            className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm3 1h6v4H7V5zm8 8v2h1v1H4v-1h1v-2a1 1 0 011-1h8a1 1 0 011 1zM9 5h2v4H9V5z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                          {meeting.projectName || 'Sin proyecto asociado'}
-                        </p>
-                        <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
-                          <svg
-                            className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                          {meeting.location}
-                        </p>
-                      </div>
-                      <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                        <svg
-                          className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                        <p>
-                          {meeting.organizer}{' '}
-                          <span className="text-gray-400">
-                            ({meeting.attendees.length} participantes)
                           </span>
-                        </p>
+                        </div>
+                        
+                        {/* Detalles */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-gray-600">
+                          <div className="flex items-center space-x-2">
+                            <CalendarIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                            <span>
+                              {new Date(meeting.date).toLocaleDateString()} a las {meeting.time}
+                            </span>
+                          </div>
+                          
+                          <div className="flex items-center space-x-2">
+                            <ClockIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                            <span>{meeting.duration} minutos</span>
+                          </div>
+                          
+                          <div className="flex items-center space-x-2">
+                            <MapPinIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                            <span className="truncate">{meeting.location}</span>
+                          </div>
+                          
+                          <div className="flex items-center space-x-2">
+                            <UserGroupIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                            <span>
+                              {meeting.organizer} ({meeting.attendees.length} participantes)
+                            </span>
+                          </div>
+                          
+                          {meeting.projectName && (
+                            <div className="flex items-center space-x-2 sm:col-span-2">
+                              <RocketLaunchIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                              <span className="truncate font-medium text-blue-600">{meeting.projectName}</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : (
-        <div className="bg-white shadow overflow-hidden sm:rounded-md p-6">
-          <div className="text-center py-10">
-            <svg
-              className="mx-auto h-12 w-12 text-gray-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1}
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-            <h3 className="mt-2 text-sm font-medium text-gray-900">
-              Vista de calendario en desarrollo
-            </h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Próximamente podrás ver tus reuniones en formato de calendario.
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white/60 backdrop-blur-sm rounded-2xl shadow-md border border-white/20 p-8">
+            <div className="text-center py-16">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-gray-400 to-gray-500 rounded-2xl mb-6">
+                <CalendarIcon className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                Vista de calendario en desarrollo
+              </h3>
+              <p className="text-gray-600 max-w-md mx-auto">
+                Próximamente podrás ver tus reuniones en formato de calendario interactivo.
+              </p>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* Footer Informativo */}
+      <footer className="bg-white/80 backdrop-blur-sm border-t border-white/20 mt-16 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="flex items-center justify-center space-x-2 mb-4">
+              <SparklesIcon className="w-5 h-5 text-green-600" />
+              <span className="text-lg font-semibold text-gray-800">¿Necesitas ayuda con las reuniones?</span>
+            </div>
+            <p className="text-gray-600 max-w-2xl mx-auto mb-4">
+              Organiza y coordina eficientemente todas tus reuniones de proyecto desde un solo lugar.
             </p>
+            <div className="mt-4 flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-6 text-sm text-gray-500">
+              <div>📧 Soporte: meetings@encodergroup.cl</div>
+              <div className="hidden sm:block">|</div>
+              <div>📞 Teléfono: +1 (555) 123-4567</div>
+            </div>
           </div>
         </div>
-      )}
+      </footer>
     </div>
   );
 };

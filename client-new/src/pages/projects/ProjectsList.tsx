@@ -16,6 +16,7 @@ import {
   UserGroupIcon,
   ChevronRightIcon
 } from '@heroicons/react/24/outline';
+import HeaderActions from '../../components/layout/HeaderActions';
 
 interface Project {
   id: string;
@@ -307,6 +308,9 @@ const ProjectsList: React.FC = () => {
                 </p>
               </div>
             </div>
+
+            {/* Right side - Header Actions */}
+            <HeaderActions />
           </div>
         </div>
       </header>

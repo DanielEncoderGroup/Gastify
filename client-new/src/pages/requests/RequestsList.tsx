@@ -32,6 +32,7 @@ import {
   UserIcon,
   CalendarIcon
 } from '@heroicons/react/24/outline';
+import HeaderActions from '../../components/layout/HeaderActions';
 
 const RequestsList: React.FC = () => {
   const { user } = useAuth();
@@ -178,13 +179,14 @@ const RequestsList: React.FC = () => {
               </div>
             </div>
 
-            {/* Botón CTA */}
-            {!isAdmin && (
-              <div className="flex-shrink-0">
+            {/* Right side - Header Actions + CTA */}
+            <div className="flex items-center space-x-4">
+              {/* Botón CTA */}
+              {!isAdmin && (
                 <button
                   onClick={() => navigate('/app/projects/request/new')}
                   className="
-                    w-full md:w-auto inline-flex items-center justify-center px-6 py-3 text-white font-medium
+                    inline-flex items-center justify-center px-6 py-3 text-white font-medium
                     bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg whitespace-nowrap
                     hover:shadow-xl hover:scale-105 transition-all duration-200
                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
@@ -193,8 +195,11 @@ const RequestsList: React.FC = () => {
                   <PlusIcon className="w-5 h-5 mr-2" />
                   Solicitar Proyecto IT
                 </button>
-              </div>
-            )}
+              )}
+              
+              {/* Header Actions */}
+              <HeaderActions />
+            </div>
           </div>
         </div>
       </header>

@@ -1,5 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import {
+  UserCircleIcon,
+  ShieldCheckIcon,
+  KeyIcon,
+  SparklesIcon,
+  UserIcon,
+  EnvelopeIcon,
+  LockClosedIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  ArrowPathIcon
+} from '@heroicons/react/24/outline';
 import { useAuth } from '../../contexts/AuthContext';
+import HeaderActions from '../../components/layout/HeaderActions';
 
 /**
  * Página de perfil que muestra la información del usuario
@@ -162,8 +175,14 @@ const Profile: React.FC = () => {
   // Si estamos cargando, mostrar spinner
   if (loading || (!userData && isAuthenticated)) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl mb-6 shadow-lg animate-pulse">
+            <SparklesIcon className="w-8 h-8 text-white" />
+          </div>
+          <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando perfil...</p>
+        </div>
       </div>
     );
   }
@@ -174,85 +193,136 @@ const Profile: React.FC = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto my-8 space-y-8">
-      {/* Tarjeta de información de perfil */}
-      <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-6 text-white">
-          <h1 className="text-3xl font-bold">Perfil de Usuario</h1>
-          <p className="text-blue-100">Información de tu cuenta</p>
-        </div>
-        
-        <div className="p-6 md:p-8">
-          {/* Layout de dos columnas para escritorio */}
-          <div className="flex flex-col md:flex-row gap-8">
-            {/* Columna izquierda: avatar y acciones */}
-            <div className="flex flex-col items-center">
-              <div className="w-48 h-48 bg-gray-200 rounded-full overflow-hidden flex justify-center items-center border-4 border-gray-100 shadow-md">
-                {userData.avatar ? (
-                  <img 
-                    src={userData.avatar} 
-                    alt="Foto de perfil" 
-                    className="object-cover w-full h-full" 
-                  />
-                ) : (
-                  <div className="text-gray-400 flex items-center justify-center w-full h-full text-6xl">
-                    <span>👤</span>
-                  </div>
-                )}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      {/* Header Superior */}
+      <header className="bg-white/80 backdrop-blur-sm border-b border-white/20 shadow-sm sticky top-0 z-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between">
+            {/* Left side - Title and icon */}
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg">
+                <UserCircleIcon className="w-6 h-6 text-white" />
               </div>
-              
-              <button 
-                onClick={refreshUserData} 
-                disabled={isRefreshing} 
-                className="mt-4 flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors shadow-sm disabled:opacity-50"
-              >
-                <span className={`${isRefreshing ? 'animate-spin' : ''} mr-1`}>⟳</span>
-                {isRefreshing ? 'Actualizando...' : 'Actualizar datos'}
-              </button>
-              
-              <div className={`mt-4 px-4 py-2 rounded-full text-sm flex items-center gap-2 ${userData.isVerified ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                <span className={`w-3 h-3 rounded-full inline-block ${userData.isVerified ? 'bg-green-500' : 'bg-yellow-500'}`}></span>
-                {userData.isVerified ? 'Verificado' : 'Pendiente de verificación'}
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-700">
+                  Perfil de Usuario
+                </h1>
+                <p className="text-gray-600 mt-1">
+                  Gestiona tu información personal y preferencias
+                </p>
               </div>
             </div>
 
-            {/* Columna derecha: información personal */}
-            <div className="flex-1">
-              <div className="bg-gray-50 rounded-lg p-6 shadow-inner h-full">
-                <h2 className="text-2xl font-semibold text-gray-800 mb-6 border-b pb-2">Información Personal</h2>
-                <div className="space-y-6">
-                  <div className="flex flex-col md:flex-row gap-2 md:gap-6">
-                    <div className="flex-1">
-                      <div className="text-sm text-gray-500 mb-1 flex items-center gap-1">
-                        <span>👤</span>
-                        <span>Nombre</span>
-                      </div>
-                      <div className="font-medium text-gray-900 text-lg">{userData.firstName || 'No especificado'}</div>
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-sm text-gray-500 mb-1 flex items-center gap-1">
-                        <span>👤</span>
-                        <span>Apellido</span>
-                      </div>
-                      <div className="font-medium text-gray-900 text-lg">{userData.lastName || 'No especificado'}</div>
-                    </div>
-                  </div>
+            {/* Right side - Header Actions */}
+            <HeaderActions />
+          </div>
+        </div>
+      </header>
+
+      {/* Contenido Principal */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        {/* Tarjeta de información de perfil */}
+        <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-md border border-white/20 overflow-hidden">
+          <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white">
+            <div className="flex items-center space-x-3">
+              <UserIcon className="w-8 h-8" />
+              <div>
+                <h2 className="text-2xl font-bold">Información Personal</h2>
+                <p className="text-indigo-100">Detalles de tu cuenta y perfil</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="p-8">
+            {/* Layout de dos columnas para escritorio */}
+            <div className="flex flex-col lg:flex-row gap-8">
+              {/* Columna izquierda: avatar y acciones */}
+              <div className="flex flex-col items-center lg:items-start">
+                <div className="w-48 h-48 bg-gradient-to-r from-gray-200 to-gray-300 rounded-2xl overflow-hidden flex justify-center items-center border-4 border-white shadow-lg">
+                  {userData.avatar ? (
+                    <img 
+                      src={userData.avatar} 
+                      alt="Foto de perfil" 
+                      className="object-cover w-full h-full" 
+                    />
+                  ) : (
+                    <UserIcon className="w-24 h-24 text-gray-400" />
+                  )}
+                </div>
+                
+                <button 
+                  onClick={refreshUserData} 
+                  disabled={isRefreshing} 
+                  className="mt-6 flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
+                >
+                  <ArrowPathIcon className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  <span>{isRefreshing ? 'Actualizando...' : 'Actualizar datos'}</span>
+                </button>
+                
+                <div className={`mt-4 px-4 py-2 rounded-full text-sm flex items-center space-x-2 ${
+                  userData.isVerified 
+                    ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' 
+                    : 'bg-amber-100 text-amber-700 border border-amber-200'
+                }`}>
+                  {userData.isVerified ? (
+                    <CheckCircleIcon className="w-4 h-4" />
+                  ) : (
+                    <ExclamationTriangleIcon className="w-4 h-4" />
+                  )}
+                  <span>{userData.isVerified ? 'Verificado' : 'Pendiente de verificación'}</span>
+                </div>
+              </div>
+
+              {/* Columna derecha: información personal */}
+              <div className="flex-1">
+                <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 shadow-md border border-white/20 h-full">
+                  <h3 className="text-xl font-semibold text-gray-800 mb-6 flex items-center space-x-2">
+                    <UserIcon className="w-5 h-5 text-indigo-600" />
+                    <span>Datos Personales</span>
+                  </h3>
                   
-                  <div className="flex flex-col">
-                    <div className="text-sm text-gray-500 mb-1 flex items-center gap-1">
-                      <span>✉️</span>
-                      <span>Correo electrónico</span>
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <div className="text-sm text-gray-500 mb-2 flex items-center space-x-2">
+                          <UserIcon className="w-4 h-4" />
+                          <span>Nombre</span>
+                        </div>
+                        <div className="font-medium text-gray-900 text-lg px-4 py-2 bg-gray-50 rounded-xl">
+                          {userData.firstName || 'No especificado'}
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="text-sm text-gray-500 mb-2 flex items-center space-x-2">
+                          <UserIcon className="w-4 h-4" />
+                          <span>Apellido</span>
+                        </div>
+                        <div className="font-medium text-gray-900 text-lg px-4 py-2 bg-gray-50 rounded-xl">
+                          {userData.lastName || 'No especificado'}
+                        </div>
+                      </div>
                     </div>
-                    <div className="font-medium text-gray-900">{userData.email}</div>
-                  </div>
-                  
-                  <div className="flex flex-col">
-                    <div className="text-sm text-gray-500 mb-1 flex items-center gap-1">
-                      <span>🔑</span>
-                      <span>Rol</span>
+                    
+                    <div>
+                      <div className="text-sm text-gray-500 mb-2 flex items-center space-x-2">
+                        <EnvelopeIcon className="w-4 h-4" />
+                        <span>Correo electrónico</span>
+                      </div>
+                      <div className="font-medium text-gray-900 px-4 py-2 bg-gray-50 rounded-xl">
+                        {userData.email}
+                      </div>
                     </div>
-                    <div className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full inline-block font-semibold">
-                      {getRoleDisplay(userData.role)}
+                    
+                    <div>
+                      <div className="text-sm text-gray-500 mb-2 flex items-center space-x-2">
+                        <ShieldCheckIcon className="w-4 h-4" />
+                        <span>Rol</span>
+                      </div>
+                      <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800 rounded-xl font-semibold border border-indigo-200">
+                        <ShieldCheckIcon className="w-4 h-4 mr-2" />
+                        {getRoleDisplay(userData.role)}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -260,92 +330,130 @@ const Profile: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
-      
-      {/* Tarjeta separada para cambio de contraseña */}
-      <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white">
-          <h2 className="text-2xl font-bold">Cambio de Contraseña</h2>
-          <p className="text-indigo-100">Actualiza tu contraseña de acceso</p>
-        </div>
         
-        <div className="p-6 md:p-8">
-          <form onSubmit={handleChangePassword} className="space-y-5">
-            {passwordError && (
-              <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-r-md">
-                {passwordError}
+        {/* Tarjeta separada para cambio de contraseña */}
+        <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-md border border-white/20 overflow-hidden">
+          <div className="bg-gradient-to-r from-purple-500 to-pink-600 p-6 text-white">
+            <div className="flex items-center space-x-3">
+              <KeyIcon className="w-8 h-8" />
+              <div>
+                <h2 className="text-2xl font-bold">Cambio de Contraseña</h2>
+                <p className="text-purple-100">Actualiza tu contraseña de acceso</p>
               </div>
-            )}
-            
-            {passwordSuccess && (
-              <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-r-md">
-                {passwordSuccess}
-              </div>
-            )}
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="md:col-span-1">
-                <label className="block text-sm font-medium text-gray-700">
-                  Contraseña actual
-                </label>
-                <input
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCurrentPassword(e.target.value)}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  required
-                />
+            </div>
+          </div>
+          
+          <div className="p-8">
+            <form onSubmit={handleChangePassword} className="space-y-6">
+              {passwordError && (
+                <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-r-xl flex items-start space-x-3">
+                  <ExclamationTriangleIcon className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <span>{passwordError}</span>
+                </div>
+              )}
+              
+              {passwordSuccess && (
+                <div className="bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 p-4 rounded-r-xl flex items-start space-x-3">
+                  <CheckCircleIcon className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <span>{passwordSuccess}</span>
+                </div>
+              )}
+              
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center space-x-2">
+                    <LockClosedIcon className="w-4 h-4" />
+                    <span>Contraseña actual</span>
+                  </label>
+                  <input
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCurrentPassword(e.target.value)}
+                    className="w-full border-2 border-gray-200 rounded-xl shadow-sm px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center space-x-2">
+                    <KeyIcon className="w-4 h-4" />
+                    <span>Nueva contraseña</span>
+                  </label>
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPassword(e.target.value)}
+                    className="w-full border-2 border-gray-200 rounded-xl shadow-sm px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center space-x-2">
+                    <LockClosedIcon className="w-4 h-4" />
+                    <span>Confirmar nueva contraseña</span>
+                  </label>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
+                    className="w-full border-2 border-gray-200 rounded-xl shadow-sm px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                    required
+                  />
+                </div>
               </div>
               
-              <div className="md:col-span-1">
-                <label className="block text-sm font-medium text-gray-700">
-                  Nueva contraseña
-                </label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPassword(e.target.value)}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  required
-                />
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <div className="flex items-start space-x-3">
+                  <LockClosedIcon className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-blue-900 mb-1">Requisitos de seguridad:</p>
+                    <p className="text-sm text-blue-800">
+                      La contraseña debe tener al menos 8 caracteres, incluir una letra mayúscula, 
+                      una minúscula, un número y un carácter especial.
+                    </p>
+                  </div>
+                </div>
               </div>
               
-              <div className="md:col-span-1">
-                <label className="block text-sm font-medium text-gray-700">
-                  Confirmar nueva contraseña
-                </label>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  required
-                />
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={isChangingPassword}
+                  className="flex items-center space-x-2 px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  {isChangingPassword ? (
+                    <ArrowPathIcon className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <KeyIcon className="w-5 h-5" />
+                  )}
+                  <span>{isChangingPassword ? 'Procesando...' : 'Cambiar contraseña'}</span>
+                </button>
               </div>
-            </div>
-            
-            <div className="md:col-span-3">
-              <p className="text-sm text-gray-600 mb-4 bg-blue-50 p-3 rounded-md border border-blue-100">
-                <span className="font-medium">Requisitos de seguridad:</span> La contraseña debe tener al menos 8 caracteres, incluir una letra mayúscula, 
-                una minúscula, un número y un carácter especial.
-              </p>
-            </div>
-            
-            <div className="flex justify-end">
-              <button
-                type="submit"
-                disabled={isChangingPassword}
-                className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 flex items-center shadow-md"
-              >
-                {isChangingPassword && (
-                  <span className="animate-spin mr-2">⟳</span>
-                )}
-                {isChangingPassword ? 'Procesando...' : 'Cambiar contraseña'}
-              </button>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
-      </div>
+      </main>
+
+      {/* Footer Informativo */}
+      <footer className="bg-white/80 backdrop-blur-sm border-t border-white/20 mt-16 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="flex items-center justify-center space-x-2 mb-4">
+              <SparklesIcon className="w-5 h-5 text-indigo-600" />
+              <span className="text-lg font-semibold text-gray-800">¿Necesitas ayuda con tu perfil?</span>
+            </div>
+            <p className="text-gray-600 max-w-2xl mx-auto mb-4">
+              Mantén tu información actualizada y protege tu cuenta con contraseñas seguras.
+            </p>
+            <div className="mt-4 flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-6 text-sm text-gray-500">
+              <div>📧 Soporte: profile@encodergroup.cl</div>
+              <div className="hidden sm:block">|</div>
+              <div>📞 Teléfono: +1 (555) 123-4567</div>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

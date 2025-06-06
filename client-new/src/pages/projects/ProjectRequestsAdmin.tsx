@@ -13,6 +13,7 @@ import {
 import { RequestStatus, RequestSummary } from '../../types/request';
 import { requestService } from '../../services/requestService';
 import ProjectRequestsTable from '../../components/projects/ProjectRequestsTable';
+import HeaderActions from '../../components/layout/HeaderActions';
 
 /**
  * Página de administración de solicitudes de proyectos informáticos
@@ -122,18 +123,24 @@ const ProjectRequestsAdmin: React.FC = () => {
       {/* Header Superior */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-white/20 shadow-sm sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl shadow-lg">
-              <ClipboardDocumentListIcon className="w-6 h-6 text-white" />
+          <div className="flex items-center justify-between">
+            {/* Left side - Title and icon */}
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl shadow-lg">
+                <ClipboardDocumentListIcon className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-700">
+                  Administración de Solicitudes
+                </h1>
+                <p className="text-gray-600 mt-1">
+                  Gestiona y revisa las solicitudes de proyectos informáticos
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-700">
-                Administración de Solicitudes
-              </h1>
-              <p className="text-gray-600 mt-1">
-                Gestiona y revisa las solicitudes de proyectos informáticos
-              </p>
-            </div>
+
+            {/* Right side - Header Actions */}
+            <HeaderActions />
           </div>
         </div>
       </header>
