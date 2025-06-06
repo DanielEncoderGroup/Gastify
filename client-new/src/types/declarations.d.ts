@@ -59,12 +59,14 @@ declare module '@heroicons/react/24/outline' {
   export const CogIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   export const ComputerDesktopIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   export const InboxArrowDownIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  export const BuildingOfficeIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   export const DocumentMagnifyingGlassIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   export const CalendarDaysIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   export const CalculatorIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   export const PresentationChartBarIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   export const FlagIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   export const MinusCircleIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  export const ChevronRightIcon: ComponentType<SVGProps<SVGSVGElement>>;
 }
 
 declare module '@heroicons/react/24/solid' {
