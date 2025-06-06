@@ -8,8 +8,30 @@ import {
   RequestStatusLabels,
   StatusBadgeClasses
 } from '../../types/request';
-import { Icon } from '../../components/ui';
 import { toast } from 'react-hot-toast';
+import {
+  ComputerDesktopIcon,
+  FunnelIcon,
+  MagnifyingGlassIcon,
+  DocumentTextIcon,
+  PlusIcon,
+  ArrowRightIcon,
+  CurrencyDollarIcon,
+  ClockIcon,
+  InboxArrowDownIcon,
+  DocumentMagnifyingGlassIcon,
+  CalendarDaysIcon,
+  CalculatorIcon,
+  PresentationChartBarIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  FlagIcon,
+  MinusCircleIcon,
+  SparklesIcon,
+  RocketLaunchIcon,
+  UserIcon,
+  CalendarIcon
+} from '@heroicons/react/24/outline';
 
 const RequestsList: React.FC = () => {
   const { user } = useAuth();
@@ -29,34 +51,33 @@ const RequestsList: React.FC = () => {
   const getStatusIcon = (status: RequestStatus) => {
     switch (status) {
       case RequestStatus.DRAFT:
-        return <Icon name="ClockIcon" className="text-gray-500" />;
+        return <ClockIcon className="w-5 h-5 text-gray-500" />;
       case RequestStatus.SUBMITTED:
-        return <Icon name="InboxArrowDownIcon" className="text-blue-500" />;
+        return <InboxArrowDownIcon className="w-5 h-5 text-blue-500" />;
       case RequestStatus.REQUIREMENTS_ANALYSIS:
-        return <Icon name="DocumentSearchIcon" className="text-purple-500" />;
+        return <DocumentMagnifyingGlassIcon className="w-5 h-5 text-purple-500" />;
       case RequestStatus.PLANNING:
-        return <Icon name="CalendarDaysIcon" className="text-indigo-500" />;
+        return <CalendarDaysIcon className="w-5 h-5 text-indigo-500" />;
       case RequestStatus.ESTIMATION:
-        return <Icon name="CalculatorIcon" className="text-orange-500" />;
+        return <CalculatorIcon className="w-5 h-5 text-orange-500" />;
       case RequestStatus.PROPOSAL_READY:
-        return <Icon name="PresentationChartBarIcon" className="text-cyan-500" />;
+        return <PresentationChartBarIcon className="w-5 h-5 text-cyan-500" />;
       case RequestStatus.APPROVED:
-        return <Icon name="CheckCircleIcon" className="text-green-500" />;
+        return <CheckCircleIcon className="w-5 h-5 text-green-500" />;
       case RequestStatus.REJECTED:
-        return <Icon name="XCircleIcon" className="text-red-500" />;
+        return <XCircleIcon className="w-5 h-5 text-red-500" />;
       case RequestStatus.IN_DEVELOPMENT:
-        return <Icon name="ComputerDesktopIcon" className="text-teal-500" />;
+        return <ComputerDesktopIcon className="w-5 h-5 text-teal-500" />;
       case RequestStatus.COMPLETED:
-        return <Icon name="FlagIcon" className="text-emerald-500" />;
+        return <FlagIcon className="w-5 h-5 text-emerald-500" />;
       case RequestStatus.CANCELED:
-        return <Icon name="MinusCircleIcon" className="text-gray-500" />;
-      // Legacy:
+        return <MinusCircleIcon className="w-5 h-5 text-gray-500" />;
       case RequestStatus.IN_PROCESS:
-        return <Icon name="ArrowRightIcon" className="text-blue-500" />;
+        return <ArrowRightIcon className="w-5 h-5 text-blue-500" />;
       case RequestStatus.IN_REVIEW:
-        return <Icon name="MagnifyingGlassIcon" className="text-yellow-500" />;
+        return <MagnifyingGlassIcon className="w-5 h-5 text-yellow-500" />;
       default:
-        return <Icon name="ClockIcon" className="text-gray-500" />;
+        return <ClockIcon className="w-5 h-5 text-gray-500" />;
     }
   };
 
@@ -118,196 +139,294 @@ const RequestsList: React.FC = () => {
     }
   };
 
+  if (loading && requests.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl mb-6 shadow-lg animate-pulse">
+            <SparklesIcon className="w-8 h-8 text-white" />
+          </div>
+          <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">Cargando solicitudes...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="py-6 px-4 sm:px-6 lg:px-8">
-      {!isAdmin && (
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg shadow-sm p-4 mb-6">
-          <div className="flex items-start">
-            <div className="flex-shrink-0">
-              <Icon name="ComputerDesktopIcon" className="h-6 w-6 text-blue-600" />
-            </div>
-            <div className="ml-3 flex-1">
-              <h3 className="text-sm font-medium text-blue-800">Solicita tu Proyecto IT</h3>
-              <div className="mt-1 text-sm text-blue-700">
-                <p>
-                  Utiliza nuestro formulario especializado para solicitar proyectos informáticos. Incluye todos los campos necesarios para entender tus necesidades técnicas y de negocio.
-                </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      {/* Header Superior */}
+      <header className="bg-white/80 backdrop-blur-sm border-b border-white/20 shadow-sm sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+            {/* Título */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0 flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg">
+                  <RocketLaunchIcon className="w-6 h-6 text-white" />
+                </div>
+                <div className="min-w-0">
+                  <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-900 bg-clip-text text-transparent break-words">
+                    Solicitudes de Proyectos
+                  </h1>
+                  <p className="text-gray-600 mt-1 break-words">
+                    {isAdmin
+                      ? 'Gestiona y revisa las solicitudes de proyectos de los clientes'
+                      : 'Revisa el estado de tus solicitudes de proyectos'}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
 
-      <div className="sm:flex sm:items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Solicitudes de Proyectos</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            {isAdmin
-              ? 'Gestiona y revisa las solicitudes de proyectos de los clientes'
-              : 'Revisa el estado de tus solicitudes de proyectos'}
-          </p>
-        </div>
-        {!isAdmin && (
-          <div className="mt-4 sm:mt-0">
-            <button
-              onClick={() => navigate('/app/projects/request/new')}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <Icon name="ComputerDesktopIcon" className="mr-2 h-5 w-5" />
-              Solicitar Proyecto IT
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Filtros */}
-      <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6 mb-6">
-        <div className="md:flex md:items-center md:justify-between">
-          <div className="flex items-center space-x-4">
-            <Icon name="FunnelIcon" className="text-gray-400" />
-            <div>
-              <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700">
-                Estado
-              </label>
-              <select
-                id="status-filter"
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value as RequestStatus | 'all')}
-                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-              >
-                <option value="all">Todos</option>
-                {Object.entries(RequestStatusLabels).map(([key, label]) => (
-                  <option key={key} value={key}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="mt-4 md:mt-0">
-            <form onSubmit={handleSearch} className="flex rounded-md shadow-sm">
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Buscar solicitudes..."
-                className="focus:ring-blue-500 focus:border-blue-500 flex-1 block w-full rounded-none rounded-l-md sm:text-sm border-gray-300"
-              />
-              <button
-                type="submit"
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-r-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <Icon name="MagnifyingGlassIcon" />
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      {/* Lista de solicitudes de proyecto */}
-      <div className="bg-white shadow overflow-hidden sm:rounded-md">
-        {loading && requests.length === 0 ? (
-          <div className="py-12 flex flex-col items-center justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-            <p className="text-gray-500">Cargando solicitudes...</p>
-          </div>
-        ) : requests.length === 0 ? (
-          <div className="py-12 text-center">
-            <Icon name="DocumentTextIcon" className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-lg font-medium text-gray-900">No hay solicitudes de proyecto</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              {isAdmin
-                ? 'No se encontraron solicitudes de proyecto.'
-                : 'Aún no has creado ninguna solicitud de proyecto.'}
-            </p>
+            {/* Botón CTA */}
             {!isAdmin && (
-              <div className="mt-6">
+              <div className="flex-shrink-0">
                 <button
                   onClick={() => navigate('/app/projects/request/new')}
-                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="
+                    w-full md:w-auto inline-flex items-center justify-center px-6 py-3 text-white font-medium
+                    bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg whitespace-nowrap
+                    hover:shadow-xl hover:scale-105 transition-all duration-200
+                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                  "
                 >
-                  <Icon name="PlusIcon" className="mr-2 h-5 w-5" />
-                  Crear nueva solicitud de proyecto
+                  <PlusIcon className="w-5 h-5 mr-2" />
+                  Solicitar Proyecto IT
                 </button>
               </div>
             )}
           </div>
-        ) : (
-          <ul className="divide-y divide-gray-200">
-            {requests.map((request) => (
-              <li key={request.id}>
-                <Link
-                  to={`/app/requests/${request.id}`}
-                  className="block hover:bg-gray-50"
+        </div>
+      </header>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Banner Informativo para Usuarios */}
+        {!isAdmin && (
+          <div className="relative overflow-hidden rounded-2xl p-6 mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/50 shadow-md">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-200/20 rounded-full -translate-y-10 translate-x-10 blur-xl"></div>
+            <div className="relative z-10 flex items-start space-x-4">
+              <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl shadow-sm">
+                <ComputerDesktopIcon className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-blue-900 mb-2">
+                  Solicita tu Proyecto IT
+                </h3>
+                <p className="text-blue-800 leading-relaxed">
+                  Utiliza nuestro formulario especializado para solicitar proyectos informáticos. 
+                  Incluye todos los campos necesarios para entender tus necesidades técnicas y de negocio.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Panel de Filtros */}
+        <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-md border border-white/20 p-6 mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+            {/* Filtro de Estado */}
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl">
+                <FunnelIcon className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1">
+                <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 mb-1">
+                  Filtrar por Estado
+                </label>
+                <select
+                  id="status-filter"
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value as RequestStatus | 'all')}
+                  className="
+                    block w-full px-4 py-2.5 rounded-xl border-2 border-gray-200 bg-white/80 backdrop-blur-sm
+                    focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20
+                    transition-all duration-200 hover:bg-white
+                  "
                 >
-                  <div className="px-4 py-4 sm:px-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        {getStatusIcon(request.status)}
-                        <p className="ml-2 text-sm font-medium text-blue-600 truncate">
-                          {request.title}
-                        </p>
+                  <option value="all">Todos los Estados</option>
+                  {Object.entries(RequestStatusLabels).map(([key, label]) => (
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Buscador */}
+            <div className="flex-1 lg:max-w-md">
+              <form onSubmit={handleSearch} className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <MagnifyingGlassIcon className="w-5 h-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Buscar solicitudes..."
+                  className="
+                    w-full pl-12 pr-4 py-2.5 rounded-xl border-2 border-gray-200 bg-white/80 backdrop-blur-sm
+                    focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20
+                    transition-all duration-200 hover:bg-white
+                  "
+                />
+                <button
+                  type="submit"
+                  className="
+                    absolute inset-y-0 right-0 flex items-center px-4
+                    text-blue-600 hover:text-blue-700 transition-colors duration-200
+                  "
+                >
+                  <ArrowRightIcon className="w-5 h-5" />
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        {/* Lista de Solicitudes */}
+        <div className="space-y-4">
+          {requests.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-gray-400 to-gray-500 rounded-3xl mb-6 shadow-lg">
+                <DocumentTextIcon className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                No hay solicitudes de proyecto
+              </h3>
+              <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                {isAdmin
+                  ? 'No se encontraron solicitudes de proyecto que coincidan con los filtros.'
+                  : 'Aún no has creado ninguna solicitud de proyecto. ¡Empieza creando tu primera solicitud!'}
+              </p>
+              {!isAdmin && (
+                <button
+                  onClick={() => navigate('/app/projects/request/new')}
+                  className="
+                    inline-flex items-center px-6 py-3 text-white font-medium
+                    bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg
+                    hover:shadow-xl hover:scale-105 transition-all duration-200
+                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                  "
+                >
+                  <PlusIcon className="w-5 h-5 mr-2" />
+                  Crear nueva solicitud
+                </button>
+              )}
+            </div>
+          ) : (
+            <>
+              {requests.map((request, index) => (
+                <Link
+                  key={request.id}
+                  to={`/app/requests/${request.id}`}
+                  className="block group"
+                >
+                  <div className="
+                    bg-white/70 backdrop-blur-sm rounded-2xl shadow-md border border-white/20 p-6
+                    hover:shadow-xl hover:bg-white/90 hover:scale-[1.02]
+                    transition-all duration-300 group-hover:border-blue-200
+                  ">
+                    <div className="flex items-start justify-between">
+                      {/* Contenido Principal */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-3 mb-3">
+                          <div className="flex items-center justify-center w-10 h-10 bg-white/80 rounded-xl shadow-sm group-hover:shadow-md transition-shadow duration-200">
+                            {getStatusIcon(request.status)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-lg font-semibold text-gray-900 truncate group-hover:text-blue-900 transition-colors duration-200">
+                              {request.title}
+                            </h3>
+                            <p className="text-sm text-gray-600 truncate">
+                              {request.description.substring(0, 120)}
+                              {request.description.length > 120 ? '...' : ''}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Metadatos */}
+                        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                          {request.budget !== undefined && (
+                            <div className="flex items-center space-x-1">
+                              <CurrencyDollarIcon className="w-4 h-4" />
+                              <span className="font-medium">${request.budget.toLocaleString()}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center space-x-1">
+                            <CalendarIcon className="w-4 h-4" />
+                            <span>Creado {new Date(request.createdAt).toLocaleDateString()}</span>
+                          </div>
+                          {isAdmin && request.client && (
+                            <div className="flex items-center space-x-1">
+                              <UserIcon className="w-4 h-4" />
+                              <span>{request.client.firstName} {request.client.lastName}</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <div className="ml-2 flex-shrink-0 flex">
-                        <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${StatusBadgeClasses[request.status]}`}
-                        >
+
+                      {/* Badge de Estado */}
+                      <div className="ml-4 flex-shrink-0">
+                        <span className={`
+                          px-3 py-1.5 text-xs font-semibold rounded-full
+                          ${StatusBadgeClasses[request.status]}
+                          shadow-sm
+                        `}>
                           {request.statusLabel}
                         </span>
                       </div>
                     </div>
-                    <div className="mt-2 sm:flex sm:justify-between">
-                      <div className="sm:flex">
-                        <p className="flex items-center text-sm text-gray-500 truncate">
-                          {request.description.substring(0, 100)}
-                          {request.description.length > 100 ? '...' : ''}
-                        </p>
-                      </div>
-                      <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                        <div className="flex space-x-4">
-                          {request.budget !== undefined && (
-                            <span className="flex items-center">
-                              <Icon name="CurrencyDollarIcon" className="flex-shrink-0 mr-1.5 text-gray-400" />
-                              ${request.budget.toLocaleString()}
-                            </span>
-                          )}
-                          {/* Ya no hay tags */}
-                        </div>
-                      </div>
-                    </div>
-                    {isAdmin && request.client && (
-                      <div className="mt-2">
-                        <p className="text-xs text-gray-500">
-                          Cliente: {request.client.firstName} {request.client.lastName}
-                        </p>
-                      </div>
-                    )}
                   </div>
                 </Link>
-              </li>
-            ))}
-          </ul>
-        )}
+              ))}
 
-        {/* Botón “Cargar más” */}
-        {hasMore && (
-          <div className="px-4 py-3 bg-gray-50 text-center sm:px-6">
-            <button
-              onClick={loadMore}
-              disabled={loading}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              {loading ? (
-                <div className="mr-2 h-4 w-4 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
-              ) : (
-                <Icon name="ArrowRightIcon" className="mr-2 text-gray-400" />
+              {/* Botón Cargar Más */}
+              {hasMore && (
+                <div className="text-center pt-8">
+                  <button
+                    onClick={loadMore}
+                    disabled={loading}
+                    className="
+                      inline-flex items-center px-6 py-3 text-gray-700 font-medium
+                      bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl shadow-sm
+                      hover:bg-white hover:shadow-md hover:border-gray-300
+                      disabled:opacity-50 disabled:cursor-not-allowed
+                      transition-all duration-200
+                    "
+                  >
+                    {loading ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin mr-2"></div>
+                        Cargando...
+                      </>
+                    ) : (
+                      <>
+                        <ArrowRightIcon className="w-5 h-5 mr-2" />
+                        Cargar más solicitudes
+                      </>
+                    )}
+                  </button>
+                </div>
               )}
-              Cargar más
-            </button>
-          </div>
-        )}
+            </>
+          )}
+        </div>
       </div>
+
+      {/* Footer */}
+      <footer className="bg-white/80 backdrop-blur-sm border-t border-white/20 mt-16 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="flex items-center justify-center space-x-2 mb-4">
+            <SparklesIcon className="w-5 h-5 text-blue-600" />
+            <span className="text-lg font-semibold text-gray-800">Gestión de Proyectos</span>
+          </div>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Administra eficientemente todas tus solicitudes de proyectos desde un solo lugar.
+            Mantén el control y seguimiento de cada etapa del proceso.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };
