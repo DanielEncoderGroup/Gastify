@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuth } from './contexts/AuthContext';
+import { NotificationProvider } from './contexts/NotificationContext';
 
 // Layout components
 import Layout from './components/layout/Layout';
@@ -20,7 +21,6 @@ import ResetPassword from './pages/auth/ResetPassword';
 import VerifyEmail from './pages/auth/VerifyEmail';
 
 // Dashboard and app pages
-// Dashboard eliminado
 import ProjectsList from './pages/projects/ProjectsList';
 import ProjectForm from './pages/projects/ProjectForm';
 import RequestDetailPage from './pages/requests/RequestDetailPage';
@@ -29,7 +29,7 @@ import MeetingsScheduler from './pages/meetings/MeetingsScheduler';
 import ProjectRequestsAdmin from './pages/projects/ProjectRequestsAdmin';
 import NewProjectRequest from './pages/projects/NewProjectRequest';
 import RequestsList from './pages/requests/RequestsList';
-// Statistics eliminado
+import NotificationsPage from './components/notifications/NotificationsPage';
 import Profile from './pages/profile/Profile';
 import NotFound from './pages/NotFound';
 
@@ -107,24 +107,31 @@ const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
+// Componente wrapper para las rutas protegidas que necesitan notificaciones
+const ProtectedLayoutWithNotifications: React.FC = () => {
+  return (
+    <NotificationProvider>
+      <Layout />
+    </NotificationProvider>
+  );
+};
+
 function App() {
   return (
     <>
       <Toaster position="top-right" />
       <AppInitializer>
         <Routes>
-          {/* Public landing page as the main route */}
+          {/* Rutas públicas SIN NotificationProvider */}
           <Route path="/" element={<LandingPage />} />
-          
-          {/* Auth routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/verify-email/:token" element={<VerifyEmail />} />
 
-          {/* Protected routes - all under /app prefix */}
-          <Route path="/app" element={<PrivateRoute element={<Layout />} />}>
+          {/* Rutas protegidas CON NotificationProvider */}
+          <Route path="/app" element={<PrivateRoute element={<ProtectedLayoutWithNotifications />} />}>
             <Route index element={<ProjectsList />} />
             <Route path="projects" element={<ProjectsList />} />
             <Route path="projects/new" element={<ProjectForm />} />
@@ -135,6 +142,7 @@ function App() {
             <Route path="requests/:id" element={<RequestDetailPage />} />
             <Route path="requests/:id/edit" element={<NewProjectRequest />} />
             <Route path="projects/request/new" element={<NewProjectRequest />} />
+            <Route path="notifications" element={<NotificationsPage />} />
             
             {/* Rutas protegidas para administradores */}
             <Route element={<AdminRoute />}>
@@ -145,7 +153,7 @@ function App() {
             <Route element={<ClientRoute />}>
               {/* No hay rutas específicas de cliente por el momento */}
             </Route>
-            {/* Ruta de Estadísticas eliminada */}
+            
             <Route path="profile" element={<Profile />} />
           </Route>
 

@@ -1,10 +1,10 @@
-# server/app/api/routes/requests.py
-
+from app.services.notification_service import NotificationService
+from app.models.notification import NotificationType
+from app.api.ws.notifications import manager
 from typing import Any, List, Optional, Dict, Set
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status, Body, Query, Path
 from bson import ObjectId
-
 from app.models.user import UserPublic, UserRole
 from app.models.request import (
     RequestCreate,
@@ -62,46 +62,133 @@ async def create_request(
     ),
     current_user: UserPublic = Depends(get_client_user),
 ) -> Any:
-    db = get_database()
+    """Crear una nueva solicitud de proyecto"""
+    
+    try:
+        print(f"Creando nueva solicitud para usuario: {current_user.email} (ID: {current_user.id})")
+        print(f"Datos de la solicitud: {request_in.model_dump()}")
+        
+        db = get_database()
 
-    # 1) Volcar el body a un diccionario
-    payload: Dict[str, Any] = request_in.model_dump()
+        # 1) Volcar el body a un diccionario
+        payload: Dict[str, Any] = request_in.model_dump()
+        print(f"Payload inicial: {payload}")
 
-    # 2) Insertar todos los metadatos que faltan
-    payload.update({
-        "clientId": ObjectId(current_user.id),
-        "status": RequestStatus.DRAFT,
-        "assignedTo": None,
-        "comments": [],
-        "files": [],
-        "statusHistory": [
-            {
-                "fromStatus": None,
-                "toStatus": RequestStatus.DRAFT,
-                "changedBy": ObjectId(current_user.id),
-                "changedAt": datetime.utcnow(),
-                "reason": "Creación de la solicitud"
-            }
-        ],
-        "createdAt": datetime.utcnow(),
-        "updatedAt": None
-    })
+        # 2) Insertar todos los metadatos que faltan
+        payload.update({
+            "clientId": ObjectId(current_user.id),
+            "status": RequestStatus.DRAFT,
+            "assignedTo": None,
+            "comments": [],
+            "files": [],
+            "statusHistory": [
+                {
+                    "fromStatus": None,
+                    "toStatus": RequestStatus.DRAFT,
+                    "changedBy": ObjectId(current_user.id),
+                    "changedAt": datetime.utcnow(),
+                    "reason": "Creación de la solicitud"
+                }
+            ],
+            "createdAt": datetime.utcnow(),
+            "updatedAt": None
+        })
+        
+        print(f"Payload completo para insertar: {payload}")
 
-    # 3) Insertar en Mongo
-    result = await db.requests.insert_one(payload)
-    created = await db.requests.find_one({"_id": result.inserted_id})
-    if not created:
+        # 3) Insertar en MongoDB
+        print("Insertando solicitud en MongoDB...")
+        result = await db.requests.insert_one(payload)
+        print(f"Solicitud insertada con ID: {result.inserted_id}")
+        
+        # Verificar que se insertó correctamente
+        created = await db.requests.find_one({"_id": result.inserted_id})
+        if not created:
+            print("ERROR: No se pudo recuperar la solicitud después de crearla")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Error al crear la solicitud - no se pudo verificar la creación"
+            )
+        
+        print(f"Solicitud creada exitosamente: {created['_id']}")
+
+        # 4) Enviar notificaciones a administradores
+        try:
+            print("Buscando administradores para notificar...")
+            admins = await db.users.find({"role": "admin"}).to_list(None)
+            print(f"Encontrados {len(admins)} administradores")
+            
+            for admin in admins:
+                admin_id = str(admin["_id"])
+                print(f"Enviando notificación a admin: {admin_id}")
+                
+                # Crear notificación en BD
+                notification_id = await NotificationService.create_notification(
+                    user_id=admin_id,
+                    type=NotificationType.REQUEST_CREATED,
+                    title="Nueva solicitud creada",
+                    message=f"El usuario {current_user.firstName} {current_user.lastName} ha creado una nueva solicitud: {request_in.title}",
+                    data={
+                        "request_id": str(result.inserted_id),
+                        "client_id": str(current_user.id),
+                        "client_name": f"{current_user.firstName} {current_user.lastName}",
+                        "title": request_in.title
+                    }
+                )
+                print(f"Notificación creada en BD: {notification_id}")
+                
+                # Enviar notificación WebSocket (no bloquear si falla)
+                try:
+                    websocket_success = await manager.send_personal_message({
+                        "type": "notification",
+                        "data": {
+                            "id": notification_id,
+                            "title": "Nueva solicitud creada",
+                            "message": f"Nueva solicitud: {request_in.title}",
+                            "request_id": str(result.inserted_id),
+                            "client_name": f"{current_user.firstName} {current_user.lastName}",
+                            "created_at": datetime.utcnow().isoformat()
+                        }
+                    }, admin_id)
+                    
+                    if websocket_success:
+                        print(f"Notificación WebSocket enviada a admin: {admin_id}")
+                    else:
+                        print(f"Admin {admin_id} no está conectado via WebSocket")
+                        
+                except Exception as ws_error:
+                    print(f"Error enviando WebSocket a admin {admin_id}: {ws_error}")
+                    # No fallar la operación por errores de WebSocket
+                
+        except Exception as notification_error:
+            # Log el error pero no fallar la creación de la solicitud
+            print(f"Error enviando notificaciones: {notification_error}")
+            # Las notificaciones son opcionales, la solicitud ya se creó exitosamente
+
+        # 5) Retornar respuesta exitosa
+        response = CreateRequestResponse(
+            success=True,
+            message="Solicitud creada correctamente",
+            requestId=str(created["_id"])
+        )
+        
+        print(f"Respuesta exitosa: {response}")
+        return response
+        
+    except HTTPException:
+        # Re-lanzar HTTPExceptions tal como están
+        raise
+        
+    except Exception as e:
+        # Capturar cualquier otro error inesperado
+        print(f"ERROR INESPERADO en create_request: {type(e).__name__}: {str(e)}")
+        import traceback
+        print(f"Traceback completo: {traceback.format_exc()}")
+        
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error al crear la solicitud"
+            detail=f"Error interno del servidor al crear la solicitud: {str(e)}"
         )
-
-    return CreateRequestResponse(
-        success=True,
-        message="Solicitud creada correctamente",
-        requestId=str(created["_id"])
-    )
-
 
 # ────────────────────────────────────────────────────────────────────────────────
 #  GET /api/requests/  → Listar solicitudes con paginación y filtros
@@ -685,6 +772,52 @@ async def change_request_status(
             }
         }
     )
+    
+    # Enviar notificación al cliente
+    await NotificationService.create_notification(
+        user_id=str(doc["clientId"]),  # Usar doc en lugar de request
+        type=NotificationType.STATUS_UPDATED,
+        title="Estado de solicitud actualizado",
+        message=f"El estado de tu solicitud '{doc['title']}' ha cambiado a: {status_change.toStatus}",
+        data={
+            "request_id": request_id,
+            "from_status": doc["status"],  # Usar el estado actual del documento
+            "to_status": status_change.toStatus,
+            "admin_id": str(current_user.id),
+            "admin_name": f"{current_user.firstName} {current_user.lastName}",
+            "title": doc["title"]  # Usar doc en lugar de request
+        }
+    )
+
+    # Notificar a todos los administradores
+    admins = await db.users.find({"role": "admin"}).to_list(None)
+    for admin in admins:
+        if str(admin["_id"]) != str(current_user.id):
+            await NotificationService.create_notification(
+                user_id=str(admin["_id"]),
+                type=NotificationType.STATUS_UPDATED,
+                title="Estado de solicitud actualizado",
+                message=f"El estado de la solicitud '{doc['title']}' ha sido cambiado a {status_change.toStatus} por {current_user.firstName} {current_user.lastName}",
+                data={
+                    "request_id": request_id,
+                    "from_status": doc["status"],
+                    "to_status": status_change.toStatus,
+                    "admin_id": str(current_user.id),
+                    "admin_name": f"{current_user.firstName} {current_user.lastName}",
+                    "client_id": str(doc["clientId"]),
+                    "title": doc["title"]
+                }
+            )
+
+    # Notificación WebSocket
+    await manager.send_personal_message({
+        "type": "notification",
+        "data": {
+            "title": "Estado actualizado",
+            "message": f"El estado de la solicitud ha sido actualizado a {status_change.toStatus}",
+            "request_id": request_id
+        }
+    }, str(doc["clientId"]))
 
     return UpdateRequestResponse(
         success=True,

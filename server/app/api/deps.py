@@ -61,6 +61,72 @@ def check_roles(allowed_roles: List[str]):
         return current_user
     return _check_roles
 
+async def get_current_user_ws(token: str) -> UserPublic:
+    """
+    Validar JWT token para conexiones WebSocket.
+    Esta función es específica para WebSockets ya que no pueden usar headers de Authorization estándar.
+    """
+    print(f"🔍 get_current_user_ws llamada con token: {token[:20]}...")
+    
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    
+    try:
+        # Importar settings aquí para evitar problemas de importación circular
+        from app.core.config import settings
+        
+        # Decodificar el token JWT
+        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            print(f"❌ Token inválido: no se encontró 'sub' en el payload")
+            raise credentials_exception
+        
+        print(f"✅ Token válido para usuario: {user_id}")
+        
+    except JWTError as e:
+        print(f"❌ Error de JWT: {e}")
+        raise credentials_exception
+    except Exception as e:
+        print(f"❌ Error inesperado al decodificar token: {e}")
+        raise credentials_exception
+    
+    # Buscar el usuario en la base de datos
+    db = get_database()
+    try:
+        user_doc = await db.users.find_one({"_id": ObjectId(user_id)})
+        if user_doc is None:
+            print(f"❌ Usuario no encontrado en BD: {user_id}")
+            raise credentials_exception
+        
+        # Verificar que el usuario esté verificado
+        if not user_doc.get("emailVerified", False):
+            print(f"❌ Usuario no verificado: {user_id}")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Email not verified"
+            )
+        
+        # Convertir a UserPublic
+        user = UserPublic(
+            id=str(user_doc["_id"]),
+            firstName=user_doc.get("firstName", ""),
+            lastName=user_doc.get("lastName", ""),
+            email=user_doc["email"],
+            role=user_doc.get("role", "client"),
+            createdAt=user_doc.get("createdAt"),
+            emailVerified=user_doc.get("emailVerified", False)
+        )
+        
+        print(f"✅ Usuario WebSocket autenticado: {user.email} ({user.role})")
+        return user
+        
+    except Exception as e:
+        print(f"❌ Error al buscar usuario en BD: {e}")
+        raise credentials_exception
 # Common role-based dependencies
 get_admin_user = check_roles([UserRole.ADMIN])
 get_client_user = check_roles([UserRole.CLIENT])

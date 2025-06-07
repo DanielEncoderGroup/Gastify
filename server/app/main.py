@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 import os
-from app.api.routes import auth, receipts, requests
+from app.api.routes import auth, receipts, requests, notifications
 from app.core.config import settings
 from app.core.database import connect_to_mongo, close_mongo_connection
 
@@ -26,6 +26,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(receipts.router, prefix="/api/receipts", tags=["Receipts"])
 app.include_router(requests.router, prefix="/api/requests", tags=["Requests"])
+app.include_router(notifications.router, prefix="/api/notifications", tags=["Notifications"])
 
 # Mount static files for uploads
 os.makedirs("uploads", exist_ok=True)
