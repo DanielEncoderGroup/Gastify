@@ -175,12 +175,12 @@ const Profile: React.FC = () => {
   // Si estamos cargando, mostrar spinner
   if (loading || (!userData && isAuthenticated)) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-blue-100 flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl mb-6 shadow-lg animate-pulse">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-700 rounded-2xl mb-6 shadow-lg animate-pulse" style={{backgroundColor: '#004b87'}}>
             <SparklesIcon className="w-8 h-8 text-white" />
           </div>
-          <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto"></div>
+          <div className="border-4 border-blue-200 border-t-blue-700 rounded-full animate-spin mx-auto" style={{borderTopColor: '#004b87'}}></div>
           <p className="mt-4 text-gray-600">Cargando perfil...</p>
         </div>
       </div>
@@ -193,18 +193,18 @@ const Profile: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-blue-100">
       {/* Header Superior */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-white/20 shadow-sm sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             {/* Left side - Title and icon */}
             <div className="flex items-center space-x-4">
-              <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg">
+              <div className="flex items-center justify-center w-12 h-12 bg-blue-700 rounded-xl shadow-lg" style={{backgroundColor: '#004b87'}}>
                 <UserCircleIcon className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-700">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
                   Perfil de Usuario
                 </h1>
                 <p className="text-gray-600 mt-1">
@@ -223,12 +223,12 @@ const Profile: React.FC = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-4">
         {/* Tarjeta de información de perfil */}
         <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-md border border-white/20 overflow-hidden">
-          <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white">
+          <div className="bg-blue-700 p-6 text-white" style={{backgroundColor: '#004b87'}}>
             <div className="flex items-center space-x-3">
               <UserIcon className="w-8 h-8" />
               <div>
                 <h2 className="text-2xl font-bold">Información Personal</h2>
-                <p className="text-indigo-100">Detalles de tu cuenta y perfil</p>
+                <p className="text-blue-100">Detalles de tu cuenta y perfil</p>
               </div>
             </div>
           </div>
@@ -253,7 +253,7 @@ const Profile: React.FC = () => {
                 <button 
                   onClick={refreshUserData} 
                   disabled={isRefreshing} 
-                  className="mt-6 flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
+                  className="mt-6 flex items-center space-x-2 px-6 py-3 bg-blue-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100" style={{backgroundColor: '#004b87'}}
                 >
                   <ArrowPathIcon className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
                   <span>{isRefreshing ? 'Actualizando...' : 'Actualizar datos'}</span>
@@ -276,8 +276,8 @@ const Profile: React.FC = () => {
               {/* Columna derecha: información personal */}
               <div className="flex-1">
                 <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 shadow-md border border-white/20 h-full">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-6 flex items-center space-x-2">
-                    <UserIcon className="w-5 h-5 text-indigo-600" />
+                  <h3 className="text-xl font-semibold text-gray-800 mb-10 flex items-center space-x-2">
+                    <UserIcon className="w-5 h-5 text-blue-700" style={{color: '#004b87'}} />
                     <span>Datos Personales</span>
                   </h3>
                   
@@ -319,7 +319,7 @@ const Profile: React.FC = () => {
                         <ShieldCheckIcon className="w-4 h-4" />
                         <span>Rol</span>
                       </div>
-                      <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800 rounded-xl font-semibold border border-indigo-200">
+                      <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-800 rounded-xl font-semibold border border-blue-200">
                         <ShieldCheckIcon className="w-4 h-4 mr-2" />
                         {getRoleDisplay(userData.role)}
                       </div>
@@ -333,12 +333,12 @@ const Profile: React.FC = () => {
         
         {/* Tarjeta separada para cambio de contraseña */}
         <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-md border border-white/20 overflow-hidden">
-          <div className="bg-gradient-to-r from-purple-500 to-pink-600 p-6 text-white">
+          <div className="bg-blue-700 p-6 text-white" style={{backgroundColor: '#004b87'}}>
             <div className="flex items-center space-x-3">
               <KeyIcon className="w-8 h-8" />
               <div>
                 <h2 className="text-2xl font-bold">Cambio de Contraseña</h2>
-                <p className="text-purple-100">Actualiza tu contraseña de acceso</p>
+                <p className="text-blue-100">Actualiza tu contraseña de acceso</p>
               </div>
             </div>
           </div>
@@ -369,7 +369,7 @@ const Profile: React.FC = () => {
                     type="password"
                     value={currentPassword}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCurrentPassword(e.target.value)}
-                    className="w-full border-2 border-gray-200 rounded-xl shadow-sm px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                    className="w-full border-2 border-gray-200 rounded-xl shadow-sm px-4 py-3 focus:ring-2 focus:ring-blue-700 focus:border-blue-700 transition-all duration-200 bg-white/80 backdrop-blur-sm"
                     required
                   />
                 </div>
@@ -383,7 +383,7 @@ const Profile: React.FC = () => {
                     type="password"
                     value={newPassword}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPassword(e.target.value)}
-                    className="w-full border-2 border-gray-200 rounded-xl shadow-sm px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                    className="w-full border-2 border-gray-200 rounded-xl shadow-sm px-4 py-3 focus:ring-2 focus:ring-blue-700 focus:border-blue-700 transition-all duration-200 bg-white/80 backdrop-blur-sm"
                     required
                   />
                 </div>
@@ -397,7 +397,7 @@ const Profile: React.FC = () => {
                     type="password"
                     value={confirmPassword}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
-                    className="w-full border-2 border-gray-200 rounded-xl shadow-sm px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                    className="w-full border-2 border-gray-200 rounded-xl shadow-sm px-4 py-3 focus:ring-2 focus:ring-blue-700 focus:border-blue-700 transition-all duration-200 bg-white/80 backdrop-blur-sm"
                     required
                   />
                 </div>
@@ -420,7 +420,7 @@ const Profile: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isChangingPassword}
-                  className="flex items-center space-x-2 px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="flex items-center space-x-2 px-8 py-3 bg-blue-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 focus:outline-none focus:ring-2 focus:ring-blue-500" style={{backgroundColor: '#004b87'}}
                 >
                   {isChangingPassword ? (
                     <ArrowPathIcon className="w-5 h-5 animate-spin" />
@@ -440,7 +440,7 @@ const Profile: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="flex items-center justify-center space-x-2 mb-4">
-              <SparklesIcon className="w-5 h-5 text-indigo-600" />
+              <SparklesIcon className="w-5 h-5 text-blue-700" style={{color: '#004b87'}} />
               <span className="text-lg font-semibold text-gray-800">¿Necesitas ayuda con tu perfil?</span>
             </div>
             <p className="text-gray-600 max-w-2xl mx-auto mb-4">
@@ -449,7 +449,12 @@ const Profile: React.FC = () => {
             <div className="mt-4 flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-6 text-sm text-gray-500">
               <div>📧 Soporte: profile@encodergroup.cl</div>
               <div className="hidden sm:block">|</div>
-              <div>📞 Teléfono: +1 (555) 123-4567</div>
+              <div>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" className="h-4 w-4 fill-current inline-block mr-1" style={{color: '#004b87'}}>
+                  <path d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z"/>
+                </svg>
+                Instagram: @encodergroup.cl
+              </div>
             </div>
           </div>
         </div>
