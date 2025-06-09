@@ -146,7 +146,7 @@ const ProjectRequestsAdmin: React.FC = () => {
       </header>
 
       {/* Contenido Principal */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         {/* Banner informativo para administradores */}
         <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 shadow-md mb-8 border border-white/20">
           <div className="flex items-start space-x-4">
@@ -242,7 +242,7 @@ const ProjectRequestsAdmin: React.FC = () => {
       </main>
 
       {/* Footer Informativo */}
-      <footer className="bg-white/80 backdrop-blur-sm border-t border-white/20 mt-16 py-8">
+      <footer className="bg-white/80 backdrop-blur-sm border-t border-white/20 mt-8 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="flex items-center justify-center space-x-2 mb-4">

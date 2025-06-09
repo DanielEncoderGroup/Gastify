@@ -179,7 +179,7 @@ const NewProjectRequest: React.FC = () => {
       </main>
 
       {/* Footer Informativo */}
-      <footer className="bg-white/80 backdrop-blur-sm border-t border-white/20 mt-16 py-8">
+      <footer className="bg-white/80 backdrop-blur-sm border-t border-white/20 mt-8 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="flex items-center justify-center space-x-2 mb-4">

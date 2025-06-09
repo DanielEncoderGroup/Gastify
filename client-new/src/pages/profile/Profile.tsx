@@ -220,7 +220,7 @@ const Profile: React.FC = () => {
       </header>
 
       {/* Contenido Principal */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-4">
         {/* Tarjeta de información de perfil */}
         <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-md border border-white/20 overflow-hidden">
           <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white">
@@ -436,7 +436,7 @@ const Profile: React.FC = () => {
       </main>
 
       {/* Footer Informativo */}
-      <footer className="bg-white/80 backdrop-blur-sm border-t border-white/20 mt-16 py-8">
+      <footer className="bg-white/80 backdrop-blur-sm border-t border-white/20 mt-8 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="flex items-center justify-center space-x-2 mb-4">
