@@ -9,7 +9,8 @@ import {
   ProjectTypeLabels,
   ProjectPriority,
   PriorityLabels,
-  CommentCreate
+  CommentCreate,
+  RequestStatusLabels  // ← Asegúrate de importar esto
 } from '../../types/request';
 import { useAuth } from '../../contexts/AuthContext';
 import { requestService } from '../../services/requestService';
@@ -75,7 +76,7 @@ const ProjectRequestDetail: React.FC<ProjectRequestDetailProps> = ({
   // Verificar si la solicitud puede ser editada
   const canEdit = isOwner && isDraft;
 
-  // Iconos para cada estado
+  // Iconos para cada estado - CORREGIDO: usar el enum RequestStatus directamente
   const getStatusIcon = (status: RequestStatus) => {
     switch (status) {
       case RequestStatus.DRAFT:
@@ -100,6 +101,10 @@ const ProjectRequestDetail: React.FC<ProjectRequestDetailProps> = ({
         return <FlagIcon className="w-5 h-5" />;
       case RequestStatus.CANCELED:
         return <MinusCircleIcon className="w-5 h-5" />;
+      case RequestStatus.IN_PROCESS:
+        return <ArrowPathIcon className="w-5 h-5" />;
+      case RequestStatus.IN_REVIEW:
+        return <DocumentMagnifyingGlassIcon className="w-5 h-5" />;
       default:
         return <ClockIcon className="w-5 h-5" />;
     }
@@ -184,7 +189,7 @@ const ProjectRequestDetail: React.FC<ProjectRequestDetailProps> = ({
     }
   };
 
-  // Renderizar el estado con el color correspondiente
+  // Renderizar el estado con el color correspondiente - CORREGIDO
   const renderStatus = (status: RequestStatus, label: string) => {
     const colors = {
       [RequestStatus.DRAFT]: 'bg-gray-100 text-gray-800 border-gray-200',
@@ -461,9 +466,10 @@ const ProjectRequestDetail: React.FC<ProjectRequestDetailProps> = ({
                           disabled={changing}
                         >
                           <option value="">Seleccionar estado...</option>
+                          {/* CORREGIDO: Usar RequestStatusLabels para mostrar etiquetas en español */}
                           {Object.entries(RequestStatus).map(([key, value]) => (
                             <option key={key} value={value} disabled={value === request.status}>
-                              {RequestStatus[key as keyof typeof RequestStatus]}
+                              {RequestStatusLabels[value as RequestStatus]}
                             </option>
                           ))}
                         </select>
