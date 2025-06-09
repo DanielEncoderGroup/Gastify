@@ -105,7 +105,12 @@ const LandingPage: React.FC = () => {
       console.error('Error durante el login:', error);
       
       // Manejar el error de autenticación
-      const errorMessage = error.response?.data?.detail || error.response?.data?.message || error.message || 'Correo electrónico o contraseña incorrecta';
+      let errorMessage = error.response?.data?.detail || error.response?.data?.message || error.message || 'Correo electrónico o contraseña incorrecta';
+      
+      // Traducir mensaje de error al español si está en inglés
+      if (errorMessage === 'Incorrect email or password') {
+        errorMessage = 'Correo o contraseña incorrectos';
+      }
       
       // Detectar si es un error de verificación de correo
       if (errorMessage.toLowerCase().includes('verifica') || 
@@ -1107,30 +1112,54 @@ const LandingPage: React.FC = () => {
               </div>
               
               {loginError && (
-                <div className={`mb-6 rounded-md shadow-sm overflow-hidden ${
-                  isVerificationError 
-                    ? 'bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200' 
-                    : 'bg-gradient-to-r from-red-50 to-red-100 border border-red-200'
-                }`}>
-                  <div className={`px-4 py-2 ${
-                    isVerificationError ? 'bg-yellow-500' : 'bg-red-500'
+                <div 
+                  className={`mb-6 rounded-xl shadow-lg transform transition-all duration-300 animate-fadeIn ${
+                    isVerificationError 
+                      ? 'bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200' 
+                      : 'bg-gradient-to-br from-red-50 via-red-100 to-white border-2 border-red-300'
+                  }`}
+                  style={{
+                    animation: 'shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both',
+                  }}
+                >
+                  <div className={`px-5 py-3 flex items-center justify-between ${
+                    isVerificationError ? 'bg-amber-500' : 'bg-gradient-to-r from-red-600 to-red-500'
                   }`}>
-                    <h3 className="text-sm font-medium text-white">
-                      {isVerificationError ? 'Verificación pendiente' : 'Error de acceso'}
+                    <h3 className="text-base font-medium text-white flex items-center">
+                      {isVerificationError 
+                        ? <>
+                            <Icon name="ExclamationTriangleIcon" className="h-5 w-5 mr-2" />
+                            Verificación pendiente
+                          </>
+                        : <>
+                            <Icon name="ShieldExclamationIcon" className="h-5 w-5 mr-2" />
+                            Error de acceso
+                          </>
+                      }
                     </h3>
+                    <button 
+                      onClick={() => setLoginError('')} 
+                      className="text-white hover:text-gray-200 transition-colors"
+                      aria-label="Cerrar notificación"
+                    >
+                      <Icon name="XMarkIcon" className="h-4 w-4" />
+                    </button>
                   </div>
-                  <div className="px-4 py-3">
-                    <div className="flex">
-                      <div className="flex-shrink-0">
+                  
+                  <div className="p-5">
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0 p-1 bg-white rounded-full shadow-sm">
                         {isVerificationError ? (
-                          <Icon name="ExclamationTriangleIcon" className="h-5 w-5 text-yellow-400" />
+                          <Icon name="ExclamationTriangleIcon" className="h-6 w-6 text-amber-500" />
                         ) : (
-                          <Icon name="ExclamationCircleIcon" className="h-5 w-5 text-red-400" />
+                          <Icon name="ExclamationCircleIcon" className="h-6 w-6 text-red-500" />
                         )}
                       </div>
-                      <div className="ml-3 flex-1">
-                        <div className={`text-sm ${isVerificationError ? 'text-yellow-700' : 'text-red-700'}`}>
-                          <p>{loginError}</p>
+                      <div className="ml-4 flex-1">
+                        <div className={`text-sm font-medium ${
+                          isVerificationError ? 'text-amber-800' : 'text-red-800'
+                        }`}>
+                          <p className="leading-relaxed">{loginError}</p>
                         </div>
                         
                         {isVerificationError && (
