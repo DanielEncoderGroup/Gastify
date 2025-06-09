@@ -15,7 +15,33 @@ import { useAuth } from '../../contexts/AuthContext';
 import { requestService } from '../../services/requestService';
 import { toast } from 'react-hot-toast';
 import { Icon } from '../ui';
-import { Link, useNavigate } from 'react-router-dom'; // <-- Importamos Link y useNavigate
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  ComputerDesktopIcon,
+  UserIcon,
+  CalendarIcon,
+  CurrencyDollarIcon,
+  ClockIcon,
+  TagIcon,
+  DocumentTextIcon,
+  ChatBubbleLeftRightIcon,
+  PencilIcon,
+  PaperAirplaneIcon,
+  ArrowPathIcon,
+  SparklesIcon,
+  ArrowLeftIcon,
+  InboxArrowDownIcon,
+  DocumentMagnifyingGlassIcon,
+  CalendarDaysIcon,
+  CalculatorIcon,
+  PresentationChartBarIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  FlagIcon,
+  MinusCircleIcon,
+  RocketLaunchIcon
+} from '@heroicons/react/24/outline';
+import HeaderActions from '../../components/layout/HeaderActions';
 
 interface ProjectRequestDetailProps {
   request: RequestDetail;
@@ -33,7 +59,7 @@ const ProjectRequestDetail: React.FC<ProjectRequestDetailProps> = ({
   isAdmin
 }) => {
   const { user } = useAuth();
-  const navigate = useNavigate(); // <-- Para volver a lista si se desea
+  const navigate = useNavigate();
   const [newComment, setNewComment] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
   const [changing, setChanging] = useState(false);
@@ -48,6 +74,36 @@ const ProjectRequestDetail: React.FC<ProjectRequestDetailProps> = ({
   const canSubmit = isOwner && isDraft;
   // Verificar si la solicitud puede ser editada
   const canEdit = isOwner && isDraft;
+
+  // Iconos para cada estado
+  const getStatusIcon = (status: RequestStatus) => {
+    switch (status) {
+      case RequestStatus.DRAFT:
+        return <ClockIcon className="w-5 h-5" />;
+      case RequestStatus.SUBMITTED:
+        return <InboxArrowDownIcon className="w-5 h-5" />;
+      case RequestStatus.REQUIREMENTS_ANALYSIS:
+        return <DocumentMagnifyingGlassIcon className="w-5 h-5" />;
+      case RequestStatus.PLANNING:
+        return <CalendarDaysIcon className="w-5 h-5" />;
+      case RequestStatus.ESTIMATION:
+        return <CalculatorIcon className="w-5 h-5" />;
+      case RequestStatus.PROPOSAL_READY:
+        return <PresentationChartBarIcon className="w-5 h-5" />;
+      case RequestStatus.APPROVED:
+        return <CheckCircleIcon className="w-5 h-5" />;
+      case RequestStatus.REJECTED:
+        return <XCircleIcon className="w-5 h-5" />;
+      case RequestStatus.IN_DEVELOPMENT:
+        return <ComputerDesktopIcon className="w-5 h-5" />;
+      case RequestStatus.COMPLETED:
+        return <FlagIcon className="w-5 h-5" />;
+      case RequestStatus.CANCELED:
+        return <MinusCircleIcon className="w-5 h-5" />;
+      default:
+        return <ClockIcon className="w-5 h-5" />;
+    }
+  };
 
   // Enviar un comentario
   const handleSubmitComment = async (e: React.FormEvent) => {
@@ -131,30 +187,26 @@ const ProjectRequestDetail: React.FC<ProjectRequestDetailProps> = ({
   // Renderizar el estado con el color correspondiente
   const renderStatus = (status: RequestStatus, label: string) => {
     const colors = {
-      [RequestStatus.DRAFT]: 'gray',
-      [RequestStatus.SUBMITTED]: 'yellow',
-      [RequestStatus.REQUIREMENTS_ANALYSIS]: 'blue',
-      [RequestStatus.PLANNING]: 'indigo',
-      [RequestStatus.ESTIMATION]: 'orange',
-      [RequestStatus.PROPOSAL_READY]: 'cyan',
-      [RequestStatus.APPROVED]: 'emerald',
-      [RequestStatus.IN_DEVELOPMENT]: 'teal',
-      [RequestStatus.IN_PROCESS]: 'purple',
-      [RequestStatus.IN_REVIEW]: 'pink',
-      [RequestStatus.COMPLETED]: 'green',
-      [RequestStatus.REJECTED]: 'red',
-      [RequestStatus.CANCELED]: 'gray'
+      [RequestStatus.DRAFT]: 'bg-gray-100 text-gray-800 border-gray-200',
+      [RequestStatus.SUBMITTED]: 'bg-blue-100 text-blue-800 border-blue-200',
+      [RequestStatus.REQUIREMENTS_ANALYSIS]: 'bg-purple-100 text-purple-800 border-purple-200',
+      [RequestStatus.PLANNING]: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+      [RequestStatus.ESTIMATION]: 'bg-orange-100 text-orange-800 border-orange-200',
+      [RequestStatus.PROPOSAL_READY]: 'bg-cyan-100 text-cyan-800 border-cyan-200',
+      [RequestStatus.APPROVED]: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+      [RequestStatus.IN_DEVELOPMENT]: 'bg-teal-100 text-teal-800 border-teal-200',
+      [RequestStatus.IN_PROCESS]: 'bg-purple-100 text-purple-800 border-purple-200',
+      [RequestStatus.IN_REVIEW]: 'bg-pink-100 text-pink-800 border-pink-200',
+      [RequestStatus.COMPLETED]: 'bg-green-100 text-green-800 border-green-200',
+      [RequestStatus.REJECTED]: 'bg-red-100 text-red-800 border-red-200',
+      [RequestStatus.CANCELED]: 'bg-gray-100 text-gray-800 border-gray-200'
     };
 
-    const color = (colors as any)[status] || 'gray';
+    const colorClass = colors[status] || 'bg-gray-100 text-gray-800 border-gray-200';
 
     return (
-      <span
-        className={`
-          inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-          bg-${color}-100 text-${color}-800
-        `}
-      >
+      <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium border ${colorClass} shadow-sm`}>
+        <span className="mr-2">{getStatusIcon(status)}</span>
         {label}
       </span>
     );
@@ -162,13 +214,13 @@ const ProjectRequestDetail: React.FC<ProjectRequestDetailProps> = ({
 
   // Renderizar el tipo de proyecto
   const renderProjectType = (type: ProjectType) => {
-    // Verificar de manera segura si el tipo existe en ProjectTypeLabels
     const label = Object.prototype.hasOwnProperty.call(ProjectTypeLabels, type)
       ? (ProjectTypeLabels as any)[type]
       : type;
 
     return (
-      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+      <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200 shadow-sm">
+        <ComputerDesktopIcon className="w-4 h-4 mr-2" />
         {label}
       </span>
     );
@@ -179,22 +231,18 @@ const ProjectRequestDetail: React.FC<ProjectRequestDetailProps> = ({
     if (!priority) return null;
 
     const colors: Record<ProjectPriority, string> = {
-      [ProjectPriority.LOW]: 'green',
-      [ProjectPriority.MEDIUM]: 'yellow',
-      [ProjectPriority.HIGH]: 'orange',
-      [ProjectPriority.URGENT]: 'red'
+      [ProjectPriority.LOW]: 'bg-green-100 text-green-800 border-green-200',
+      [ProjectPriority.MEDIUM]: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      [ProjectPriority.HIGH]: 'bg-orange-100 text-orange-800 border-orange-200',
+      [ProjectPriority.URGENT]: 'bg-red-100 text-red-800 border-red-200'
     };
 
-    const color = colors[priority] || 'gray';
+    const colorClass = colors[priority] || 'bg-gray-100 text-gray-800 border-gray-200';
     const label = (PriorityLabels as any)[priority] || priority;
 
     return (
-      <span
-        className={`
-          inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-          bg-${color}-100 text-${color}-800
-        `}
-      >
+      <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium border ${colorClass} shadow-sm`}>
+        <FlagIcon className="w-4 h-4 mr-2" />
         {label}
       </span>
     );
@@ -203,15 +251,16 @@ const ProjectRequestDetail: React.FC<ProjectRequestDetailProps> = ({
   // Renderizar las etiquetas
   const renderTags = (tags: string[]) => {
     if (!tags || tags.length === 0)
-      return <span className="text-gray-500">Sin etiquetas</span>;
+      return <span className="text-gray-500 italic">Sin etiquetas</span>;
 
     return (
-      <div className="flex flex-wrap gap-1">
+      <div className="flex flex-wrap gap-2">
         {tags.map((tag, index) => (
           <span
             key={index}
-            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
+            className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200 shadow-sm"
           >
+            <TagIcon className="w-3 h-3 mr-1" />
             {tag}
           </span>
         ))}
@@ -220,423 +269,421 @@ const ProjectRequestDetail: React.FC<ProjectRequestDetailProps> = ({
   };
 
   return (
-    <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-      {/* Encabezado */}
-      <div className="px-4 py-5 sm:px-6 bg-gray-50">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
-              {request.title}
-            </h3>
-            <p className="mt-1 max-w-2xl text-sm text-gray-500">
-              Solicitud #{request.id} - Creada el {formatDate(request.createdAt)}
-            </p>
-          </div>
-          <div className="flex items-center space-x-2">
-            {renderStatus(request.status, request.statusLabel || '')}
-            {request.priority && renderPriority(request.priority)}
-          </div>
-        </div>
-      </div>
-
-      {/* Información principal */}
-      <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
-        <dl className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
-          {/* Tipo de proyecto */}
-          <div className="sm:col-span-1">
-            <dt className="text-sm font-medium text-gray-500">Tipo de proyecto</dt>
-            <dd className="mt-1 text-sm text-gray-900">
-              {renderProjectType(request.projectType)}
-            </dd>
-          </div>
-
-          {/* Cliente */}
-          <div className="sm:col-span-1">
-            <dt className="text-sm font-medium text-gray-500">Cliente</dt>
-            <dd className="mt-1 text-sm text-gray-900">
-              {request.client?.name} ({request.client?.email})
-            </dd>
-          </div>
-
-          {/* Descripción */}
-          <div className="sm:col-span-2">
-            <dt className="text-sm font-medium text-gray-500">Descripción</dt>
-            <dd className="mt-1 text-sm text-gray-900 whitespace-pre-line">
-              {request.description}
-            </dd>
-          </div>
-
-          {/* Requisitos técnicos */}
-          {request.technicalRequirements && (
-            <div className="sm:col-span-2">
-              <dt className="text-sm font-medium text-gray-500">
-                Requisitos técnicos
-              </dt>
-              <dd className="mt-1 text-sm text-gray-900 whitespace-pre-line">
-                {request.technicalRequirements}
-              </dd>
-            </div>
-          )}
-
-          {/* Objetivos de negocio */}
-          {request.businessGoals && (
-            <div className="sm:col-span-2">
-              <dt className="text-sm font-medium text-gray-500">
-                Objetivos de negocio
-              </dt>
-              <dd className="mt-1 text-sm text-gray-900 whitespace-pre-line">
-                {request.businessGoals}
-              </dd>
-            </div>
-          )}
-
-          {/* Integraciones necesarias */}
-          {request.integrationsNeeded && (
-            <div className="sm:col-span-2">
-              <dt className="text-sm font-medium text-gray-500">
-                Integraciones necesarias
-              </dt>
-              <dd className="mt-1 text-sm text-gray-900 whitespace-pre-line">
-                {request.integrationsNeeded}
-              </dd>
-            </div>
-          )}
-
-          {/* Público objetivo */}
-          {request.targetAudience && (
-            <div className="sm:col-span-2">
-              <dt className="text-sm font-medium text-gray-500">
-                Público objetivo
-              </dt>
-              <dd className="mt-1 text-sm text-gray-900 whitespace-pre-line">
-                {request.targetAudience}
-              </dd>
-            </div>
-          )}
-
-          {/* Información adicional */}
-          {request.additionalInfo && (
-            <div className="sm:col-span-2">
-              <dt className="text-sm font-medium text-gray-500">
-                Información adicional
-              </dt>
-              <dd className="mt-1 text-sm text-gray-900 whitespace-pre-line">
-                {request.additionalInfo}
-              </dd>
-            </div>
-          )}
-
-          {/* Presupuesto */}
-          {request.budget !== undefined && (
-            <div className="sm:col-span-1">
-              <dt className="text-sm font-medium text-gray-500">
-                Presupuesto estimado
-              </dt>
-              <dd className="mt-1 text-sm text-gray-900">
-                {typeof request.budget === 'number'
-                  ? request.budget.toLocaleString('es-ES', {
-                      style: 'currency',
-                      currency: 'EUR'
-                    })
-                  : request.budget}
-              </dd>
-            </div>
-          )}
-
-          {/* Plazo */}
-          {request.timeframe && (
-            <div className="sm:col-span-1">
-              <dt className="text-sm font-medium text-gray-500">Plazo estimado</dt>
-              <dd className="mt-1 text-sm text-gray-900">{request.timeframe}</dd>
-            </div>
-          )}
-
-          {/* Etiquetas */}
-          <div className="sm:col-span-2">
-            <dt className="text-sm font-medium text-gray-500">Etiquetas</dt>
-            <dd className="mt-1 text-sm text-gray-900">
-              {renderTags(request.tags || [])}
-            </dd>
-          </div>
-        </dl>
-      </div>
-
-      {/* Acciones */}
-      {(canSubmit || canEdit || isAdmin) && (
-        <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
-          <div className="flex flex-wrap justify-end space-x-3">
-            {canEdit && (
-              <Link
-                to={`/app/requests/${request.id}/edit`}
-                className="
-                  inline-flex items-center px-4 py-2 border border-gray-300 rounded-md
-                  shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50
-                  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
-                "
-              >
-                <Icon name="PencilIcon" className="mr-2 h-4 w-4" />
-                Editar
-              </Link>
-            )}
-
-            {canSubmit && (
-              <button
-                onClick={handleSubmitRequest}
-                disabled={changing}
-                className="
-                  inline-flex items-center px-4 py-2 border border-transparent rounded-md
-                  shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700
-                  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
-                  disabled:opacity-50
-                "
-              >
-                {changing ? (
-                  <div className="inline-flex items-center">
-                    <div className="mr-2 h-4 w-4 border-t-2 border-b-2 border-white rounded-full animate-spin" />
-                    Enviando...
-                  </div>
-                ) : (
-                  <>
-                    <Icon name="PaperAirplaneIcon" className="mr-2 h-4 w-4" />
-                    Enviar para revisión
-                  </>
-                )}
-              </button>
-            )}
-
-            {isAdmin && (
-              <div className="flex items-center space-x-2 mt-3 sm:mt-0 w-full sm:w-auto">
-                <select
-                  value={newStatus || ''}
-                  onChange={(e) => setNewStatus(e.target.value as RequestStatus)}
-                  className="
-                    mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300
-                    focus:outline-none focus:ring-blue-500 focus:border-blue-500
-                    sm:text-sm rounded-md
-                  "
-                  disabled={changing}
-                >
-                  <option value="">Seleccionar estado...</option>
-                  {Object.entries(RequestStatus).map(([key, value]) => (
-                    <option key={key} value={value} disabled={value === request.status}>
-                      {RequestStatus[key as keyof typeof RequestStatus]}
-                    </option>
-                  ))}
-                </select>
-
-                <input
-                  type="text"
-                  value={statusReason}
-                  onChange={(e) => setStatusReason(e.target.value)}
-                  placeholder="Razón del cambio..."
-                  className="
-                    mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300
-                    focus:outline-none focus:ring-blue-500 focus:border-blue-500
-                    sm:text-sm rounded-md
-                  "
-                  disabled={changing}
-                />
-
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      {/* Header Superior */}
+      <header className="bg-white/80 backdrop-blur-sm border-b border-white/20 shadow-sm sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+            {/* Título y Navegación */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start space-x-4">
                 <button
-                  onClick={handleChangeStatus}
-                  disabled={changing || !newStatus || !statusReason.trim()}
-                  className="
-                    inline-flex items-center px-4 py-2 border border-transparent rounded-md
-                    shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700
-                    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
-                    disabled:opacity-50
-                  "
+                  onClick={() => navigate('/app/requests')}
+                  className="flex-shrink-0 flex items-center justify-center w-12 h-12 bg-gradient-to-r from-gray-600 to-gray-700 rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
                 >
-                  {changing ? (
-                    <div className="inline-flex items-center">
-                      <div className="mr-2 h-4 w-4 border-t-2 border-b-2 border-white rounded-full animate-spin" />
-                      Actualizando...
-                    </div>
-                  ) : (
-                    <>
-                      <Icon name="ArrowPathIcon" className="mr-2 h-4 w-4" />
-                      Actualizar estado
-                    </>
-                  )}
+                  <ArrowLeftIcon className="w-6 h-6 text-white" />
                 </button>
+                <div className="min-w-0">
+                  <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-900 bg-clip-text text-transparent break-words">
+                    {request.title}
+                  </h1>
+                  <p className="text-gray-600 mt-1 break-words">
+                    Solicitud #{request.id} • Creada el {formatDate(request.createdAt)}
+                  </p>
+                </div>
               </div>
-            )}
+            </div>
+
+            {/* Right side - Status + Header Actions */}
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
+                {renderStatus(request.status, request.statusLabel || '')}
+                {request.priority && renderPriority(request.priority)}
+              </div>
+              <HeaderActions />
+            </div>
           </div>
         </div>
-      )}
+      </header>
 
-      {/* Historial de cambios de estado */}
-      <div className="border-t border-gray-200">
-        <div className="px-4 py-5 sm:px-6">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">
-            Historial de cambios
-          </h3>
+      {/* Contenido Principal */}
+      <main className="pt-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Columna Principal - Información del Proyecto */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* Información Principal */}
+              <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-md border border-white/20 p-8">
+                <div className="flex items-center space-x-3 mb-6">
+                  <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg">
+                    <DocumentTextIcon className="w-6 h-6 text-white" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900">Información del Proyecto</h2>
+                </div>
 
-          <div className="mt-4 flow-root">
-            <ul className="-mb-8">
-              {request.statusHistory.map((statusChange, index) => (
-                <li key={index}>
-                  <div className="relative pb-8">
-                    {index !== request.statusHistory.length - 1 ? (
-                      <span
-                        className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200"
-                        aria-hidden="true"
-                      />
-                    ) : null}
-                    <div className="relative flex space-x-3">
-                      <div>
-                        <span className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center ring-8 ring-white">
-                          <Icon name="ArrowPathIcon" className="h-5 w-5 text-white" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Tipo de proyecto */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-600">Tipo de proyecto</label>
+                    <div>{renderProjectType(request.projectType)}</div>
+                  </div>
+
+                  {/* Cliente */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-600">Cliente</label>
+                    <div className="flex items-center space-x-2 text-gray-900">
+                      <UserIcon className="w-5 h-5 text-gray-500" />
+                      <span className="font-medium">{request.client?.name}</span>
+                      <span className="text-gray-500">({request.client?.email})</span>
+                    </div>
+                  </div>
+
+                  {/* Presupuesto */}
+                  {request.budget !== undefined && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-600">Presupuesto estimado</label>
+                      <div className="flex items-center space-x-2 text-gray-900">
+                        <CurrencyDollarIcon className="w-5 h-5 text-gray-500" />
+                        <span className="font-medium">
+                          {typeof request.budget === 'number'
+                            ? request.budget.toLocaleString('es-ES', {
+                                style: 'currency',
+                                currency: 'EUR'
+                              })
+                            : request.budget}
                         </span>
                       </div>
-                      <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
-                        <div>
-                          <p className="text-sm text-gray-500">
-                            {statusChange.fromStatusLabel ? (
-                              <>
-                                Cambió de{' '}
-                                <span className="font-medium text-gray-900">
-                                  {statusChange.fromStatusLabel}
-                                </span>{' '}
-                                a{' '}
-                                <span className="font-medium text-gray-900">
-                                  {statusChange.toStatusLabel}
-                                </span>
-                              </>
-                            ) : (
-                              <>
-                                Estado inicial:{' '}
-                                <span className="font-medium text-gray-900">
-                                  {statusChange.toStatusLabel}
-                                </span>
-                              </>
-                            )}
-                          </p>
-                          <p className="mt-1 text-sm text-gray-500">
-                            {statusChange.reason}
-                          </p>
-                        </div>
-                        <div className="text-right text-sm whitespace-nowrap text-gray-500">
-                          <time dateTime={statusChange.changedAt}>
-                            {formatDate(statusChange.changedAt)}
-                          </time>
-                          <p className="text-xs text-gray-400">
-                            por {statusChange.changedBy?.name || 'Sistema'}
-                          </p>
-                        </div>
-                      </div>
                     </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </div>
+                  )}
 
-      {/* Comentarios */}
-      <div className="border-t border-gray-200">
-        <div className="px-4 py-5 sm:px-6">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">
-            Comentarios
-          </h3>
+                  {/* Plazo */}
+                  {request.timeframe && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-600">Plazo estimado</label>
+                      <div className="flex items-center space-x-2 text-gray-900">
+                        <ClockIcon className="w-5 h-5 text-gray-500" />
+                        <span className="font-medium">{request.timeframe}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
-          {/* Lista de comentarios */}
-          <div className="mt-4 space-y-6">
-            {request.comments.length === 0 ? (
-              <p className="text-sm text-gray-500">No hay comentarios todavía.</p>
-            ) : (
-              request.comments.map((comment) => (
-                <div key={comment.id} className="bg-gray-50 p-4 rounded-lg">
-                  <div className="flex">
-                    <div className="flex-shrink-0 mr-3">
-                      <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600">
-                        {comment.user?.firstName?.charAt(0) || '?'}
-                        {comment.user?.lastName?.charAt(0) || '?'}
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-medium text-gray-900">
-                          {comment.user?.name || 'Usuario'}
-                        </h4>
-                        <p className="text-xs text-gray-500">
-                          {formatDate(comment.createdAt)}
-                        </p>
-                      </div>
-                      <div className="mt-1 text-sm text-gray-700 whitespace-pre-line">
-                        {comment.content}
-                      </div>
-                    </div>
+                {/* Descripción */}
+                <div className="mt-8 space-y-2">
+                  <label className="text-sm font-medium text-gray-600">Descripción</label>
+                  <div className="bg-gray-50/80 rounded-xl p-4 text-gray-900 leading-relaxed whitespace-pre-line border border-gray-200">
+                    {request.description}
                   </div>
                 </div>
-              ))
-            )}
-          </div>
 
-          {/* Formulario para nuevo comentario */}
-          <div className="mt-6">
-            <form onSubmit={handleSubmitComment}>
-              <div>
-                <label htmlFor="comment" className="sr-only">
-                  Añadir comentario
-                </label>
-                <textarea
-                  id="comment"
-                  name="comment"
-                  rows={3}
-                  className="
-                    shadow-sm block w-full focus:ring-blue-500 focus:border-blue-500
-                    sm:text-sm border border-gray-300 rounded-md
-                  "
-                  placeholder="Añadir un comentario..."
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  disabled={submittingComment}
-                ></textarea>
+                {/* Secciones opcionales */}
+                {[
+                  { key: 'technicalRequirements', label: 'Requisitos técnicos' },
+                  { key: 'businessGoals', label: 'Objetivos de negocio' },
+                  { key: 'integrationsNeeded', label: 'Integraciones necesarias' },
+                  { key: 'targetAudience', label: 'Público objetivo' },
+                  { key: 'additionalInfo', label: 'Información adicional' }
+                ].map(({ key, label }) => {
+                  const value = (request as any)[key];
+                  if (!value) return null;
+                  
+                  return (
+                    <div key={key} className="mt-6 space-y-2">
+                      <label className="text-sm font-medium text-gray-600">{label}</label>
+                      <div className="bg-gray-50/80 rounded-xl p-4 text-gray-900 leading-relaxed whitespace-pre-line border border-gray-200">
+                        {value}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Etiquetas */}
+                <div className="mt-8 space-y-2">
+                  <label className="text-sm font-medium text-gray-600">Etiquetas</label>
+                  <div>{renderTags(request.tags || [])}</div>
+                </div>
               </div>
-              <div className="mt-3 flex justify-end">
-                <button
-                  type="submit"
-                  disabled={submittingComment || !newComment.trim()}
-                  className="
-                    inline-flex items-center px-4 py-2 border border-transparent text-sm
-                    font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700
-                    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
-                    disabled:opacity-50
-                  "
-                >
-                  {submittingComment ? (
-                    <div className="inline-flex items-center">
-                      <div className="mr-2 h-4 w-4 border-t-2 border-b-2 border-white rounded-full animate-spin" />
-                      Enviando...
+
+              {/* Acciones */}
+              {(canSubmit || canEdit || isAdmin) && (
+                <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-md border border-white/20 p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Acciones</h3>
+                  
+                  <div className="flex flex-wrap gap-4">
+                    {canEdit && (
+                      <Link
+                        to={`/app/requests/${request.id}/edit`}
+                        className="
+                          inline-flex items-center px-6 py-3 border border-gray-300 rounded-xl
+                          shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50
+                          hover:shadow-md transition-all duration-200
+                        "
+                      >
+                        <PencilIcon className="mr-2 h-5 w-5" />
+                        Editar
+                      </Link>
+                    )}
+
+                    {canSubmit && (
+                      <button
+                        onClick={handleSubmitRequest}
+                        disabled={changing}
+                        className="
+                          inline-flex items-center px-6 py-3 border border-transparent rounded-xl
+                          shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600
+                          hover:shadow-lg hover:scale-105 transition-all duration-200 disabled:opacity-50
+                        "
+                      >
+                        {changing ? (
+                          <div className="inline-flex items-center">
+                            <div className="mr-2 h-5 w-5 border-t-2 border-b-2 border-white rounded-full animate-spin" />
+                            Enviando...
+                          </div>
+                        ) : (
+                          <>
+                            <PaperAirplaneIcon className="mr-2 h-5 w-5" />
+                            Enviar para revisión
+                          </>
+                        )}
+                      </button>
+                    )}
+
+                    {isAdmin && (
+                      <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 w-full md:w-auto">
+                        <select
+                          value={newStatus || ''}
+                          onChange={(e) => setNewStatus(e.target.value as RequestStatus)}
+                          className="
+                            block px-4 py-3 text-sm border border-gray-300 rounded-xl bg-white/80
+                            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                            transition-all duration-200
+                          "
+                          disabled={changing}
+                        >
+                          <option value="">Seleccionar estado...</option>
+                          {Object.entries(RequestStatus).map(([key, value]) => (
+                            <option key={key} value={value} disabled={value === request.status}>
+                              {RequestStatus[key as keyof typeof RequestStatus]}
+                            </option>
+                          ))}
+                        </select>
+
+                        <input
+                          type="text"
+                          value={statusReason}
+                          onChange={(e) => setStatusReason(e.target.value)}
+                          placeholder="Razón del cambio..."
+                          className="
+                            block px-4 py-3 text-sm border border-gray-300 rounded-xl bg-white/80
+                            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                            transition-all duration-200
+                          "
+                          disabled={changing}
+                        />
+
+                        <button
+                          onClick={handleChangeStatus}
+                          disabled={changing || !newStatus || !statusReason.trim()}
+                          className="
+                            inline-flex items-center px-6 py-3 border border-transparent rounded-xl
+                            shadow-sm text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600
+                            hover:shadow-lg hover:scale-105 transition-all duration-200 disabled:opacity-50
+                          "
+                        >
+                          {changing ? (
+                            <div className="inline-flex items-center">
+                              <div className="mr-2 h-5 w-5 border-t-2 border-b-2 border-white rounded-full animate-spin" />
+                              Actualizando...
+                            </div>
+                          ) : (
+                            <>
+                              <ArrowPathIcon className="mr-2 h-5 w-5" />
+                              Actualizar estado
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Columna Lateral - Historial y Comentarios */}
+            <div className="space-y-8">
+              {/* Historial de cambios de estado */}
+              <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-md border border-white/20 p-6">
+                <div className="flex items-center space-x-3 mb-6">
+                  <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl shadow-lg">
+                    <ArrowPathIcon className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900">Historial de cambios</h3>
+                </div>
+
+                <div className="space-y-4">
+                  {request.statusHistory.map((statusChange, index) => (
+                    <div key={index} className="relative">
+                      {index !== request.statusHistory.length - 1 && (
+                        <div className="absolute left-6 top-12 w-0.5 h-8 bg-gray-200" />
+                      )}
+                      
+                      <div className="flex space-x-4">
+                        <div className="flex-shrink-0">
+                          <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-md">
+                            <ArrowPathIcon className="w-6 h-6 text-white" />
+                          </div>
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="bg-gray-50/80 rounded-xl p-4 border border-gray-200">
+                            <p className="text-sm text-gray-800 font-medium">
+                              {statusChange.fromStatusLabel ? (
+                                <>
+                                  De <span className="text-gray-900">{statusChange.fromStatusLabel}</span> a{' '}
+                                  <span className="text-blue-600 font-semibold">{statusChange.toStatusLabel}</span>
+                                </>
+                              ) : (
+                                <>
+                                  Estado inicial: <span className="text-blue-600 font-semibold">{statusChange.toStatusLabel}</span>
+                                </>
+                              )}
+                            </p>
+                            <p className="text-sm text-gray-600 mt-1">{statusChange.reason}</p>
+                            <div className="flex items-center justify-between mt-3 text-xs text-gray-500">
+                              <span>{statusChange.changedBy?.name || 'Sistema'}</span>
+                              <time>{formatDate(statusChange.changedAt)}</time>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Comentarios */}
+              <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-md border border-white/20 p-6">
+                <div className="flex items-center space-x-3 mb-6">
+                  <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-xl shadow-lg">
+                    <ChatBubbleLeftRightIcon className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900">Comentarios</h3>
+                </div>
+
+                {/* Lista de comentarios */}
+                <div className="space-y-4 mb-6">
+                  {request.comments.length === 0 ? (
+                    <div className="text-center py-8">
+                      <ChatBubbleLeftRightIcon className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                      <p className="text-gray-500 italic">No hay comentarios todavía.</p>
                     </div>
                   ) : (
-                    <>
-                      <Icon name="ChatBubbleLeftIcon" className="mr-2 h-4 w-4" />
-                      Comentar
-                    </>
+                    request.comments.map((comment) => (
+                      <div key={comment.id} className="bg-gray-50/80 rounded-xl p-4 border border-gray-200">
+                        <div className="flex items-start space-x-3">
+                          <div className="flex-shrink-0">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-medium shadow-md">
+                              {comment.user?.firstName?.charAt(0) || '?'}
+                              {comment.user?.lastName?.charAt(0) || '?'}
+                            </div>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="text-sm font-semibold text-gray-900">
+                                {comment.user?.name || 'Usuario'}
+                              </h4>
+                              <p className="text-xs text-gray-500">
+                                {formatDate(comment.createdAt)}
+                              </p>
+                            </div>
+                            <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                              {comment.content}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))
                   )}
-                </button>
+                </div>
+
+                {/* Formulario para nuevo comentario */}
+                <form onSubmit={handleSubmitComment} className="space-y-4">
+                  <div>
+                    <label htmlFor="comment" className="block text-sm font-medium text-gray-700 mb-2">
+                      Añadir comentario
+                    </label>
+                    <textarea
+                      id="comment"
+                      name="comment"
+                      rows={4}
+                      className="
+                        block w-full px-4 py-3 rounded-xl border border-gray-300 bg-white/80 backdrop-blur-sm
+                        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                        transition-all duration-200 resize-none
+                      "
+                      placeholder="Escribe tu comentario aquí..."
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      disabled={submittingComment}
+                    />
+                  </div>
+                  
+                  <button
+                    type="submit"
+                    disabled={submittingComment || !newComment.trim()}
+                    className="
+                      w-full inline-flex items-center justify-center px-6 py-3 border border-transparent
+                      text-sm font-medium rounded-xl shadow-sm text-white bg-gradient-to-r from-blue-600 to-indigo-600
+                      hover:shadow-lg hover:scale-105 transition-all duration-200 disabled:opacity-50
+                    "
+                  >
+                    {submittingComment ? (
+                      <div className="inline-flex items-center">
+                        <div className="mr-2 h-5 w-5 border-t-2 border-b-2 border-white rounded-full animate-spin" />
+                        Enviando...
+                      </div>
+                    ) : (
+                      <>
+                        <ChatBubbleLeftRightIcon className="mr-2 h-5 w-5" />
+                        Comentar
+                      </>
+                    )}
+                  </button>
+                </form>
               </div>
-            </form>
+            </div>
+          </div>
+
+          {/* Botón Volver - Flotante en la parte inferior */}
+          <div className="fixed bottom-8 right-8 z-20">
+            <button
+              onClick={() => navigate('/app/requests')}
+              className="
+                inline-flex items-center px-6 py-3 bg-white/90 backdrop-blur-sm border border-gray-200
+                rounded-full shadow-lg text-sm font-medium text-gray-700 hover:bg-white hover:shadow-xl
+                hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-2
+                focus:ring-blue-500 focus:ring-offset-2
+              "
+            >
+              <ArrowLeftIcon className="mr-2 h-5 w-5" />
+              Volver a Mis Solicitudes
+            </button>
           </div>
         </div>
-      </div>
+      </main>
 
-      {/* BOTÓN “VOLVER A MIS SOLICITUDES” */}
-      <div className="mt-6 px-4 py-4 sm:px-6 bg-gray-50 text-right">
-        <button
-          onClick={() => navigate('/app/requests')}
-          className="
-            inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm
-            text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none
-            focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
-          "
-        >
-          Volver a Mis Solicitudes
-        </button>
-      </div>
+      {/* Footer */}
+      <footer className="bg-white/80 backdrop-blur-sm border-t border-white/20 mt-16 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="flex items-center justify-center space-x-2 mb-4">
+            <SparklesIcon className="w-5 h-5 text-blue-600" />
+            <span className="text-lg font-semibold text-gray-800">Gestión de Proyectos</span>
+          </div>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Seguimiento detallado de tu solicitud de proyecto. Mantente informado del progreso y colabora con el equipo.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };
