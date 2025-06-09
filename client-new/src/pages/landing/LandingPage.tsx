@@ -182,6 +182,17 @@ const LandingPage: React.FC = () => {
               >
                 Valores
               </a>
+              <a 
+                href="javascript:void(0)" 
+                onClick={() => {
+                  // Eliminar parámetros de URL y navegar a la sección
+                  navigate('/', { replace: true });
+                  document.getElementById('fundadores')?.scrollIntoView({ behavior: 'smooth' });
+                }} 
+                className="text-base font-medium text-gray-300 hover:text-white"
+              >
+                Equipo
+              </a>
               <button
                 onClick={() => setShowLoginModal(true)}
                 className="whitespace-nowrap text-base font-medium text-gray-300 hover:text-white"
@@ -633,41 +644,17 @@ const LandingPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Estadísticas section */}
-      <div className="bg-blue-700 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
-            <div className="text-center">
-              <p className="text-5xl font-extrabold text-white">100+</p>
-              <p className="mt-2 text-xl font-medium text-blue-100">Proyectos completados</p>
-            </div>
-            <div className="text-center">
-              <p className="text-5xl font-extrabold text-white">50+</p>
-              <p className="mt-2 text-xl font-medium text-blue-100">Clientes satisfechos</p>
-            </div>
-            <div className="text-center">
-              <p className="text-5xl font-extrabold text-white">15+</p>
-              <p className="mt-2 text-xl font-medium text-blue-100">Años de experiencia</p>
-            </div>
-            <div className="text-center">
-              <p className="text-5xl font-extrabold text-white">24/7</p>
-              <p className="mt-2 text-xl font-medium text-blue-100">Soporte técnico</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Testimonios section */}
+      {/* Testimonios section - ACTUALIZADO */}
       <div id="testimonios" className="bg-white py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h2 className="text-3xl font-extrabold text-gray-900">Lo que nuestros clientes dicen</h2>
             <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-500">
-              Empresas que han transformado sus procesos con nuestras soluciones
+              Quality Metrics ha transformado sus procesos con nuestras soluciones centralizadas
             </p>
           </div>
-          <div className="mt-16 grid gap-8 lg:grid-cols-3">
-            {/* Testimonio 1 */}
+          <div className="mt-16 grid gap-8 lg:grid-cols-2 max-w-4xl mx-auto">
+            {/* Testimonio 1 - Amílcar Arriagada */}
             <div className="bg-gray-50 rounded-lg p-8 shadow-sm border border-gray-200 relative">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                 <div className="bg-blue-500 rounded-full p-2">
@@ -675,20 +662,20 @@ const LandingPage: React.FC = () => {
                 </div>
               </div>
               <div className="text-gray-700 mb-6 pt-4">
-                <p className="italic">"EncoderGroup transformó nuestra operación digital, implementando una solución que no solo resolvió nuestros problemas inmediatos sino que escaló con nuestro crecimiento."</p>
+                <p className="italic">"El sistema centralizado de datos que desarrolló EncoderGroup revolucionó nuestra capacidad de tomar decisiones estratégicas. Ahora tenemos acceso inmediato a métricas críticas y una visión unificada de toda nuestra operación."</p>
               </div>
               <div className="flex items-center">
                 <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Icon name="UserIcon" className="h-8 w-8 text-blue-500" />
+                  <span className="text-blue-600 font-semibold text-lg">AA</span>
                 </div>
                 <div className="ml-4">
-                  <h4 className="text-lg font-bold text-gray-900">Carlos Martínez</h4>
-                  <p className="text-gray-500">Director de Tecnología, TechSolutions</p>
+                  <h4 className="text-lg font-bold text-gray-900">Amílcar Arriagada</h4>
+                  <p className="text-gray-500">CEO, Quality Metrics</p>
                 </div>
               </div>
             </div>
             
-            {/* Testimonio 2 */}
+            {/* Testimonio 2 - Rodrigo Vilches */}
             <div className="bg-gray-50 rounded-lg p-8 shadow-sm border border-gray-200 relative">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                 <div className="bg-blue-500 rounded-full p-2">
@@ -696,36 +683,15 @@ const LandingPage: React.FC = () => {
                 </div>
               </div>
               <div className="text-gray-700 mb-6 pt-4">
-                <p className="italic">"El enfoque metodológico de EncoderGroup marcó la diferencia. Cumplieron con los plazos, mantuvieron una comunicación transparente y entregaron un producto de alta calidad."</p>
+                <p className="italic">"El dashboard interactivo que construyeron nos permite monitorear KPIs en tiempo real y identificar oportunidades de mejora inmediatamente. La visualización de datos nunca había sido tan clara y accionable para nuestro equipo."</p>
               </div>
               <div className="flex items-center">
                 <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Icon name="UserIcon" className="h-8 w-8 text-blue-500" />
+                  <span className="text-blue-600 font-semibold text-lg">RV</span>
                 </div>
                 <div className="ml-4">
-                  <h4 className="text-lg font-bold text-gray-900">Ana Rodríguez</h4>
-                  <p className="text-gray-500">CEO, Innovatech</p>
-                </div>
-              </div>
-            </div>
-            
-            {/* Testimonio 3 */}
-            <div className="bg-gray-50 rounded-lg p-8 shadow-sm border border-gray-200 relative">
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <div className="bg-blue-500 rounded-full p-2">
-                  <Icon name="ChatBubbleLeftIcon" className="h-6 w-6 text-white" />
-                </div>
-              </div>
-              <div className="text-gray-700 mb-6 pt-4">
-                <p className="italic">"Después de intentar con varios proveedores, encontramos en EncoderGroup el socio tecnológico que entendió nuestras necesidades y las transformó en soluciones concretas."</p>
-              </div>
-              <div className="flex items-center">
-                <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Icon name="UserIcon" className="h-8 w-8 text-blue-500" />
-                </div>
-                <div className="ml-4">
-                  <h4 className="text-lg font-bold text-gray-900">Miguel González</h4>
-                  <p className="text-gray-500">Director de Operaciones, LogisTrade</p>
+                  <h4 className="text-lg font-bold text-gray-900">Rodrigo Vilches</h4>
+                  <p className="text-gray-500">Jefe de Producto, Quality Metrics</p>
                 </div>
               </div>
             </div>
@@ -733,69 +699,145 @@ const LandingPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Recursos section */}
-      <div id="recursos" className="bg-gray-50 py-16 lg:py-24">
+      {/* Fundadores section - NUEVO */}
+      <div id="fundadores" className="bg-gray-50 py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-              Recursos y conocimiento
+              Nuestro Equipo Fundador
             </h2>
             <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-500">
-              Artículos, guías y mejores prácticas para el éxito digital
+              Ingenieros informáticos con la experiencia y pasión necesarias para transformar ideas en soluciones digitales exitosas
+            </p>
+          </div>
+          <div className="mt-12 grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
+            {/* Daniel Iturra */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl">
+              <div className="h-64 bg-gradient-to-br from-blue-600 to-indigo-700 relative">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-4xl font-bold text-blue-600">DI</span>
+                  </div>
+                </div>
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">Daniel Iturra</h3>
+                <p className="text-blue-600 font-medium mb-4 text-center">Ingeniero Informático</p>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  Especialista en arquitectura de software y desarrollo backend. Con amplia experiencia en el diseño de sistemas escalables y la implementación de soluciones tecnológicas robustas que impulsan el crecimiento empresarial.
+                </p>
+                <div className="mt-4 flex justify-center space-x-2">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    Backend
+                  </span>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    Arquitectura
+                  </span>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    DevOps
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Mario Bronchuer */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl">
+              <div className="h-64 bg-gradient-to-br from-indigo-600 to-purple-700 relative">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-4xl font-bold text-indigo-600">MB</span>
+                  </div>
+                </div>
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">Mario Bronchuer</h3>
+                <p className="text-indigo-600 font-medium mb-4 text-center">Ingeniero Informático</p>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  Experto en desarrollo frontend y experiencia de usuario. Se enfoca en crear interfaces intuitivas y funcionales que conectan de manera efectiva la tecnología con las necesidades del usuario final.
+                </p>
+                <div className="mt-4 flex justify-center space-x-2">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                    Frontend
+                  </span>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                    UX/UI
+                  </span>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                    React
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Servicios destacados section - NUEVO (reemplaza recursos) */}
+      <div id="servicios" className="bg-white py-16 lg:py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+              Servicios destacados
+            </h2>
+            <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-500">
+              Soluciones especializadas que impulsan la transformación digital de tu empresa
             </p>
           </div>
           <div className="mt-12 grid gap-8 md:grid-cols-3">
-            {/* Recurso 1 */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl">
-              <div className="h-48 bg-blue-600 relative">
+            {/* Servicio 1 */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl border border-gray-100">
+              <div className="h-48 bg-gradient-to-br from-blue-500 to-blue-600 relative">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Icon name="DocumentTextIcon" className="h-24 w-24 text-white opacity-60" />
+                  <Icon name="ChartBarIcon" className="h-24 w-24 text-white opacity-90" />
                 </div>
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Guía de implementación ágil</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Dashboards Interactivos</h3>
                 <p className="text-gray-500 mb-4">
-                  Aprende a implementar metodologías ágiles en tu organización y mejora la entrega de tus proyectos.
+                  Visualización de datos en tiempo real con métricas personalizadas que facilitan la toma de decisiones estratégicas.
                 </p>
-                <button type="button" className="text-blue-600 font-medium flex items-center hover:text-blue-800 focus:outline-none">
-                  Leer más <Icon name="ArrowRightIcon" className="h-4 w-4 ml-1" />
-                </button>
+                <div className="flex items-center text-blue-600 font-medium hover:text-blue-800">
+                  <span className="mr-2">Conocer más</span>
+                  <Icon name="ArrowRightIcon" className="h-4 w-4" />
+                </div>
               </div>
             </div>
             
-            {/* Recurso 2 */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl">
-              <div className="h-48 bg-blue-600 relative">
+            {/* Servicio 2 */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl border border-gray-100">
+              <div className="h-48 bg-gradient-to-br from-green-500 to-green-600 relative">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Icon name="PresentationChartLineIcon" className="h-24 w-24 text-white opacity-60" />
+                  <Icon name="CircleStackIcon" className="h-24 w-24 text-white opacity-90" />
                 </div>
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Estrategias de digitalización</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Sistemas Centralizados</h3>
                 <p className="text-gray-500 mb-4">
-                  Descubre cómo transformar digitalmente tu empresa para mantener la competitividad en el mercado actual.
+                  Unificación de datos y procesos empresariales en una plataforma central para mayor eficiencia operacional.
                 </p>
-                <button type="button" className="text-blue-600 font-medium flex items-center hover:text-blue-800 focus:outline-none">
-                  Leer más <Icon name="ArrowRightIcon" className="h-4 w-4 ml-1" />
-                </button>
+                <div className="flex items-center text-blue-600 font-medium hover:text-blue-800">
+                  <span className="mr-2">Conocer más</span>
+                  <Icon name="ArrowRightIcon" className="h-4 w-4" />
+                </div>
               </div>
             </div>
             
-            {/* Recurso 3 */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl">
-              <div className="h-48 bg-blue-600 relative">
+            {/* Servicio 3 */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl border border-gray-100">
+              <div className="h-48 bg-gradient-to-br from-purple-500 to-purple-600 relative">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Icon name="ShieldCheckIcon" className="h-24 w-24 text-white opacity-60" />
+                  <Icon name="CogIcon" className="h-24 w-24 text-white opacity-90" />
                 </div>
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Seguridad en aplicaciones web</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Automatización de Procesos</h3>
                 <p className="text-gray-500 mb-4">
-                  Conoce las mejores prácticas para proteger tus aplicaciones web y los datos de tus usuarios.
+                  Optimización y automatización de flujos de trabajo para reducir tareas manuales y aumentar la productividad.
                 </p>
-                <button type="button" className="text-blue-600 font-medium flex items-center hover:text-blue-800 focus:outline-none">
-                  Leer más <Icon name="ArrowRightIcon" className="h-4 w-4 ml-1" />
-                </button>
+                <div className="flex items-center text-blue-600 font-medium hover:text-blue-800">
+                  <span className="mr-2">Conocer más</span>
+                  <Icon name="ArrowRightIcon" className="h-4 w-4" />
+                </div>
               </div>
             </div>
           </div>
@@ -803,7 +845,7 @@ const LandingPage: React.FC = () => {
       </div>
 
       {/* FAQ section */}
-      <div id="faq" className="bg-white py-16 lg:py-24">
+      <div id="faq" className="bg-gray-50 py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
@@ -816,7 +858,7 @@ const LandingPage: React.FC = () => {
           <div className="mt-12 max-w-3xl mx-auto">
             <div className="space-y-6">
               {/* Pregunta 1 */}
-              <div className="bg-gray-50 rounded-lg p-6 shadow-sm">
+              <div className="bg-white rounded-lg p-6 shadow-sm">
                 <h3 className="text-lg font-bold text-gray-900 flex items-center">
                   <Icon name="QuestionMarkCircleIcon" className="h-6 w-6 text-blue-500 mr-2" />
                   ¿Cuánto tiempo toma desarrollar un proyecto?
@@ -827,7 +869,7 @@ const LandingPage: React.FC = () => {
               </div>
               
               {/* Pregunta 2 */}
-              <div className="bg-gray-50 rounded-lg p-6 shadow-sm">
+              <div className="bg-white rounded-lg p-6 shadow-sm">
                 <h3 className="text-lg font-bold text-gray-900 flex items-center">
                   <Icon name="QuestionMarkCircleIcon" className="h-6 w-6 text-blue-500 mr-2" />
                   ¿Qué metodologías de trabajo utilizan?
@@ -838,7 +880,7 @@ const LandingPage: React.FC = () => {
               </div>
               
               {/* Pregunta 3 */}
-              <div className="bg-gray-50 rounded-lg p-6 shadow-sm">
+              <div className="bg-white rounded-lg p-6 shadow-sm">
                 <h3 className="text-lg font-bold text-gray-900 flex items-center">
                   <Icon name="QuestionMarkCircleIcon" className="h-6 w-6 text-blue-500 mr-2" />
                   ¿Ofrecen soporte después del lanzamiento?
@@ -849,7 +891,7 @@ const LandingPage: React.FC = () => {
               </div>
               
               {/* Pregunta 4 */}
-              <div className="bg-gray-50 rounded-lg p-6 shadow-sm">
+              <div className="bg-white rounded-lg p-6 shadow-sm">
                 <h3 className="text-lg font-bold text-gray-900 flex items-center">
                   <Icon name="QuestionMarkCircleIcon" className="h-6 w-6 text-blue-500 mr-2" />
                   ¿Cómo garantizan la calidad del software?
@@ -864,7 +906,7 @@ const LandingPage: React.FC = () => {
       </div>
 
       {/* Contacto section */}
-      <div id="contacto" className="bg-gray-50 py-16 lg:py-24">
+      <div id="contacto" className="bg-white py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div>
@@ -901,7 +943,7 @@ const LandingPage: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="bg-white p-8 rounded-lg shadow-md">
+            <div className="bg-gray-50 p-8 rounded-lg shadow-md">
               <form className="space-y-6">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nombre</label>
@@ -1008,6 +1050,7 @@ const LandingPage: React.FC = () => {
                 <a href="#metodologias" className="text-gray-400 hover:text-white">Metodologías</a>
                 <a href="#tecnologias" className="text-gray-400 hover:text-white">Tecnologías</a>
                 <a href="#valores" className="text-gray-400 hover:text-white">Valores</a>
+                <a href="#fundadores" className="text-gray-400 hover:text-white">Equipo</a>
                 <Link to="/login" className="text-gray-400 hover:text-white">Iniciar sesión</Link>
               </div>
             </div>
@@ -1020,7 +1063,7 @@ const LandingPage: React.FC = () => {
                   <span>info@encodergroup.cl</span>
                 </div>
                 <div className="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" className="h-5 w-5 fill-current text-blue-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" className="h-5 w-5 fill-current text-blue-500 mr-2">
                     <path d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z"/>
                   </svg>
                   <span>@encodegroup.cl</span>
