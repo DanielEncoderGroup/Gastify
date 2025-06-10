@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-hot-toast';
 import { 
   ArrowLeftIcon,
@@ -35,8 +36,15 @@ interface ProjectData {
 }
 
 const ProjectDetail: React.FC = () => {
+  const { user } = useAuth();
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+  
+  // Registrar información del usuario para depuración
+  useEffect(() => {
+    console.log('ProjectDetail - Usuario actual:', user);
+    console.log('ProjectDetail - Rol del usuario:', user?.role);
+    console.log('ProjectDetail - ¿Es admin?', user?.role?.toLowerCase() === 'admin');
+  }, [user]);
 
   // Estados principales
   const [projectData, setProjectData] = useState<ProjectData>({
@@ -60,7 +68,6 @@ const ProjectDetail: React.FC = () => {
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isEditingTask, setIsEditingTask] = useState(false);
-  const [isSubmittingTask, setIsSubmittingTask] = useState(false);
 
   // Persistir preferencia de vista en localStorage
   useEffect(() => {
@@ -252,7 +259,6 @@ const ProjectDetail: React.FC = () => {
     if (!id || !projectData.project) return;
     
     try {
-      setIsSubmittingTask(true);
       
       if (isEditingTask && selectedTask) {
         // Actualizar tarea existente
@@ -305,8 +311,6 @@ const ProjectDetail: React.FC = () => {
     } catch (error) {
       console.error('Error al guardar la tarea:', error);
       toast.error('Error al guardar la tarea');
-    } finally {
-      setIsSubmittingTask(false);
     }
   }, [id, projectData.project, isEditingTask, selectedTask]);
 
@@ -371,24 +375,35 @@ const ProjectDetail: React.FC = () => {
         </div>
         <div className="flex space-x-3">
           <Link
-            to={`/app/projects/${id}/edit`}
+            to="/app/projects"
             className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
-            <PencilIcon className="h-4 w-4 mr-2" />
-            Editar
+            <ArrowLeftIcon className="h-4 w-4 mr-2" />
+            Volver
           </Link>
-          <button
-            type="button"
-            onClick={() => {
-              setShowTaskForm(true);
-              setSelectedTask(null);
-              setIsEditingTask(false);
-            }}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            <PlusIcon className="h-4 w-4 mr-2" />
-            Agregar tarea
-          </button>
+          {user?.role?.toLowerCase() === 'admin' && (
+            <>
+              <Link
+                to={`/app/projects/${id}/edit`}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                <PencilIcon className="h-4 w-4 mr-2" />
+                Editar
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowTaskForm(true);
+                  setSelectedTask(null);
+                  setIsEditingTask(false);
+                }}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                <PlusIcon className="h-4 w-4 mr-2" />
+                Agregar tarea
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -549,18 +564,22 @@ const ProjectDetail: React.FC = () => {
                       </div>
                       <h3 className="mt-2 text-sm font-medium text-gray-900">No hay tareas</h3>
                       <p className="mt-1 text-sm text-gray-500">
-                        Comienza creando una nueva tarea para este proyecto.
+                        {user?.role?.toLowerCase() === 'admin' 
+                          ? 'Comienza creando una nueva tarea para este proyecto.'
+                          : 'No hay tareas disponibles en este proyecto.'}
                       </p>
-                      <div className="mt-6">
-                        <button
-                          type="button"
-                          onClick={() => setShowTaskForm(true)}
-                          className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >
-                          <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
-                          Nueva tarea
-                        </button>
-                      </div>
+                      {user?.role?.toLowerCase() === 'admin' && (
+                        <div className="mt-6">
+                          <button
+                            type="button"
+                            onClick={() => setShowTaskForm(true)}
+                            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                          >
+                            <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
+                            Nueva tarea
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </>
@@ -608,18 +627,22 @@ const ProjectDetail: React.FC = () => {
                       </div>
                       <h3 className="mt-2 text-sm font-medium text-gray-900">No hay tareas</h3>
                       <p className="mt-1 text-sm text-gray-500">
-                        Comienza creando una nueva tarea para este proyecto.
+                        {user?.role?.toLowerCase() === 'admin' 
+                          ? 'Comienza creando una nueva tarea para este proyecto.'
+                          : 'No hay tareas disponibles en este proyecto.'}
                       </p>
-                      <div className="mt-6">
-                        <button
-                          type="button"
-                          onClick={() => setShowTaskForm(true)}
-                          className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >
-                          <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
-                          Nueva tarea
-                        </button>
-                      </div>
+                      {user?.role?.toLowerCase() === 'admin' && (
+                        <div className="mt-6">
+                          <button
+                            type="button"
+                            onClick={() => setShowTaskForm(true)}
+                            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                          >
+                            <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
+                            Nueva tarea
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </>
