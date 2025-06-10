@@ -9,6 +9,8 @@ class NotificationType:
     STATUS_UPDATED = "status_updated"
     COMMENT_ADDED = "comment_added"
     FILE_UPLOADED = "file_uploaded"
+    REQUEST_STATUS_CHANGED = "request_status_changed"
+    PROJECT_CREATED = "project_created"
 
 class Notification(BaseModel):
     id: Optional[PyObjectId] = Field(default=None, alias="_id")

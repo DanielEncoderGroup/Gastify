@@ -1,6 +1,6 @@
-from app.services.notification_service import NotificationService
 from app.models.notification import NotificationType
-from app.api.ws.notifications import manager
+from app.services.notification_service import NotificationService
+from app.models.project import ProjectCreate, Project
 from typing import Any, List, Optional, Dict, Set
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status, Body, Query, Path
@@ -15,6 +15,7 @@ from app.models.request import (
     PaginatedRequestsResponse,
     RequestSummary,
     RequestDetail,
+    RequestStatusUpdatePayload,
     RequestResponse,
     UpdateRequestResponse,
     DeleteRequestResponse,
@@ -721,108 +722,171 @@ async def delete_request(
 )
 async def change_request_status(
     request_id: str = Path(..., description="ID de la solicitud"),
-    status_change: StatusChange = Body(...),
+    payload: RequestStatusUpdatePayload = Body(..., description="Nuevo estado y razón del cambio"),
     current_user: UserPublic = Depends(get_admin_user),
 ) -> Any:
+    """Cambiar el estado de una solicitud (solo para administradores)
+
+    Body (JSON):
+      - status (str, obligatorio): Nuevo estado.
+      - reason (str, opcional): Razón del cambio de estado.
+
+    El `fromStatus` y `changedBy` se gestionan automáticamente en el backend.
+    """
     db = get_database()
 
     try:
-        doc = await db.requests.find_one({"_id": ObjectId(request_id)})
-    except:
+        req_doc = await db.requests.find_one({"_id": ObjectId(request_id)})
+    except Exception as e:
+        print(f"Error al buscar la solicitud {request_id}: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="ID de solicitud inválido"
+            detail=f"ID de solicitud inválido: {request_id}"
         )
 
-    if not doc:
+    if not req_doc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Solicitud no encontrada"
+            detail=f"Solicitud no encontrada con ID: {request_id}"
         )
 
-    if status_change.toStatus not in RequestStatus.all_statuses():
+    # Validar que el nuevo estado sea válido
+    if payload.status not in RequestStatus.all_statuses():
+        valid_statuses = ", ".join(RequestStatus.all_statuses())
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Estado no válido"
+            detail=f"Estado '{payload.status}' inválido. Estados válidos: {valid_statuses}"
         )
 
-    if doc["status"] == status_change.toStatus:
+    # No permitir cambiar a 'draft' si ya no es 'draft'
+    if payload.status == RequestStatus.DRAFT and req_doc["status"] != RequestStatus.DRAFT:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"La solicitud ya está en estado {status_change.toStatus}"
+            detail="No se puede cambiar el estado a 'draft' una vez que la solicitud ha sido procesada."
         )
 
-    history_entry = {
-        "fromStatus": doc["status"],
-        "toStatus": status_change.toStatus,
-        "changedBy": ObjectId(current_user.id),
+    # Crear la entrada para el historial de estados como diccionario (evita problemas de serialización)
+    status_history_entry = {
+        "fromStatus": req_doc["status"],
+        "fromStatusLabel": RequestStatus.status_labels().get(req_doc["status"], req_doc["status"]),
+        "toStatus": payload.status,
+        "toStatusLabel": RequestStatus.status_labels().get(payload.status, payload.status),
+        "changedBy": {
+            "_id": str(current_user.id),
+            "firstName": current_user.firstName,
+            "lastName": current_user.lastName,
+            "email": current_user.email,
+            "role": current_user.role
+        },
         "changedAt": datetime.utcnow(),
-        "reason": status_change.reason
+        "reason": payload.reason if payload.reason else f"Estado cambiado a {payload.status} por administrador."
     }
 
-    await db.requests.update_one(
+    # Actualizar el documento en MongoDB
+    update_result = await db.requests.update_one(
         {"_id": ObjectId(request_id)},
         {
             "$set": {
-                "status": status_change.toStatus,
+                "status": payload.status,
                 "updatedAt": datetime.utcnow()
             },
             "$push": {
-                "statusHistory": history_entry
+                "statusHistory": status_history_entry
             }
         }
     )
-    
-    # Enviar notificación al cliente
-    await NotificationService.create_notification(
-        user_id=str(doc["clientId"]),  # Usar doc en lugar de request
-        type=NotificationType.STATUS_UPDATED,
-        title="Estado de solicitud actualizado",
-        message=f"El estado de tu solicitud '{doc['title']}' ha cambiado a: {status_change.toStatus}",
-        data={
-            "request_id": request_id,
-            "from_status": doc["status"],  # Usar el estado actual del documento
-            "to_status": status_change.toStatus,
-            "admin_id": str(current_user.id),
-            "admin_name": f"{current_user.firstName} {current_user.lastName}",
-            "title": doc["title"]  # Usar doc en lugar de request
-        }
-    )
 
-    # Notificar a todos los administradores
-    admins = await db.users.find({"role": "admin"}).to_list(None)
-    for admin in admins:
-        if str(admin["_id"]) != str(current_user.id):
+    if update_result.modified_count == 0:
+        print(f"Advertencia: No se modificó la solicitud {request_id} al intentar cambiar estado a {payload.status}")
+
+    # Notificar al cliente sobre el cambio de estado
+    try:
+        client_id_str = str(req_doc.get("clientId"))
+        if client_id_str:
             await NotificationService.create_notification(
-                user_id=str(admin["_id"]),
-                type=NotificationType.STATUS_UPDATED,
-                title="Estado de solicitud actualizado",
-                message=f"El estado de la solicitud '{doc['title']}' ha sido cambiado a {status_change.toStatus} por {current_user.firstName} {current_user.lastName}",
-                data={
-                    "request_id": request_id,
-                    "from_status": doc["status"],
-                    "to_status": status_change.toStatus,
-                    "admin_id": str(current_user.id),
-                    "admin_name": f"{current_user.firstName} {current_user.lastName}",
-                    "client_id": str(doc["clientId"]),
-                    "title": doc["title"]
-                }
+                user_id=client_id_str,
+                type=NotificationType.REQUEST_STATUS_CHANGED,
+                title="Estado de tu solicitud actualizado",
+                message=f"El estado de tu solicitud '{req_doc.get('title', 'N/A')}' ha cambiado a: {payload.status}.",
+                related_id=request_id
             )
-
-    # Notificación WebSocket
-    await manager.send_personal_message({
-        "type": "notification",
-        "data": {
-            "title": "Estado actualizado",
-            "message": f"El estado de la solicitud ha sido actualizado a {status_change.toStatus}",
-            "request_id": request_id
-        }
-    }, str(doc["clientId"]))
+    except Exception as e:
+        print(f"Error al intentar enviar notificación de cambio de estado para request {request_id}: {e}")
+    
+    # Si el estado cambia a 'approved', crear un proyecto automáticamente
+    if payload.status == RequestStatus.APPROVED:
+        try:
+            await create_project_from_request(request_id=request_id, req_doc=req_doc, db=db)
+        except Exception as e:
+            print(f"Error al crear proyecto desde la solicitud aprobada {request_id}: {e}")
+            # No interrumpimos el flujo si falla la creación del proyecto
 
     return UpdateRequestResponse(
         success=True,
-        message=f"Estado actualizado a {status_change.toStatus}"
+        message=f"Estado de la solicitud cambiado a '{payload.status}' correctamente"
     )
+
+
+async def create_project_from_request(request_id: str, req_doc: dict, db) -> bool:
+    """Crear un proyecto automáticamente a partir de una solicitud aprobada.
+    
+    Args:
+        request_id: ID de la solicitud aprobada
+        req_doc: Documento de la solicitud
+        db: Instancia de la base de datos
+    
+    Returns:
+        bool: True si el proyecto se creó correctamente o ya existía, False en caso de error
+    """
+    # Verificar si ya existe un proyecto para esta solicitud
+    existing_project = await db.projects.find_one({"requestId": ObjectId(request_id)})
+    
+    if existing_project:
+        print(f"Ya existe un proyecto para la solicitud {request_id}: {existing_project['_id']}")
+        return True
+    
+    # Crear un nuevo proyecto basado en la solicitud
+    try:
+        project_data = {
+            "requestId": ObjectId(request_id),
+            "title": req_doc.get("title", "Proyecto sin título"),
+            "description": req_doc.get("description", "Proyecto creado automáticamente desde una solicitud aprobada"),
+            "clientId": req_doc.get("clientId"),
+            "assignedTeam": [],
+            "startDate": datetime.utcnow(),
+            "status": "active",
+            "createdAt": datetime.utcnow(),
+            "updatedAt": datetime.utcnow(),
+            "tasks": []
+        }
+        
+        # Opcional: Agregar más campos si están disponibles en la solicitud
+        if "deadline" in req_doc:
+            project_data["deadline"] = req_doc["deadline"]
+            
+        # Insertar el nuevo proyecto
+        result = await db.projects.insert_one(project_data)
+        
+        # Notificar al cliente sobre la creación del proyecto
+        try:
+            client_id_str = str(req_doc.get("clientId"))
+            if client_id_str:
+                await NotificationService.create_notification(
+                    user_id=client_id_str,
+                    type=NotificationType.PROJECT_CREATED,
+                    title="Nuevo proyecto creado",
+                    message=f"Se ha creado un proyecto a partir de tu solicitud '{req_doc.get('title', 'N/A')}'. Ya puedes verlo en tu lista de proyectos.",
+                    related_id=str(result.inserted_id)
+                )
+        except Exception as e:
+            print(f"Error al enviar notificación de creación de proyecto: {e}")
+        
+        print(f"Proyecto creado correctamente para la solicitud {request_id}: {result.inserted_id}")
+        return True
+        
+    except Exception as e:
+        print(f"Error al crear proyecto desde la solicitud {request_id}: {e}")
+        return False
 
 
 # ────────────────────────────────────────────────────────────────────────────────

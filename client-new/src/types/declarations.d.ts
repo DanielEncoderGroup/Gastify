@@ -37,6 +37,7 @@ declare module '@heroicons/react/24/outline' {
   export const CogIcon: ComponentType<SVGProps<SVGSVGElement>>;
   export const ComputerDesktopIcon: ComponentType<SVGProps<SVGSVGElement>>;
   export const InboxArrowDownIcon: ComponentType<SVGProps<SVGSVGElement>>;
+  export const Squares2X2Icon: ComponentType<SVGProps<SVGSVGElement>>;
   export const BuildingOfficeIcon: ComponentType<SVGProps<SVGSVGElement>>;
   export const CalendarDaysIcon: ComponentType<SVGProps<SVGSVGElement>>;
   export const CalculatorIcon: ComponentType<SVGProps<SVGSVGElement>>;

@@ -322,10 +322,22 @@ class StatusHistoryEntry(BaseModel):
     fromStatusLabel: Optional[str]
     toStatus: str
     toStatusLabel: str
-    changedAt: datetime
+    changedAt: datetime 
     reason: Optional[str]
     changedBy: Optional[UserPublic]
 
+class RequestStatusUpdatePayload(BaseModel):
+    status: str = Field(..., description="El nuevo estado al que se cambiará la solicitud.")
+    reason: Optional[str] = Field(None, description="La razón para el cambio de estado (opcional).")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "status": "approved",
+                "reason": "La solicitud cumple con todos los criterios."
+            }
+        }
+    }
 
 class RequestDetail(RequestSummary):
     # Hereda todos los campos de RequestSummary

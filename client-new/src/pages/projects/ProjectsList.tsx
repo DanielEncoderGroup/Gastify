@@ -17,7 +17,10 @@ import {
   ChevronRightIcon
 } from '@heroicons/react/24/outline';
 import HeaderActions from '../../components/layout/HeaderActions';
+import projectService from '../../services/projectService';
+import { Project as BackendProject } from '../../types/project';
 
+// Interfaz simplificada para la lista de proyectos
 interface Project {
   id: string;
   name: string;
@@ -212,58 +215,57 @@ const ProjectRow: React.FC<{ project: Project }> = ({ project }) => {
 const ProjectsList: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  // Simular carga de datos
+  // Cargar datos reales del backend
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setProjects([
-        {
-          id: '1',
-          name: 'Implementación ERP',
-          description: 'Implementación de sistema ERP para gestión financiera y optimización de procesos empresariales',
-          status: 'active',
-          startDate: '2023-01-15',
-          endDate: '2023-07-30',
-        },
-        {
-          id: '2',
-          name: 'Migración a la nube',
-          description: 'Migración de infraestructura local a servicios en la nube para mejorar escalabilidad y reducir costos',
-          status: 'active',
-          startDate: '2023-03-01',
-          endDate: '2023-09-15',
-        },
-        {
-          id: '3',
-          name: 'Desarrollo app móvil',
-          description: 'Desarrollo de aplicación móvil para clientes con funcionalidades avanzadas y experiencia optimizada',
-          status: 'pending',
-          startDate: '2023-06-01',
-          endDate: '2023-12-31',
-        },
-        {
-          id: '4',
-          name: 'Actualización infraestructura',
-          description: 'Actualización de servidores y equipos de red para mejorar rendimiento y seguridad',
-          status: 'completed',
-          startDate: '2023-02-10',
-          endDate: '2023-04-20',
-        },
-      ]);
-      setIsLoading(false);
-    }, 1000);
+    const fetchProjects = async () => {
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        // Llamada al servicio real con los filtros apropiados
+        // El parámetro 'approved' indica proyectos aprobados para mostrar
+        // Usamos 'approved' para asegurar que solo se muestren solicitudes aprobadas que son proyectos
+        const data = await projectService.getAll(
+          statusFilter || 'active', // Si no hay filtro, mostrar por defecto los activos
+          undefined, // clientId (dejar undefined para ver todos o usar contexto de usuario)
+          currentPage,
+          10 // límite por página
+        );
+        
+        // Mapear datos del backend al formato esperado por el componente
+        const mappedProjects: Project[] = data.projects.map((project: BackendProject) => ({
+          id: project._id,
+          name: project.title,
+          description: project.description,
+          status: project.status,
+          startDate: project.startDate,
+          endDate: project.deadline || '',
+        }));
+        
+        setProjects(mappedProjects);
+        setTotalPages(data.pages);
+        setIsLoading(false);
+      } catch (err) {
+        console.error('Error al cargar proyectos:', err);
+        setError('No se pudieron cargar los proyectos. Por favor, inténtalo de nuevo más tarde.');
+        setIsLoading(false);
+      }
+    };
+    
+    fetchProjects();
+  }, [statusFilter, currentPage]); // Actualizar cuando cambian los filtros o la página
 
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Filtrar proyectos
+  // Filtrar proyectos (solo por búsqueda ya que el filtro por estado se aplica en el backend)
   const filteredProjects = projects.filter((project) => {
     const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           project.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = !statusFilter || project.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   });
 
   const statusOptions = [
@@ -274,6 +276,33 @@ const ProjectsList: React.FC = () => {
 
 
 
+  // Componente de paginación
+  const Pagination = () => (
+    <div className="flex justify-center mt-6 space-x-2">
+      <button
+        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+        disabled={currentPage === 1}
+        className={`px-4 py-2 rounded-lg ${currentPage === 1 
+          ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+          : 'bg-blue-50 text-blue-600 hover:bg-blue-100'}`}
+      >
+        Anterior
+      </button>
+      <span className="px-4 py-2 bg-white border border-gray-100 rounded-lg">
+        {currentPage} / {totalPages}
+      </span>
+      <button
+        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+        disabled={currentPage === totalPages}
+        className={`px-4 py-2 rounded-lg ${currentPage === totalPages 
+          ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+          : 'bg-blue-50 text-blue-600 hover:bg-blue-100'}`}
+      >
+        Siguiente
+      </button>
+    </div>
+  );
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
@@ -283,6 +312,26 @@ const ProjectsList: React.FC = () => {
           </div>
           <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto"></div>
           <p className="mt-4 text-gray-600">Cargando proyectos...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-6 bg-white rounded-xl shadow-md">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-2xl mb-6">
+            <ExclamationTriangleIcon className="w-8 h-8 text-red-600" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">Error al cargar proyectos</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button 
+            onClick={() => setCurrentPage(1)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Reintentar
+          </button>
         </div>
       </div>
     );
@@ -304,7 +353,7 @@ const ProjectsList: React.FC = () => {
                   Gestión de Proyectos
                 </h1>
                 <p className="text-gray-600 mt-1">
-                  Supervisa y administra todos los proyectos en curso
+                  {filteredProjects.length === 0 ? 'No hay proyectos disponibles' : `Mostrando ${filteredProjects.length} proyecto(s) en curso`}
                 </p>
               </div>
             </div>
@@ -395,10 +444,27 @@ const ProjectsList: React.FC = () => {
               
               {/* Lista vertical de proyectos */}
               <div className="space-y-4">
-                {filteredProjects.map((project) => (
-                  <ProjectRow key={project.id} project={project} />
-                ))}
+                {filteredProjects.length === 0 ? (
+                  <div className="text-center p-10 bg-white/80 backdrop-blur-sm rounded-xl border border-gray-100 shadow-sm">
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-50 rounded-2xl mb-4">
+                      <ExclamationTriangleIcon className="w-8 h-8 text-blue-500" />
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-800">No se encontraron proyectos</h3>
+                    <p className="text-gray-600 mt-2">
+                      {statusFilter 
+                        ? 'Prueba con un filtro diferente o contacta a soporte si este problema persiste.'
+                        : 'No tienes proyectos aprobados aún. Contacta con un administrador si necesitas ayuda.'}
+                    </p>
+                  </div>
+                ) : (
+                  filteredProjects.map((project) => (
+                    <ProjectRow key={project.id} project={project} />
+                  ))
+                )}
               </div>
+              
+              {/* Paginación */}
+              {totalPages > 1 && <Pagination />}
             </>
           ) : (
             <div className="text-center py-16">
