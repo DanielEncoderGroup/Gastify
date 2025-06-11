@@ -5,13 +5,13 @@ from email.mime.multipart import MIMEMultipart
 from email.header import Header
 
 # Configuración SMTP
-SMTP_HOST = 'mail.encodergroup.cl'
+SMTP_HOST = 'smtp.example.com'
 SMTP_PORT = 465
-SMTP_USER = 'noreply@encodergroup.cl'
-SMTP_PASSWORD = '.3H*qU8MI&?g'
+SMTP_USER = 'noreply@example.com'
+SMTP_PASSWORD = 'your_smtp_password'
 
 # Dirección de mail-tester.com (reemplaza con la que recibas del sitio)
-TARGET_EMAIL = 'test-axosh9lpa@srv1.mail-tester.com'
+TARGET_EMAIL = 'your-test-email@example.com'
 
 # Crear mensaje
 msg = MIMEMultipart('alternative')
