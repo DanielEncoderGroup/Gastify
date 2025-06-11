@@ -21,10 +21,8 @@ import ResetPassword from './pages/auth/ResetPassword';
 import VerifyEmail from './pages/auth/VerifyEmail';
 
 // Dashboard and app pages
-import ProjectsList from './pages/projects/ProjectsList';
 import ProjectForm from './pages/projects/ProjectForm';
 import RequestDetailPage from './pages/requests/RequestDetailPage';
-import ProjectDetail from './pages/projects/ProjectDetail';
 import MeetingsScheduler from './pages/meetings/MeetingsScheduler';
 import ProjectRequestsAdmin from './pages/projects/ProjectRequestsAdmin';
 import NewProjectRequest from './pages/projects/NewProjectRequest';
@@ -132,10 +130,7 @@ function App() {
 
           {/* Rutas protegidas CON NotificationProvider */}
           <Route path="/app" element={<PrivateRoute element={<ProtectedLayoutWithNotifications />} />}>
-            <Route index element={<ProjectsList />} />
-            <Route path="projects" element={<ProjectsList />} />
             <Route path="projects/new" element={<ProjectForm />} />
-            <Route path="projects/:id" element={<ProjectDetail />} />
             <Route path="projects/:id/edit" element={<ProjectForm />} />
             <Route path="meetings" element={<MeetingsScheduler />} />
             <Route path="requests" element={<RequestsList />} />
