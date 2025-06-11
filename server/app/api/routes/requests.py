@@ -1,6 +1,5 @@
 from app.models.notification import NotificationType
 from app.services.notification_service import NotificationService
-from app.models.project import ProjectCreate, Project
 from typing import Any, List, Optional, Dict, Set
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status, Body, Query, Path
