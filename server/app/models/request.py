@@ -1,23 +1,11 @@
 # server/app/models/request.py
 
-from typing import Optional, List, Annotated, Any, Dict
+from typing import Optional, List, Dict
 from datetime import datetime
 from bson import ObjectId
-from pydantic import BaseModel, Field, BeforeValidator
+from pydantic import BaseModel, Field
 
 from app.models.user import PyObjectId, UserPublic
-
-# ----------------------------------
-# 1) Validación de ObjectId (PyObjectId)
-# ----------------------------------
-def validate_object_id(v: Any) -> ObjectId:
-    if isinstance(v, ObjectId):
-        return v
-    if isinstance(v, str) and ObjectId.is_valid(v):
-        return ObjectId(v)
-    raise ValueError("Invalid ObjectId")
-
-PyObjectId = Annotated[ObjectId, BeforeValidator(validate_object_id)]
 
 
 # ----------------------------------
