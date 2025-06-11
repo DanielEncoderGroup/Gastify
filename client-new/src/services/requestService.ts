@@ -11,12 +11,6 @@ import {
   RequestStatus
 } from '../types/request';
 
-// Importamos el servicio mock para desarrollo
-import { mockRequestService } from './mockRequestService';
-
-// Flag para activar o desactivar el modo mock (desarrollo)
-const USE_MOCK_SERVICE = false;
-
 /**
  * Servicio para gestión de solicitudes
  */
@@ -36,9 +30,6 @@ export const requestService = {
     skip: number = 0,
     limit: number = 10
   ): Promise<RequestsListResponse> => {
-    if (USE_MOCK_SERVICE) {
-      return mockRequestService.getAll(status, clientId, search, skip, limit);
-    }
 
     try {
       // La baseURL de `api` ya apunta a "/api"
@@ -67,9 +58,6 @@ export const requestService = {
    * @param id ID de la solicitud
    */
   getById: async (id: string): Promise<RequestResponse> => {
-    if (USE_MOCK_SERVICE) {
-      return mockRequestService.getById(id);
-    }
 
     try {
       const response = await api.get<RequestResponse>(`/requests/${id}`);
@@ -84,12 +72,6 @@ export const requestService = {
    * @param request RequestCreate (todos los campos que definimos en el modelo)
    */
   create: async (request: RequestCreate): Promise<{ requestId: string }> => {
-    if (USE_MOCK_SERVICE) {
-      // En el mockService devolvemos un objeto RequestResponse, 
-      // pero para alinearlo con el backend real, retornamos { requestId }.
-      const mockResult = await mockRequestService.create(request);
-      return { requestId: mockResult.request.id };
-    }
 
     try {
       // El backend retorna: { success: true, message: "...", requestId: "abc123" }
@@ -111,9 +93,6 @@ export const requestService = {
    * @param request Datos de RequestUpdate (todos opcionales)
    */
   update: async (id: string, request: RequestUpdate): Promise<void> => {
-    if (USE_MOCK_SERVICE) {
-      return mockRequestService.update(id, request).then(() => {});
-    }
 
     try {
       await api.put(`/requests/${id}`, request);
@@ -127,11 +106,6 @@ export const requestService = {
    * @param id ID de la solicitud
    */
   delete: async (id: string): Promise<{ success: boolean; message: string }> => {
-    if (USE_MOCK_SERVICE) {
-      // Simulamos un delete en el mock
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      return { success: true, message: 'Solicitud eliminada correctamente' };
-    }
 
     try {
       const response = await api.delete<{ success: boolean; message: string }>(
@@ -152,9 +126,7 @@ export const requestService = {
     id: string,
     statusChange: StatusChangeRequest
   ): Promise<void> => {
-    if (USE_MOCK_SERVICE) {
-      return mockRequestService.changeStatus(id, statusChange).then(() => {});
-    }
+    
 
     try {
       await api.patch(`/requests/${id}/status`, statusChange);
@@ -172,9 +144,7 @@ export const requestService = {
     id: string,
     comment: CommentCreate
   ): Promise<void> => {
-    if (USE_MOCK_SERVICE) {
-      return mockRequestService.addComment(id, comment).then(() => {});
-    }
+    
 
     try {
       await api.post(`/requests/${id}/comments`, comment);
@@ -188,9 +158,7 @@ export const requestService = {
    * @param id ID de la solicitud
    */
   submitRequest: async (id: string): Promise<void> => {
-    if (USE_MOCK_SERVICE) {
-      return mockRequestService.submitRequest(id).then(() => {});
-    }
+
 
     try {
       await api.post(`/requests/${id}/submit`);
