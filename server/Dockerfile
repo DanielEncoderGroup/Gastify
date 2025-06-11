@@ -2,7 +2,7 @@
 FROM python:3.10-slim-bookworm
 
 # Set environment variables
-ENV PYTHONDONDONTWRITEBYTECODE=1 \
+ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app \
     PIP_NO_CACHE_DIR=1 \
