@@ -100,7 +100,7 @@ const LandingPage: React.FC = () => {
       toast.success('Inicio de sesión exitoso');
       
       // Usar navigate en lugar de window.location para evitar recargas completas
-      navigate('/app/projects');
+      navigate('/app/requests');
     } catch (error: any) {
       console.error('Error durante el login:', error);
       
