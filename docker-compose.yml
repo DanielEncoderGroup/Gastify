@@ -3,13 +3,14 @@ version: '3.8'
 
 services:
   # ───────────────────────────────────────────────────────────────────────────────
-  # 1) MongoDB
+  # 1) MongoDB (disabled - using host MongoDB instead)
   # ───────────────────────────────────────────────────────────────────────────────
   mongo:
     image: mongo:latest
     container_name: encodergroup-mongo
+    # Changed port to avoid conflict with host MongoDB
     ports:
-      - "27017:27017"
+      - "27018:27017"
     volumes:
       - mongo-data:/data/db
     networks:
@@ -30,15 +31,15 @@ services:
       - mongo
     environment:
       # variables para producción (se usan en server/app/core/config.py)
-      - MONGO_URI=mongodb://mongo:27017/encodergroup
+      - MONGO_URI=mongodb://host.docker.internal:27017/encodergroup
       - ENVIRONMENT=production
       - JWT_SECRET=your_jwt_secret_key
       - JWT_ALGORITHM=HS256
       - ACCESS_TOKEN_EXPIRE_MINUTES=10080   # 7 días
-      - SMTP_HOST=smtp.example.com
+      - SMTP_HOST=cpmail1.ghservers.net
       - SMTP_PORT=465
-      - SMTP_USER=noreply@example.com
-      - SMTP_PASSWORD=your_smtp_password
+      - SMTP_USER=noreply@encodergroup.cl
+      - SMTP_PASSWORD=dd)c}{F]P]U#
       - SMTP_SSL=true
       - SMTP_VERIFY_SSL=false
       - CLIENT_URL=http://localhost             # para enlaces de verificación

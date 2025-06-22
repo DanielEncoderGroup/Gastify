@@ -9,8 +9,8 @@ from datetime import datetime
 from motor.motor_asyncio import AsyncIOMotorClient
 
 # Configuración de la conexión a MongoDB
-MONGO_URI = "mongodb://mongo:27017/misviaticos"
-DB_NAME = "misviaticos"
+MONGO_URI = "mongodb://localhost:27017/encodergroup"
+DB_NAME = "encodergroup"
 
 async def migrate_existing_users():
     """
