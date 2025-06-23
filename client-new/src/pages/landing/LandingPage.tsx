@@ -4,6 +4,10 @@ import Icon from '../../components/ui/Icon';
 import { toast } from 'react-hot-toast';
 import { authService } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import HeroSection from '../../components/HeroSection';
+import MethodologiesSection from '../../components/MethodologiesSection';
+import TeamSection from '../../components/TeamSection';
+import ServicesSection from '../../components/ServicesSection';
 
 const LandingPage: React.FC = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -181,17 +185,6 @@ const LandingPage: React.FC = () => {
                 onClick={() => {
                   // Eliminar parámetros de URL y navegar a la sección
                   navigate('/', { replace: true });
-                  document.getElementById('valores')?.scrollIntoView({ behavior: 'smooth' });
-                }} 
-                className="text-base font-medium text-gray-300 hover:text-white"
-              >
-                Valores
-              </a>
-              <a 
-                href="javascript:void(0)" 
-                onClick={() => {
-                  // Eliminar parámetros de URL y navegar a la sección
-                  navigate('/', { replace: true });
                   document.getElementById('fundadores')?.scrollIntoView({ behavior: 'smooth' });
                 }} 
                 className="text-base font-medium text-gray-300 hover:text-white"
@@ -215,98 +208,13 @@ const LandingPage: React.FC = () => {
         </div>
       </header>
 
-      {/* Hero section */}
-      <div className="relative bg-gray-900">
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-900 to-gray-900 mix-blend-multiply" />
-          <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-blue-500 opacity-20" />
-        </div>
-        <div className="relative max-w-7xl mx-auto py-24 px-4 sm:py-32 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
-            Soluciones Tecnológicas <span className="text-blue-400">Escalables</span> para Empresas Modernas
-          </h1>
-          <p className="mt-6 text-xl text-gray-300 max-w-3xl">
-            EncoderGroup transforma el modo en que las empresas gestionan sus recursos, proyectos y equipos mediante soluciones digitales a medida que crecen con tu negocio.
-          </p>
-          <div className="mt-10 flex items-center space-x-6">
-            <Link
-              to="/register"
-              className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-            >
-              Comenzar ahora
-            </Link>
-            <button
-              onClick={() => setShowLoginModal(true)}
-              className="text-base font-medium text-white hover:text-blue-300"
-            >
-              Iniciar sesión
-            </button>
-          </div>
-        </div>
-      </div>
+      {/* Hero section with animations */}
+      <HeroSection setShowLoginModal={setShowLoginModal} />
 
-      {/* Metodologías section */}
-      <div id="metodologias" className="py-16 bg-white overflow-hidden lg:py-24">
-        <div className="relative max-w-xl mx-auto px-4 sm:px-6 lg:px-8 lg:max-w-7xl">
-          <div className="relative">
-            <h2 className="text-center text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-              Metodologías de Trabajo
-            </h2>
-            <p className="mt-4 max-w-3xl mx-auto text-center text-xl text-gray-500">
-              Implementamos metodologías ágiles que garantizan la entrega de valor constante y la adaptación a los cambios.
-            </p>
-          </div>
+      {/* Metodologías section with animations */}
+      <MethodologiesSection />
 
-          <div className="mt-12 lg:mt-16 lg:grid lg:grid-cols-3 lg:gap-8">
-            <div className="relative p-8 bg-white rounded-lg shadow-md transition-all duration-300 hover:shadow-xl">
-              <div className="h-14 w-14 rounded-md bg-blue-500 flex items-center justify-center mb-5">
-                <Icon name="ArrowPathIcon" className="h-8 w-8 text-white" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Scrum</h3>
-              <p className="text-gray-500 mb-3">
-                Iteraciones cortas (sprints) que permiten entregar valor de forma incremental y obtener retroalimentación constante.
-              </p>
-              <ul className="text-gray-500 list-disc pl-5 space-y-1">
-                <li>Sprints de 1-2 semanas</li>
-                <li>Ceremonias ágiles</li>
-                <li>Mejora continua</li>
-              </ul>
-            </div>
-
-            <div className="relative mt-10 lg:mt-0 p-8 bg-white rounded-lg shadow-md transition-all duration-300 hover:shadow-xl">
-              <div className="h-14 w-14 rounded-md bg-blue-500 flex items-center justify-center mb-5">
-                <Icon name="Squares2X2Icon" className="h-8 w-8 text-white" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Kanban</h3>
-              <p className="text-gray-500 mb-3">
-                Visualización del flujo de trabajo que permite identificar cuellos de botella y optimizar procesos.
-              </p>
-              <ul className="text-gray-500 list-disc pl-5 space-y-1">
-                <li>Flujo continuo</li>
-                <li>Limitación de trabajo en progreso</li>
-                <li>Optimización de ciclos</li>
-              </ul>
-            </div>
-
-            <div className="relative mt-10 lg:mt-0 p-8 bg-white rounded-lg shadow-md transition-all duration-300 hover:shadow-xl">
-              <div className="h-14 w-14 rounded-md bg-blue-500 flex items-center justify-center mb-5">
-                <Icon name="CpuChipIcon" className="h-8 w-8 text-white" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">DevOps</h3>
-              <p className="text-gray-500 mb-3">
-                Integración entre desarrollo y operaciones para automatizar procesos y acelerar entregas.
-              </p>
-              <ul className="text-gray-500 list-disc pl-5 space-y-1">
-                <li>CI/CD automatizado</li>
-                <li>Infraestructura como código</li>
-                <li>Monitoreo continuo</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Tecnologías section */}
+      {/* Stack Tecnológico section con tarjetas oscuras */}
       <div id="tecnologias" className="py-16 bg-gray-50 overflow-hidden lg:py-24">
         <div className="relative max-w-xl mx-auto px-4 sm:px-6 lg:px-8 lg:max-w-7xl">
           <div className="relative">
@@ -318,157 +226,85 @@ const LandingPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="mt-12 lg:mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                <span className="h-10 w-10 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center mr-3">
-                  <Icon name="CodeBracketIcon" className="h-6 w-6" />
-                </span>
+          <div className="mt-12 lg:mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Frontend Card */}
+            <div className="bg-[#111827] p-8 rounded-lg shadow-lg border border-[#1e293b] text-center">
+              <div className="flex justify-center mb-4">
+                <div className="h-14 w-14 bg-blue-500/10 rounded-full flex items-center justify-center">
+                  <Icon name="CodeBracketIcon" className="h-8 w-8 text-blue-400" />
+                </div>
+              </div>
+              <h3 className="text-gray-400 font-medium mb-2">
                 Frontend
               </h3>
-              <ul className="space-y-2 text-gray-500">
-                <li className="flex items-center">
-                  <span className="mr-2 text-blue-500">•</span> React & TypeScript
-                </li>
-                <li className="flex items-center">
-                  <span className="mr-2 text-blue-500">•</span> TailwindCSS
-                </li>
-                <li className="flex items-center">
-                  <span className="mr-2 text-blue-500">•</span> Redux / Context API
-                </li>
-                <li className="flex items-center">
-                  <span className="mr-2 text-blue-500">•</span> Formik & Yup
-                </li>
-              </ul>
+              <h2 className="text-white text-2xl font-bold mb-3">
+                React & TypeScript
+              </h2>
+              <div className="text-blue-400 text-sm space-y-1">
+                <p>TailwindCSS</p>
+                <p>Redux / Context API</p>
+                <p>Formik & Yup</p>
+              </div>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                <span className="h-10 w-10 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center mr-3">
-                  <Icon name="ServerIcon" className="h-6 w-6" />
-                </span>
+            {/* Backend Card */}
+            <div className="bg-[#111827] p-8 rounded-lg shadow-lg border border-[#1e293b] text-center">
+              <div className="flex justify-center mb-4">
+                <div className="h-14 w-14 bg-purple-500/10 rounded-full flex items-center justify-center">
+                  <Icon name="ServerIcon" className="h-8 w-8 text-purple-400" />
+                </div>
+              </div>
+              <h3 className="text-gray-400 font-medium mb-2">
                 Backend
               </h3>
-              <ul className="space-y-2 text-gray-500">
-                <li className="flex items-center">
-                  <span className="mr-2 text-blue-500">•</span> Node.js & Express
-                </li>
-                <li className="flex items-center">
-                  <span className="mr-2 text-blue-500">•</span> MongoDB
-                </li>
-                <li className="flex items-center">
-                  <span className="mr-2 text-blue-500">•</span> RESTful APIs
-                </li>
-                <li className="flex items-center">
-                  <span className="mr-2 text-blue-500">•</span> JWT Authentication
-                </li>
-              </ul>
+              <h2 className="text-white text-2xl font-bold mb-3">
+                Node.js & Express
+              </h2>
+              <div className="text-purple-400 text-sm space-y-1">
+                <p>MongoDB</p>
+                <p>RESTful APIs</p>
+                <p>JWT Authentication</p>
+              </div>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                <span className="h-10 w-10 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center mr-3">
-                  <Icon name="CubeIcon" className="h-6 w-6" />
-                </span>
+            {/* DevOps Card */}
+            <div className="bg-[#111827] p-8 rounded-lg shadow-lg border border-[#1e293b] text-center">
+              <div className="flex justify-center mb-4">
+                <div className="h-14 w-14 bg-green-500/10 rounded-full flex items-center justify-center">
+                  <Icon name="CubeIcon" className="h-8 w-8 text-green-400" />
+                </div>
+              </div>
+              <h3 className="text-gray-400 font-medium mb-2">
                 DevOps
               </h3>
-              <ul className="space-y-2 text-gray-500">
-                <li className="flex items-center">
-                  <span className="mr-2 text-blue-500">•</span> Docker & Kubernetes
-                </li>
-                <li className="flex items-center">
-                  <span className="mr-2 text-blue-500">•</span> CI/CD Pipelines
-                </li>
-                <li className="flex items-center">
-                  <span className="mr-2 text-blue-500">•</span> AWS / Azure
-                </li>
-                <li className="flex items-center">
-                  <span className="mr-2 text-blue-500">•</span> Monitoring & Logging
-                </li>
-              </ul>
+              <h2 className="text-white text-2xl font-bold mb-3">
+                Docker & Kubernetes
+              </h2>
+              <div className="text-green-400 text-sm space-y-1">
+                <p>CI/CD Pipelines</p>
+                <p>AWS / Azure</p>
+                <p>Monitoring & Logging</p>
+              </div>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                <span className="h-10 w-10 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center mr-3">
-                  <Icon name="WrenchScrewdriverIcon" className="h-6 w-6" />
-                </span>
+            {/* Herramientas Card */}
+            <div className="bg-[#111827] p-8 rounded-lg shadow-lg border border-[#1e293b] text-center">
+              <div className="flex justify-center mb-4">
+                <div className="h-14 w-14 bg-yellow-500/10 rounded-full flex items-center justify-center">
+                  <Icon name="WrenchScrewdriverIcon" className="h-8 w-8 text-yellow-400" />
+                </div>
+              </div>
+              <h3 className="text-gray-400 font-medium mb-2">
                 Herramientas
               </h3>
-              <ul className="space-y-2 text-gray-500">
-                <li className="flex items-center">
-                  <span className="mr-2 text-blue-500">•</span> Git & GitHub
-                </li>
-                <li className="flex items-center">
-                  <span className="mr-2 text-blue-500">•</span> Jira / Trello
-                </li>
-                <li className="flex items-center">
-                  <span className="mr-2 text-blue-500">•</span> Figma / Adobe XD
-                </li>
-                <li className="flex items-center">
-                  <span className="mr-2 text-blue-500">•</span> Jest / Cypress
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Valores section */}
-      <div id="valores" className="py-16 bg-white overflow-hidden lg:py-24">
-        <div className="relative max-w-xl mx-auto px-4 sm:px-6 lg:px-8 lg:max-w-7xl">
-          <div className="relative">
-            <h2 className="text-center text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-              Nuestros Valores
-            </h2>
-            <p className="mt-4 max-w-3xl mx-auto text-center text-xl text-gray-500">
-              Estos valores definen nuestra cultura y guían cada decisión que tomamos en EncoderGroup.
-            </p>
-          </div>
-
-          <div className="mt-12 lg:mt-16 grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="relative p-8 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-              <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center">
-                <Icon name="ShieldCheckIcon" className="h-6 w-6 mr-2 text-blue-500" />
-                Compromiso
-              </h3>
-              <p className="text-gray-700">
-                Nos comprometemos a entregar soluciones de alta calidad que superen las expectativas de nuestros clientes.
-                Asumimos la responsabilidad de nuestro trabajo y cumplimos con los plazos establecidos.
-              </p>
-            </div>
-
-            <div className="relative p-8 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-              <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center">
-                <Icon name="LightBulbIcon" className="h-6 w-6 mr-2 text-blue-500" />
-                Innovación
-              </h3>
-              <p className="text-gray-700">
-                Buscamos constantemente nuevas formas de resolver problemas y mejorar nuestros procesos.
-                Fomentamos la creatividad y el pensamiento disruptivo en todos los niveles de la organización.
-              </p>
-            </div>
-
-            <div className="relative p-8 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-              <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center">
-                <Icon name="UserGroupIcon" className="h-6 w-6 mr-2 text-blue-500" />
-                Colaboración
-              </h3>
-              <p className="text-gray-700">
-                Creemos en el poder del trabajo en equipo. Colaboramos estrechamente con nuestros clientes y
-                entre nosotros para lograr resultados excepcionales. Valoramos la diversidad de pensamiento y experiencia.
-              </p>
-            </div>
-
-            <div className="relative p-8 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-              <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center">
-                <Icon name="DocumentTextIcon" className="h-6 w-6 mr-2 text-blue-500" />
-                Transparencia
-              </h3>
-              <p className="text-gray-700">
-                Mantenemos una comunicación clara y honesta en todas nuestras interacciones. Compartimos abiertamente
-                nuestros procesos, decisiones y resultados, construyendo confianza con nuestros clientes y colaboradores.
-              </p>
+              <h2 className="text-white text-2xl font-bold mb-3">
+                Git & GitHub
+              </h2>
+              <div className="text-yellow-400 text-sm space-y-1">
+                <p>Jira / Trello</p>
+                <p>Figma / Adobe XD</p>
+                <p>Jest / Cypress</p>
+              </div>
             </div>
           </div>
         </div>
@@ -649,62 +485,7 @@ const LandingPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Testimonios section - ACTUALIZADO */}
-      <div id="testimonios" className="bg-white py-16 lg:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h2 className="text-3xl font-extrabold text-gray-900">Lo que nuestros clientes dicen</h2>
-            <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-500">
-              Quality Metrics ha transformado sus procesos con nuestras soluciones centralizadas
-            </p>
-          </div>
-          <div className="mt-16 grid gap-8 lg:grid-cols-2 max-w-4xl mx-auto">
-            {/* Testimonio 1 - Amílcar Arriagada */}
-            <div className="bg-gray-50 rounded-lg p-8 shadow-sm border border-gray-200 relative">
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <div className="bg-blue-500 rounded-full p-2">
-                  <Icon name="ChatBubbleLeftIcon" className="h-6 w-6 text-white" />
-                </div>
-              </div>
-              <div className="text-gray-700 mb-6 pt-4">
-                <p className="italic">"El sistema centralizado de datos que desarrolló EncoderGroup revolucionó nuestra capacidad de tomar decisiones estratégicas. Ahora tenemos acceso inmediato a métricas críticas y una visión unificada de toda nuestra operación."</p>
-              </div>
-              <div className="flex items-center">
-                <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <span className="text-blue-600 font-semibold text-lg">AA</span>
-                </div>
-                <div className="ml-4">
-                  <h4 className="text-lg font-bold text-gray-900">Amílcar Arriagada</h4>
-                  <p className="text-gray-500">CEO, Quality Metrics</p>
-                </div>
-              </div>
-            </div>
-            
-            {/* Testimonio 2 - Rodrigo Vilches */}
-            <div className="bg-gray-50 rounded-lg p-8 shadow-sm border border-gray-200 relative">
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <div className="bg-blue-500 rounded-full p-2">
-                  <Icon name="ChatBubbleLeftIcon" className="h-6 w-6 text-white" />
-                </div>
-              </div>
-              <div className="text-gray-700 mb-6 pt-4">
-                <p className="italic">"El dashboard interactivo que construyeron nos permite monitorear KPIs en tiempo real y identificar oportunidades de mejora inmediatamente. La visualización de datos nunca había sido tan clara y accionable para nuestro equipo."</p>
-              </div>
-              <div className="flex items-center">
-                <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <span className="text-blue-600 font-semibold text-lg">RV</span>
-                </div>
-                <div className="ml-4">
-                  <h4 className="text-lg font-bold text-gray-900">Rodrigo Vilches</h4>
-                  <p className="text-gray-500">Jefe de Producto, Quality Metrics</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Fundadores section - NUEVO */}
+      {/* Fundadores section */}
       <div id="fundadores" className="bg-gray-50 py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
@@ -777,7 +558,7 @@ const LandingPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Servicios destacados section - NUEVO (reemplaza recursos) */}
+      {/* Servicios destacados section */}
       <div id="servicios" className="bg-white py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
@@ -1054,7 +835,7 @@ const LandingPage: React.FC = () => {
               <div className="flex flex-col space-y-2">
                 <a href="#metodologias" className="text-gray-400 hover:text-white">Metodologías</a>
                 <a href="#tecnologias" className="text-gray-400 hover:text-white">Tecnologías</a>
-                <a href="#valores" className="text-gray-400 hover:text-white">Valores</a>
+
                 <a href="#fundadores" className="text-gray-400 hover:text-white">Equipo</a>
                 <Link to="/login" className="text-gray-400 hover:text-white">Iniciar sesión</Link>
               </div>
