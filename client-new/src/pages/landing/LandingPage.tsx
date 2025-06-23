@@ -4,6 +4,7 @@ import Icon from '../../components/ui/Icon';
 import { toast } from 'react-hot-toast';
 import { authService } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import ScrollToTopButton from '../../components/ScrollToTopButton';
 import HeroSection from '../../components/HeroSection';
 import MethodologiesSection from '../../components/MethodologiesSection';
 import TeamSection from '../../components/TeamSection';
@@ -806,6 +807,9 @@ const LandingPage: React.FC = () => {
           </div>
         </div>
       )}
+      
+      {/* Botón para desplazarse hacia arriba */}
+      <ScrollToTopButton />
     </div>
   );
 };
