@@ -215,13 +215,36 @@ const LandingPage: React.FC = () => {
       <MethodologiesSection />
 
       {/* Stack Tecnológico section con tarjetas oscuras */}
-      <div id="tecnologias" className="py-16 bg-gray-50 overflow-hidden lg:py-24">
+      <div id="tecnologias" className="relative py-16 bg-[#0e1220] overflow-hidden lg:py-24">
+        {/* Section Separator - Top decorative line */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
+
+        {/* Background elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          {/* Fondo similar a servicios destacados pero con variación */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#0c101e] via-[#121c35] to-[#0e152a] mix-blend-normal" />
+          
+          {/* Círculos difuminados en posiciones diferentes */}
+          <div className="absolute -top-60 left-1/3 w-[600px] h-[600px] rounded-full bg-blue-600/5 blur-3xl" />
+          <div className="absolute bottom-0 -right-40 w-[400px] h-[400px] rounded-full bg-indigo-600/5 blur-3xl" />
+          <div className="absolute bottom-1/3 left-0 w-[350px] h-[350px] rounded-full bg-purple-600/5 blur-3xl" />
+          
+          {/* Patrón de fondo de hexágonos pero girado */}
+          <div className="absolute inset-0 opacity-[0.03]" 
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 5L55 20V40L30 55L5 40V20L30 5Z' stroke='white' stroke-opacity='0.2' fill='none'/%3E%3C/svg%3E")`,
+              backgroundSize: '60px 60px',
+              transform: 'rotate(30deg)'
+            }}
+          />
+        </div>
+        
         <div className="relative max-w-xl mx-auto px-4 sm:px-6 lg:px-8 lg:max-w-7xl">
           <div className="relative">
-            <h2 className="text-center text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-              Stack Tecnológico
+            <h2 className="text-center text-3xl leading-8 font-extrabold tracking-tight text-white sm:text-4xl">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-500">Stack</span> Tecnológico
             </h2>
-            <p className="mt-4 max-w-3xl mx-auto text-center text-xl text-gray-500">
+            <p className="mt-4 max-w-3xl mx-auto text-center text-xl text-gray-300">
               Utilizamos tecnologías modernas y escalables para desarrollar soluciones robustas y adaptables.
             </p>
           </div>
@@ -310,325 +333,13 @@ const LandingPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Proceso section */}
-      <div id="proceso" className="py-16 bg-gray-50 overflow-hidden lg:py-24">
-        <div className="relative max-w-xl mx-auto px-4 sm:px-6 lg:px-8 lg:max-w-7xl">
-          <div className="relative">
-            <h2 className="text-center text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-              Un proceso claro y orientado a resultados
-            </h2>
-            <p className="mt-4 max-w-3xl mx-auto text-center text-xl text-gray-500">
-              Implementamos un enfoque estructurado que asegura la calidad, transparencia y comunicación constante en cada fase del proyecto.
-            </p>
-          </div>
 
-          <div className="mt-16 relative">
-            {/* Línea vertical de proceso */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-blue-200"></div>
-
-            {/* Paso 1 */}
-            <div className="relative mb-24">
-              <div className="flex items-center justify-center">
-                <div className="absolute z-10 flex items-center justify-center h-12 w-12 rounded-full bg-blue-500 text-white shadow-lg left-1/2 transform -translate-x-1/2">
-                  <span className="font-bold">1</span>
-                </div>
-              </div>
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="md:text-right md:pr-12 flex flex-col items-center md:items-end">
-                  <h3 className="text-xl font-bold text-gray-900">Descubrimiento y Análisis</h3>
-                  <p className="mt-2 text-gray-600 max-w-md">
-                    Comprendemos tus necesidades, objetivos de negocio y visión del proyecto. Identificamos usuarios y requerimientos clave para definir el alcance.
-                  </p>
-                </div>
-                <div className="hidden md:block">
-                  <Icon name="MagnifyingGlassIcon" className="h-16 w-16 text-blue-500" />
-                </div>
-              </div>
-            </div>
-
-            {/* Paso 2 */}
-            <div className="relative mb-24">
-              <div className="flex items-center justify-center">
-                <div className="absolute z-10 flex items-center justify-center h-12 w-12 rounded-full bg-blue-500 text-white shadow-lg left-1/2 transform -translate-x-1/2">
-                  <span className="font-bold">2</span>
-                </div>
-              </div>
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="hidden md:block md:text-right md:pr-12">
-                  <Icon name="ChartBarIcon" className="h-16 w-16 text-blue-500 ml-auto" />
-                </div>
-                <div className="flex flex-col items-center md:items-start">
-                  <h3 className="text-xl font-bold text-gray-900">Planificación Estratégica</h3>
-                  <p className="mt-2 text-gray-600 max-w-md">
-                    Elaboramos una estrategia detallada, definimos arquitectura, seleccionamos tecnologías y creamos un plan de acción con cronograma claro.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Paso 3 */}
-            <div className="relative mb-24">
-              <div className="flex items-center justify-center">
-                <div className="absolute z-10 flex items-center justify-center h-12 w-12 rounded-full bg-blue-500 text-white shadow-lg left-1/2 transform -translate-x-1/2">
-                  <span className="font-bold">3</span>
-                </div>
-              </div>
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="md:text-right md:pr-12 flex flex-col items-center md:items-end">
-                  <h3 className="text-xl font-bold text-gray-900">Diseño y Prototipado</h3>
-                  <p className="mt-2 text-gray-600 max-w-md">
-                    Creamos interfaces intuitivas y experiencias de usuario atractivas, con prototipos interactivos para validar antes del desarrollo.
-                  </p>
-                </div>
-                <div className="hidden md:block">
-                  <Icon name="PaintBrushIcon" className="h-16 w-16 text-blue-500" />
-                </div>
-              </div>
-            </div>
-
-            {/* Paso 4 */}
-            <div className="relative mb-24">
-              <div className="flex items-center justify-center">
-                <div className="absolute z-10 flex items-center justify-center h-12 w-12 rounded-full bg-blue-500 text-white shadow-lg left-1/2 transform -translate-x-1/2">
-                  <span className="font-bold">4</span>
-                </div>
-              </div>
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="hidden md:block md:text-right md:pr-12">
-                  <Icon name="CodeBracketIcon" className="h-16 w-16 text-blue-500 ml-auto" />
-                </div>
-                <div className="flex flex-col items-center md:items-start">
-                  <h3 className="text-xl font-bold text-gray-900">Desarrollo Ágil</h3>
-                  <p className="mt-2 text-gray-600 max-w-md">
-                    Implementamos mediante sprints con metodologías ágiles (Scrum), entregas incrementales y feedback continuo para asegurar calidad.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Paso 5 */}
-            <div className="relative mb-24">
-              <div className="flex items-center justify-center">
-                <div className="absolute z-10 flex items-center justify-center h-12 w-12 rounded-full bg-blue-500 text-white shadow-lg left-1/2 transform -translate-x-1/2">
-                  <span className="font-bold">5</span>
-                </div>
-              </div>
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="md:text-right md:pr-12 flex flex-col items-center md:items-end">
-                  <h3 className="text-xl font-bold text-gray-900">Testing y Aseguramiento</h3>
-                  <p className="mt-2 text-gray-600 max-w-md">
-                    Realizamos pruebas exhaustivas funcionales, de seguridad y rendimiento para garantizar una aplicación robusta y libre de errores.
-                  </p>
-                </div>
-                <div className="hidden md:block">
-                  <Icon name="BugAntIcon" className="h-16 w-16 text-blue-500" />
-                </div>
-              </div>
-            </div>
-
-            {/* Paso 6 */}
-            <div className="relative mb-24">
-              <div className="flex items-center justify-center">
-                <div className="absolute z-10 flex items-center justify-center h-12 w-12 rounded-full bg-blue-500 text-white shadow-lg left-1/2 transform -translate-x-1/2">
-                  <span className="font-bold">6</span>
-                </div>
-              </div>
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="hidden md:block md:text-right md:pr-12">
-                  <Icon name="RocketLaunchIcon" className="h-16 w-16 text-blue-500 ml-auto" />
-                </div>
-                <div className="flex flex-col items-center md:items-start">
-                  <h3 className="text-xl font-bold text-gray-900">Despliegue e Implementación</h3>
-                  <p className="mt-2 text-gray-600 max-w-md">
-                    Desplegamos en producción con CI/CD, garantizando una transición suave, monitoreo y escalabilidad desde el primer día.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Paso 7 */}
-            <div className="relative">
-              <div className="flex items-center justify-center">
-                <div className="absolute z-10 flex items-center justify-center h-12 w-12 rounded-full bg-blue-500 text-white shadow-lg left-1/2 transform -translate-x-1/2">
-                  <span className="font-bold">7</span>
-                </div>
-              </div>
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="md:text-right md:pr-12 flex flex-col items-center md:items-end">
-                  <h3 className="text-xl font-bold text-gray-900">Soporte y Evolución</h3>
-                  <p className="mt-2 text-gray-600 max-w-md">
-                    Proporcionamos acompañamiento continuo, capacitación, soporte técnico y evolución del producto para adaptarse a nuevas necesidades.
-                  </p>
-                </div>
-                <div className="hidden md:block">
-                  <Icon name="AcademicCapIcon" className="h-16 w-16 text-blue-500" />
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Botones de acción */}
-          <div className="mt-16 flex flex-col sm:flex-row justify-center gap-4">
-            <a 
-              href="#contacto" 
-              className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-            >
-              Iniciar proyecto
-            </a>
-            <a 
-              href="#metodologias" 
-              className="inline-flex items-center justify-center px-5 py-3 border border-blue-600 text-base font-medium rounded-md text-blue-600 bg-white hover:bg-blue-50"
-            >
-              Conocer más sobre nuestras metodologías
-            </a>
-          </div>
-        </div>
-      </div>
 
       {/* Fundadores section */}
-      <div id="fundadores" className="bg-gray-50 py-16 lg:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-              Nuestro Equipo Fundador
-            </h2>
-            <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-500">
-              Ingenieros informáticos con la experiencia y pasión necesarias para transformar ideas en soluciones digitales exitosas
-            </p>
-          </div>
-          <div className="mt-12 grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
-            {/* Daniel Iturra */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl">
-              <div className="h-64 bg-gradient-to-br from-blue-600 to-indigo-700 relative">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-lg">
-                    <span className="text-4xl font-bold text-blue-600">DI</span>
-                  </div>
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">Daniel Iturra</h3>
-                <p className="text-blue-600 font-medium mb-4 text-center">Ingeniero Informático</p>
-                <p className="text-gray-600 text-sm leading-relaxed">
-                  Especialista en arquitectura de software y desarrollo backend. Con amplia experiencia en el diseño de sistemas escalables y la implementación de soluciones tecnológicas robustas que impulsan el crecimiento empresarial.
-                </p>
-                <div className="mt-4 flex justify-center space-x-2">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    Backend
-                  </span>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    Arquitectura
-                  </span>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    DevOps
-                  </span>
-                </div>
-              </div>
-            </div>
-            
-            {/* Mario Bronchuer */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl">
-              <div className="h-64 bg-gradient-to-br from-indigo-600 to-purple-700 relative">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-lg">
-                    <span className="text-4xl font-bold text-indigo-600">MB</span>
-                  </div>
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">Mario Bronchuer</h3>
-                <p className="text-indigo-600 font-medium mb-4 text-center">Ingeniero Informático</p>
-                <p className="text-gray-600 text-sm leading-relaxed">
-                  Experto en desarrollo frontend y experiencia de usuario. Se enfoca en crear interfaces intuitivas y funcionales que conectan de manera efectiva la tecnología con las necesidades del usuario final.
-                </p>
-                <div className="mt-4 flex justify-center space-x-2">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                    Frontend
-                  </span>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                    UX/UI
-                  </span>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                    React
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <TeamSection />
 
       {/* Servicios destacados section */}
-      <div id="servicios" className="bg-white py-16 lg:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-              Servicios destacados
-            </h2>
-            <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-500">
-              Soluciones especializadas que impulsan la transformación digital de tu empresa
-            </p>
-          </div>
-          <div className="mt-12 grid gap-8 md:grid-cols-3">
-            {/* Servicio 1 */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl border border-gray-100">
-              <div className="h-48 bg-gradient-to-br from-blue-500 to-blue-600 relative">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Icon name="ChartBarIcon" className="h-24 w-24 text-white opacity-90" />
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Dashboards Interactivos</h3>
-                <p className="text-gray-500 mb-4">
-                  Visualización de datos en tiempo real con métricas personalizadas que facilitan la toma de decisiones estratégicas.
-                </p>
-                <div className="flex items-center text-blue-600 font-medium hover:text-blue-800">
-                  <span className="mr-2">Conocer más</span>
-                  <Icon name="ArrowRightIcon" className="h-4 w-4" />
-                </div>
-              </div>
-            </div>
-            
-            {/* Servicio 2 */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl border border-gray-100">
-              <div className="h-48 bg-gradient-to-br from-green-500 to-green-600 relative">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Icon name="CircleStackIcon" className="h-24 w-24 text-white opacity-90" />
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Sistemas Centralizados</h3>
-                <p className="text-gray-500 mb-4">
-                  Unificación de datos y procesos empresariales en una plataforma central para mayor eficiencia operacional.
-                </p>
-                <div className="flex items-center text-blue-600 font-medium hover:text-blue-800">
-                  <span className="mr-2">Conocer más</span>
-                  <Icon name="ArrowRightIcon" className="h-4 w-4" />
-                </div>
-              </div>
-            </div>
-            
-            {/* Servicio 3 */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl border border-gray-100">
-              <div className="h-48 bg-gradient-to-br from-purple-500 to-purple-600 relative">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Icon name="CogIcon" className="h-24 w-24 text-white opacity-90" />
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Automatización de Procesos</h3>
-                <p className="text-gray-500 mb-4">
-                  Optimización y automatización de flujos de trabajo para reducir tareas manuales y aumentar la productividad.
-                </p>
-                <div className="flex items-center text-blue-600 font-medium hover:text-blue-800">
-                  <span className="mr-2">Conocer más</span>
-                  <Icon name="ArrowRightIcon" className="h-4 w-4" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ServicesSection />
 
       {/* FAQ section */}
       <div id="faq" className="bg-gray-50 py-16 lg:py-24">
