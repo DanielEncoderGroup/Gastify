@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import Icon from '../../components/ui/Icon';
 import { toast } from 'react-hot-toast';
 import { authService } from '../../services/api';
@@ -343,58 +344,91 @@ const LandingPage: React.FC = () => {
       <ServicesSection />
 
       {/* FAQ section */}
-      <div id="faq" className="bg-gray-50 py-16 lg:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div id="faq" className="relative bg-gradient-to-b from-[#0f1628] via-[#121a33] to-[#0d1424] py-16 lg:py-24 overflow-hidden">
+        {/* Elementos decorativos de fondo */}
+        <div className="absolute inset-0 overflow-hidden">
+          {/* Círculos difuminados */}
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full filter blur-3xl opacity-30"></div>
+          <div className="absolute bottom-10 right-1/4 w-80 h-80 bg-indigo-700/20 rounded-full filter blur-3xl opacity-30"></div>
+          <div className="absolute top-1/2 left-1/3 w-60 h-60 bg-purple-600/20 rounded-full filter blur-3xl opacity-20"></div>
+          
+          {/* Patrón hexagonal */}
+          <div className="absolute inset-0 opacity-10" 
+               style={{
+                 backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'28\' height=\'49\' viewBox=\'0 0 28 49\'%3E%3Cg fill-rule=\'evenodd\'%3E%3Cg id=\'hexagons\' fill=\'%239C92AC\' fill-opacity=\'0.25\' fill-rule=\'nonzero\'%3E%3Cpath d=\'M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+                 transform: 'rotate(30deg)'
+               }}>
+          </div>
+        </div>
+        
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+            <h2 className="text-3xl font-extrabold text-white sm:text-4xl bg-clip-text text-transparent bg-gradient-to-r from-blue-300 via-blue-400 to-indigo-400">
               Preguntas frecuentes
             </h2>
-            <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-500">
+            <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-300">
               Respuestas a las preguntas más comunes sobre nuestros servicios
             </p>
           </div>
+          
           <div className="mt-12 max-w-3xl mx-auto">
             <div className="space-y-6">
               {/* Pregunta 1 */}
-              <div className="bg-white rounded-lg p-6 shadow-sm">
-                <h3 className="text-lg font-bold text-gray-900 flex items-center">
-                  <Icon name="QuestionMarkCircleIcon" className="h-6 w-6 text-blue-500 mr-2" />
-                  ¿Cuánto tiempo toma desarrollar un proyecto?
+              <div className="bg-gradient-to-br from-gray-900/80 to-gray-800/90 rounded-xl p-6 shadow-lg border border-blue-500/20 backdrop-blur-sm transition-all duration-300 hover:border-blue-400/40 hover:shadow-blue-900/20 hover:-translate-y-1">
+                <h3 className="text-lg font-bold text-white flex items-center">
+                  <div className="p-3 bg-blue-600/20 rounded-full mr-4 flex-shrink-0">
+                    <Icon name="QuestionMarkCircleIcon" className="h-6 w-6 text-blue-400" />
+                  </div>
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-blue-100">
+                    ¿Cuánto tiempo toma desarrollar un proyecto?
+                  </span>
                 </h3>
-                <p className="mt-2 text-gray-600">
+                <p className="mt-4 ml-14 text-gray-300">
                   Cada proyecto es único, pero generalmente nuestros desarrollos toman entre 2-6 meses dependiendo de la complejidad. Trabajamos con metodologías ágiles que permiten entregas incrementales y visibilidad temprana de resultados.
                 </p>
               </div>
               
               {/* Pregunta 2 */}
-              <div className="bg-white rounded-lg p-6 shadow-sm">
-                <h3 className="text-lg font-bold text-gray-900 flex items-center">
-                  <Icon name="QuestionMarkCircleIcon" className="h-6 w-6 text-blue-500 mr-2" />
-                  ¿Qué metodologías de trabajo utilizan?
+              <div className="bg-gradient-to-br from-gray-900/80 to-gray-800/90 rounded-xl p-6 shadow-lg border border-indigo-500/20 backdrop-blur-sm transition-all duration-300 hover:border-indigo-400/40 hover:shadow-indigo-900/20 hover:-translate-y-1">
+                <h3 className="text-lg font-bold text-white flex items-center">
+                  <div className="p-3 bg-indigo-600/20 rounded-full mr-4 flex-shrink-0">
+                    <Icon name="QuestionMarkCircleIcon" className="h-6 w-6 text-indigo-400" />
+                  </div>
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 to-indigo-100">
+                    ¿Qué metodologías de trabajo utilizan?
+                  </span>
                 </h3>
-                <p className="mt-2 text-gray-600">
+                <p className="mt-4 ml-14 text-gray-300">
                   Implementamos principalmente Scrum y Kanban, adaptadas a las necesidades específicas de cada proyecto y cliente. Estas metodologías ágiles nos permiten ser flexibles, transparentes y entregar valor de forma constante.
                 </p>
               </div>
               
               {/* Pregunta 3 */}
-              <div className="bg-white rounded-lg p-6 shadow-sm">
-                <h3 className="text-lg font-bold text-gray-900 flex items-center">
-                  <Icon name="QuestionMarkCircleIcon" className="h-6 w-6 text-blue-500 mr-2" />
-                  ¿Ofrecen soporte después del lanzamiento?
+              <div className="bg-gradient-to-br from-gray-900/80 to-gray-800/90 rounded-xl p-6 shadow-lg border border-purple-500/20 backdrop-blur-sm transition-all duration-300 hover:border-purple-400/40 hover:shadow-purple-900/20 hover:-translate-y-1">
+                <h3 className="text-lg font-bold text-white flex items-center">
+                  <div className="p-3 bg-purple-600/20 rounded-full mr-4 flex-shrink-0">
+                    <Icon name="QuestionMarkCircleIcon" className="h-6 w-6 text-purple-400" />
+                  </div>
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-purple-100">
+                    ¿Ofrecen soporte después del lanzamiento?
+                  </span>
                 </h3>
-                <p className="mt-2 text-gray-600">
+                <p className="mt-4 ml-14 text-gray-300">
                   Sí, ofrecemos planes de soporte y mantenimiento para todos nuestros proyectos. Además, proporcionamos capacitación al equipo del cliente para asegurar una transición suave y el máximo aprovechamiento de la solución.
                 </p>
               </div>
               
               {/* Pregunta 4 */}
-              <div className="bg-white rounded-lg p-6 shadow-sm">
-                <h3 className="text-lg font-bold text-gray-900 flex items-center">
-                  <Icon name="QuestionMarkCircleIcon" className="h-6 w-6 text-blue-500 mr-2" />
-                  ¿Cómo garantizan la calidad del software?
+              <div className="bg-gradient-to-br from-gray-900/80 to-gray-800/90 rounded-xl p-6 shadow-lg border border-cyan-500/20 backdrop-blur-sm transition-all duration-300 hover:border-cyan-400/40 hover:shadow-cyan-900/20 hover:-translate-y-1">
+                <h3 className="text-lg font-bold text-white flex items-center">
+                  <div className="p-3 bg-cyan-600/20 rounded-full mr-4 flex-shrink-0">
+                    <Icon name="QuestionMarkCircleIcon" className="h-6 w-6 text-cyan-400" />
+                  </div>
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 to-cyan-100">
+                    ¿Cómo garantizan la calidad del software?
+                  </span>
                 </h3>
-                <p className="mt-2 text-gray-600">
+                <p className="mt-4 ml-14 text-gray-300">
                   Implementamos prácticas de ingeniería de software como desarrollo basado en pruebas (TDD), integración continua, revisiones de código y pruebas automatizadas. Cada proyecto pasa por rigurosas fases de QA antes de su entrega.
                 </p>
               </div>
@@ -403,128 +437,68 @@ const LandingPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Contacto section */}
-      <div id="contacto" className="bg-white py-16 lg:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div>
-              <h2 className="text-3xl font-extrabold text-gray-900">Conversemos sobre tu proyecto</h2>
-              <p className="mt-4 text-lg text-gray-500">
-                Estamos listos para ayudarte a transformar tus ideas en soluciones digitales escalables.
-              </p>
-              <div className="mt-8 space-y-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <Icon name="EnvelopeIcon" className="h-6 w-6 text-blue-500" />
-                  </div>
-                  <div className="ml-3 text-base text-gray-500">
-                    <p>info@encodergroup.cl</p>
-                  </div>
-                </div>
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" className="h-6 w-6 fill-current text-blue-500">
-                      <path d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z"/>
-                    </svg>
-                  </div>
-                  <div className="ml-3 text-base text-gray-500">
-                    <p>@encodegroup.cl</p>
-                  </div>
-                </div>
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <Icon name="MapPinIcon" className="h-6 w-6 text-blue-500" />
-                  </div>
-                  <div className="ml-3 text-base text-gray-500">
-                    <p>Puerto Montt, Chile</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="bg-gray-50 p-8 rounded-lg shadow-md">
-              <form className="space-y-6">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nombre</label>
-                  <input
-                    type="text"
-                    name="name"
-                    id="name"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    id="email"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="company" className="block text-sm font-medium text-gray-700">Empresa</label>
-                  <input
-                    type="text"
-                    name="company"
-                    id="company"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-700">Mensaje</label>
-                  <textarea
-                    name="message"
-                    id="message"
-                    rows={4}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <button
-                    type="submit"
-                    className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-                  >
-                    Enviar mensaje
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
+
 
       {/* CTA section */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800">
-        <div className="max-w-2xl mx-auto text-center py-16 px-4 sm:py-20 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
-            <span className="block">¿Listo para transformar tu negocio?</span>
-            <span className="block">Comienza tu proyecto con EncoderGroup.</span>
-          </h2>
-          <p className="mt-4 text-lg leading-6 text-blue-100">
-            Únete a las empresas que están impulsando su crecimiento con nuestras soluciones tecnológicas escalables y personalizadas.
-          </p>
-          <div className="mt-8 flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-            <Link
-              to="/register"
-              className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50 sm:w-auto"
-            >
-              Comenzar proyecto
-            </Link>
-            <Link
-              to="/login"
-              className="inline-flex items-center justify-center px-5 py-3 border border-white text-base font-medium rounded-md text-white hover:bg-blue-700 sm:w-auto"
-            >
-              Acceder a mi cuenta
-            </Link>
-          </div>
+      <div className="relative overflow-hidden bg-[#0f1628]">
+        {/* Círculos difuminados decorativos */}
+        <div className="absolute top-0 left-0 w-72 h-72 bg-gradient-to-br from-blue-600/30 to-indigo-700/30 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+        <div className="absolute bottom-0 right-0 w-80 h-80 bg-gradient-to-br from-indigo-700/20 to-purple-700/20 rounded-full blur-3xl translate-x-1/3 translate-y-1/3"></div>
+        
+        {/* Patrón hexagonal */}
+        <div className="absolute inset-0 opacity-5" 
+          style={{
+            backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'100\' height=\'100\' viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M11 18.9l9 5.2v10.4l-9 5.2-9-5.2V24.1l9-5.2zm50 0l9 5.2v10.4l-9 5.2-9-5.2V24.1l9-5.2zm-25 43.3l9 5.2v10.4l-9 5.2-9-5.2V67.4l9-5.2zm0-43.3l9 5.2v10.4l-9 5.2-9-5.2V24.1l9-5.2zm25 21.7l9 5.2v10.4l-9 5.2-9-5.2V45.8l9-5.2zm-50 0l9 5.2v10.4l-9 5.2-9-5.2V45.8l9-5.2zm25 43.3l9 5.2v10.4l-9 5.2-9-5.2V89.1l9-5.2z\' fill=\'%23ffffff\' fill-opacity=\'1\' fill-rule=\'evenodd\'/%3E%3C/svg%3E")',
+            backgroundSize: '60px'
+          }}>
+        </div>
+        
+        <div className="relative z-10 max-w-4xl mx-auto text-center py-20 px-4 sm:py-28 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7 }}
+            viewport={{ once: true }}
+            className="relative z-10"
+          >
+            <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
+              <span className="block bg-clip-text text-transparent bg-gradient-to-r from-blue-300 via-indigo-300 to-purple-300">¿Listo para transformar tu negocio?</span>
+              <span className="block mt-2 text-white">Comienza tu proyecto con <span className="text-blue-500">Encoder</span>Group.</span>
+            </h2>
+            <p className="mt-6 text-xl leading-7 text-gray-300">
+              Únete a las empresas que están impulsando su crecimiento con nuestras soluciones tecnológicas escalables y personalizadas.
+            </p>
+            
+            <div className="mt-10 flex flex-col sm:flex-row justify-center space-y-5 sm:space-y-0 sm:space-x-6">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ type: "spring", stiffness: 400, damping: 15 }}
+              >
+                <Link
+                  to="/register"
+                  className="w-full inline-flex items-center justify-center px-6 py-4 border-2 border-transparent text-base font-medium rounded-lg text-gray-900 bg-gradient-to-r from-blue-400 to-indigo-400 hover:from-blue-500 hover:to-indigo-500 shadow-lg shadow-blue-600/20 transition-all duration-200 sm:w-auto"
+                >
+                  <Icon name="RocketLaunchIcon" className="h-5 w-5 mr-2" />
+                  Comenzar proyecto
+                </Link>
+              </motion.div>
+              
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ type: "spring", stiffness: 400, damping: 15 }}
+              >
+                <Link
+                  to="/login"
+                  className="w-full inline-flex items-center justify-center px-6 py-4 border-2 border-indigo-500 text-base font-medium rounded-lg text-white hover:bg-indigo-900/30 transition-colors duration-200 sm:w-auto"
+                >
+                  <Icon name="ArrowRightOnRectangleIcon" className="h-5 w-5 mr-2" />
+                  Acceder a mi cuenta
+                </Link>
+              </motion.div>
+            </div>
+          </motion.div>
         </div>
       </div>
 
