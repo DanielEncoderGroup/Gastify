@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import { motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { Icon } from '../../components/ui';
 
@@ -87,60 +88,110 @@ const Register: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="relative bg-gray-900">
+      <header className="relative bg-[#0f1628] shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6 md:justify-start md:space-x-10">
-            <div className="flex justify-start lg:w-0 lg:flex-1">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo */}
+            <div className="flex-shrink-0 flex items-center">
               <Link to="/" className="text-white text-2xl font-bold flex items-center">
-                <Icon name="CommandLineIcon" className="h-8 w-8 text-blue-500 mr-2" />
+                <Icon name="CommandLineIcon" className="h-7 w-7 text-blue-500 mr-2" />
                 <span className="text-blue-500">Encoder</span>Group
               </Link>
             </div>
-            <div className="hidden md:flex items-center justify-end md:flex-1 lg:w-0 space-x-8">
-              <Link 
-                to="/" 
-                className="text-base font-medium text-gray-300 hover:text-white"
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigate('/');
-                  // Dar tiempo para que cargue la página antes de hacer scroll
-                  setTimeout(() => {
-                    document.getElementById('metodologias')?.scrollIntoView({ behavior: 'smooth' });
-                  }, 100);
-                }}
+            
+            {/* Right side navigation - all elements to the right */}
+            <div className="hidden md:flex items-center space-x-6">
+              {/* Navigation links */}
+              <motion.div 
+                whileHover={{ y: -2 }} 
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                className="relative group"
               >
-                Metodologías
-              </Link>
-              <Link 
-                to="/" 
-                className="text-base font-medium text-gray-300 hover:text-white"
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigate('/');
-                  setTimeout(() => {
-                    document.getElementById('tecnologias')?.scrollIntoView({ behavior: 'smooth' });
-                  }, 100);
-                }}
+                <Link 
+                  to="/" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate('/');
+                    setTimeout(() => {
+                      document.getElementById('metodologias')?.scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                  }}
+                  className="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors duration-200 rounded-md hover:bg-indigo-900/20 group"
+                >
+                  <Icon name="ArrowTrendingUpIcon" className="mr-2 h-5 w-5 text-gray-400 group-hover:text-blue-400 transition-colors duration-200" aria-hidden="true" />
+                  Metodologías
+                </Link>
+              </motion.div>
+
+              <motion.div 
+                whileHover={{ y: -2 }} 
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                className="relative group"
               >
-                Tecnologías
-              </Link>
-              <Link 
-                to="/" 
-                className="text-base font-medium text-gray-300 hover:text-white"
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigate('/');
-                  setTimeout(() => {
-                    document.getElementById('valores')?.scrollIntoView({ behavior: 'smooth' });
-                  }, 100);
-                }}
+                <Link 
+                  to="/" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate('/');
+                    setTimeout(() => {
+                      document.getElementById('tecnologias')?.scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                  }}
+                  className="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors duration-200 rounded-md hover:bg-indigo-900/20 group"
+                >
+                  <Icon name="CubeIcon" className="mr-2 h-5 w-5 text-gray-400 group-hover:text-blue-400 transition-colors duration-200" aria-hidden="true" />
+                  Tecnologías
+                </Link>
+              </motion.div>
+
+              <motion.div 
+                whileHover={{ y: -2 }} 
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                className="relative group"
               >
-                Valores
-              </Link>
-              <Link to="/?showLogin=true" className="text-base font-medium text-gray-300 hover:text-white">Iniciar sesión</Link>
-              <Link to="/register" className="ml-8 whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700">
-                Registrarse
-              </Link>
+                <Link 
+                  to="/" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate('/');
+                    setTimeout(() => {
+                      document.getElementById('fundadores')?.scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                  }}
+                  className="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors duration-200 rounded-md hover:bg-indigo-900/20 group"
+                >
+                  <Icon name="UserGroupIcon" className="mr-2 h-5 w-5 text-gray-400 group-hover:text-blue-400 transition-colors duration-200" aria-hidden="true" />
+                  Equipo
+                </Link>
+              </motion.div>
+              
+              {/* Authentication */}
+              <motion.div 
+                whileHover={{ y: -2 }} 
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              >
+                <Link 
+                  to="/?showLogin=true"
+                  className="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors duration-200 rounded-md hover:bg-indigo-900/20"
+                >
+                  <Icon name="ArrowRightOnRectangleIcon" className="mr-2 h-5 w-5 text-gray-400 group-hover:text-blue-400" aria-hidden="true" />
+                  Iniciar sesión
+                </Link>
+              </motion.div>
+              
+              <motion.div 
+                whileHover={{ scale: 1.05 }} 
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 400, damping: 15 }}
+              >
+                <Link
+                  to="/register"
+                  className="flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/30 transition-all duration-200"
+                >
+                  <Icon name="UserPlusIcon" className="mr-2 h-5 w-5" aria-hidden="true" />
+                  Registrarse
+                </Link>
+              </motion.div>
             </div>
           </div>
         </div>

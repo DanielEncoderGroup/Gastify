@@ -150,61 +150,101 @@ const LandingPage: React.FC = () => {
   return (
     <div className="bg-white">
       {/* Header */}
-      <header className="relative bg-gray-900">
+      <header className="relative bg-[#0f1628] shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6 md:justify-start md:space-x-10">
-            <div className="flex justify-start lg:w-0 lg:flex-1">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo */}
+            <div className="flex-shrink-0 flex items-center">
               <span className="text-white text-2xl font-bold flex items-center">
-                <Icon name="CommandLineIcon" className="h-8 w-8 text-blue-500 mr-2" />
+                <Icon name="CommandLineIcon" className="h-7 w-7 text-blue-500 mr-2" />
                 <span className="text-blue-500">Encoder</span>Group
               </span>
             </div>
-            <div className="hidden md:flex items-center justify-end md:flex-1 lg:w-0 space-x-8">
-              <a 
-                href="javascript:void(0)" 
-                onClick={() => {
-                  // Eliminar parámetros de URL y navegar a la sección
-                  navigate('/', { replace: true });
-                  document.getElementById('metodologias')?.scrollIntoView({ behavior: 'smooth' });
-                }} 
-                className="text-base font-medium text-gray-300 hover:text-white"
+            
+            {/* Right side navigation - all elements to the right */}
+            <div className="hidden md:flex items-center space-x-6">
+              {/* Navigation links */}
+              <motion.div 
+                whileHover={{ y: -2 }} 
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                className="relative group"
               >
-                Metodologías
-              </a>
-              <a 
-                href="javascript:void(0)" 
-                onClick={() => {
-                  // Eliminar parámetros de URL y navegar a la sección
-                  navigate('/', { replace: true });
-                  document.getElementById('tecnologias')?.scrollIntoView({ behavior: 'smooth' });
-                }} 
-                className="text-base font-medium text-gray-300 hover:text-white"
+                <a 
+                  href="javascript:void(0)" 
+                  onClick={() => {
+                    navigate('/', { replace: true });
+                    document.getElementById('metodologias')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors duration-200 rounded-md hover:bg-indigo-900/20 group"
+                >
+                  <Icon name="ArrowTrendingUpIcon" className="mr-2 h-5 w-5 text-gray-400 group-hover:text-blue-400 transition-colors duration-200" aria-hidden="true" />
+                  Metodologías
+                </a>
+              </motion.div>
+
+              <motion.div 
+                whileHover={{ y: -2 }} 
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                className="relative group"
               >
-                Tecnologías
-              </a>
-              <a 
-                href="javascript:void(0)" 
-                onClick={() => {
-                  // Eliminar parámetros de URL y navegar a la sección
-                  navigate('/', { replace: true });
-                  document.getElementById('fundadores')?.scrollIntoView({ behavior: 'smooth' });
-                }} 
-                className="text-base font-medium text-gray-300 hover:text-white"
+                <a 
+                  href="javascript:void(0)" 
+                  onClick={() => {
+                    navigate('/', { replace: true });
+                    document.getElementById('tecnologias')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors duration-200 rounded-md hover:bg-indigo-900/20 group"
+                >
+                  <Icon name="CubeIcon" className="mr-2 h-5 w-5 text-gray-400 group-hover:text-blue-400 transition-colors duration-200" aria-hidden="true" />
+                  Tecnologías
+                </a>
+              </motion.div>
+
+              <motion.div 
+                whileHover={{ y: -2 }} 
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                className="relative group"
               >
-                Equipo
-              </a>
-              <button
-                onClick={() => setShowLoginModal(true)}
-                className="whitespace-nowrap text-base font-medium text-gray-300 hover:text-white"
+                <a 
+                  href="javascript:void(0)" 
+                  onClick={() => {
+                    navigate('/', { replace: true });
+                    document.getElementById('fundadores')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors duration-200 rounded-md hover:bg-indigo-900/20 group"
+                >
+                  <Icon name="UserGroupIcon" className="mr-2 h-5 w-5 text-gray-400 group-hover:text-blue-400 transition-colors duration-200" aria-hidden="true" />
+                  Equipo
+                </a>
+              </motion.div>
+              
+              {/* Authentication */}
+              <motion.div 
+                whileHover={{ y: -2 }} 
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
-                Iniciar sesión
-              </button>
-              <Link
-                to="/register"
-                className="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-gray-900 bg-blue-500 hover:bg-blue-600"
+                <button
+                  onClick={() => setShowLoginModal(true)}
+                  className="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors duration-200 rounded-md hover:bg-indigo-900/20"
+                >
+                  <Icon name="ArrowRightOnRectangleIcon" className="mr-2 h-5 w-5 text-gray-400 group-hover:text-blue-400" aria-hidden="true" />
+                  Iniciar sesión
+                </button>
+              </motion.div>
+              
+              <motion.div 
+                whileHover={{ scale: 1.05 }} 
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 400, damping: 15 }}
               >
-                Registrarse
-              </Link>
+                <Link
+                  to="/register"
+                  className="flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/30 transition-all duration-200"
+                >
+                  <Icon name="UserPlusIcon" className="mr-2 h-5 w-5" aria-hidden="true" />
+                  Registrarse
+                </Link>
+              </motion.div>
             </div>
           </div>
         </div>
