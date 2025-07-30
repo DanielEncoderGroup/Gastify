@@ -3,12 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 import os
-from app.api.routes import auth, receipts, requests, notifications, projects
+from app.api.routes import auth, receipts, notifications
 from app.core.config import settings
 from app.core.database import connect_to_mongo, close_mongo_connection
 
 app = FastAPI(
-    title="Encodergroup API",
+    title="Gastify API",
     description="API para gestión de boletas de gastos",
     version="2.0.0"
 )
@@ -25,9 +25,7 @@ app.add_middleware(
 # Include routers
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(receipts.router, prefix="/api/receipts", tags=["Receipts"])
-app.include_router(requests.router, prefix="/api/requests", tags=["Requests"])
 app.include_router(notifications.router, prefix="/api/notifications", tags=["Notifications"])
-app.include_router(projects.router, prefix="/api/projects", tags=["Projects"])
 
 # Mount static files for uploads
 os.makedirs("uploads", exist_ok=True)
@@ -44,7 +42,7 @@ async def shutdown_db_client():
 
 @app.get("/", tags=["Health"])
 def health_check():
-    return {"message": "Encodergroup API is running..."}
+    return {"message": "Gastify API is running..."}
 
 if __name__ == "__main__":
     uvicorn.run(

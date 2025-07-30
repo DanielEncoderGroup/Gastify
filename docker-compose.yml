@@ -6,7 +6,7 @@ services:
   # 1) MongoDB (disabled - using host MongoDB instead)
   # ───────────────────────────────────────────────────────────────────────────────
   mongo:
-    image: mongo:latest
+    image: mongo:6.0
     container_name: gastify-mongo
     # Changed port to avoid conflict with host MongoDB
     ports:

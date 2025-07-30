@@ -5,12 +5,11 @@ from pydantic import BaseModel, Field, BeforeValidator
 from app.models.user import PyObjectId
 
 class NotificationType:
-    REQUEST_CREATED = "request_created"
-    STATUS_UPDATED = "status_updated"
+    RECEIPT_CREATED = "receipt_created"
+    RECEIPT_UPDATED = "receipt_updated"
     COMMENT_ADDED = "comment_added"
     FILE_UPLOADED = "file_uploaded"
-    REQUEST_STATUS_CHANGED = "request_status_changed"
-    PROJECT_CREATED = "project_created"
+    SYSTEM_NOTIFICATION = "system_notification"
 
 class Notification(BaseModel):
     id: Optional[PyObjectId] = Field(default=None, alias="_id")

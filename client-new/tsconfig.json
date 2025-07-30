@@ -31,5 +31,6 @@
       "@types/*": ["types/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["src/pages/landing/LandingPage.tsx", "**/LandingPage.tsx"]
 }
