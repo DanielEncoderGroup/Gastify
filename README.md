@@ -1,17 +1,19 @@
-# EncoderGroup - Plataforma de Gestión Empresarial
+# Gastify - Plataforma de Gestión de Gastos
 
-![EncoderGroup Logo](https://via.placeholder.com/800x200/0078D7/FFFFFF?text=EncoderGroup)
+![Gastify Logo](https://via.placeholder.com/800x200/4CAF50/FFFFFF?text=Gastify)
 
 ## 🚀 Acerca del Proyecto
 
-EncoderGroup es una plataforma integral de gestión empresarial diseñada para optimizar los procesos internos de organizaciones modernas. Esta solución tecnológica permite administrar proyectos, coordinar reuniones, gestionar solicitudes, y mantener un sistema centralizado de información para toda la empresa.
+Gastify es una plataforma especializada para la gestión y rendición de gastos empresariales diseñada para optimizar los procesos financieros de organizaciones modernas. Esta solución tecnológica permite registrar, categorizar, aprobar y hacer seguimiento de gastos corporativos, simplificando la rendición de cuentas y mejorando la transparencia financiera.
 
 ## ✨ Características Principales
 
-- **Gestión de Proyectos**: Seguimiento completo del ciclo de vida de proyectos con asignación de equipos, tareas y recursos.
-- **Programación de Reuniones**: Coordinación eficiente de reuniones con notificaciones, agendas y seguimiento de acuerdos.
-- **Sistema de Solicitudes**: Flujo automatizado para solicitudes internas (materiales, viáticos, permisos, soporte técnico).
-- **Perfil de Usuario**: Gestión de información personal, preferencias y actividad de la cuenta.
+- **Registro de Gastos**: Captura detallada de gastos con soporte para comprobantes digitales.
+- **Categorización Inteligente**: Organización automática de gastos por categorías y centros de costo.
+- **Flujo de Aprobación**: Sistema configurable de aprobaciones para diferentes niveles y montos.
+- **Reportes y Análisis**: Informes detallados y visualizaciones para análisis de gastos.
+- **Gestión de Comprobantes**: Almacenamiento y validación de recibos y facturas digitales.
+- **Perfil de Usuario**: Gestión de información personal, historial de gastos y preferencias.
 - **Diseño Responsivo**: Experiencia de usuario consistente en todos los dispositivos.
 - **Arquitectura Escalable**: Diseñada para crecer con las necesidades de la empresa.
 
