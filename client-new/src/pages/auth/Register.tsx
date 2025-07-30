@@ -88,14 +88,14 @@ const Register: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="relative bg-[#0f1628] shadow-lg">
+      <header className="relative bg-gradient-to-r from-primary-600 to-secondary-500 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <div className="flex-shrink-0 flex items-center">
               <Link to="/" className="text-white text-2xl font-bold flex items-center">
-                <Icon name="CommandLineIcon" className="h-7 w-7 text-blue-500 mr-2" />
-                <span className="text-blue-500">Encoder</span>Group
+                <Icon name="ReceiptPercentIcon" className="h-7 w-7 text-white mr-2" />
+                <span className="text-white">Gastify</span>
               </Link>
             </div>
             
@@ -113,13 +113,13 @@ const Register: React.FC = () => {
                     e.preventDefault();
                     navigate('/');
                     setTimeout(() => {
-                      document.getElementById('metodologias')?.scrollIntoView({ behavior: 'smooth' });
+                      document.getElementById('reportes')?.scrollIntoView({ behavior: 'smooth' });
                     }, 100);
                   }}
-                  className="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors duration-200 rounded-md hover:bg-indigo-900/20 group"
+                  className="flex items-center px-4 py-2 text-sm font-medium text-gray-100 hover:text-white transition-colors duration-200 rounded-md hover:bg-primary-700/20 group"
                 >
-                  <Icon name="ArrowTrendingUpIcon" className="mr-2 h-5 w-5 text-gray-400 group-hover:text-blue-400 transition-colors duration-200" aria-hidden="true" />
-                  Metodologías
+                  <Icon name="ChartPieIcon" className="mr-2 h-5 w-5 text-gray-200 group-hover:text-white transition-colors duration-200" aria-hidden="true" />
+                  Reportes
                 </Link>
               </motion.div>
 
@@ -134,13 +134,13 @@ const Register: React.FC = () => {
                     e.preventDefault();
                     navigate('/');
                     setTimeout(() => {
-                      document.getElementById('tecnologias')?.scrollIntoView({ behavior: 'smooth' });
+                      document.getElementById('calculadora')?.scrollIntoView({ behavior: 'smooth' });
                     }, 100);
                   }}
-                  className="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors duration-200 rounded-md hover:bg-indigo-900/20 group"
+                  className="flex items-center px-4 py-2 text-sm font-medium text-gray-100 hover:text-white transition-colors duration-200 rounded-md hover:bg-primary-700/20 group"
                 >
-                  <Icon name="CubeIcon" className="mr-2 h-5 w-5 text-gray-400 group-hover:text-blue-400 transition-colors duration-200" aria-hidden="true" />
-                  Tecnologías
+                  <Icon name="CalculatorIcon" className="mr-2 h-5 w-5 text-gray-200 group-hover:text-white transition-colors duration-200" aria-hidden="true" />
+                  Calculadora
                 </Link>
               </motion.div>
 
@@ -155,13 +155,13 @@ const Register: React.FC = () => {
                     e.preventDefault();
                     navigate('/');
                     setTimeout(() => {
-                      document.getElementById('fundadores')?.scrollIntoView({ behavior: 'smooth' });
+                      document.getElementById('categorias')?.scrollIntoView({ behavior: 'smooth' });
                     }, 100);
                   }}
-                  className="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors duration-200 rounded-md hover:bg-indigo-900/20 group"
+                  className="flex items-center px-4 py-2 text-sm font-medium text-gray-100 hover:text-white transition-colors duration-200 rounded-md hover:bg-primary-700/20 group"
                 >
-                  <Icon name="UserGroupIcon" className="mr-2 h-5 w-5 text-gray-400 group-hover:text-blue-400 transition-colors duration-200" aria-hidden="true" />
-                  Equipo
+                  <Icon name="RectangleStackIcon" className="mr-2 h-5 w-5 text-gray-200 group-hover:text-white transition-colors duration-200" aria-hidden="true" />
+                  Categorías
                 </Link>
               </motion.div>
               
@@ -172,9 +172,9 @@ const Register: React.FC = () => {
               >
                 <Link 
                   to="/?showLogin=true"
-                  className="flex items-center px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors duration-200 rounded-md hover:bg-indigo-900/20"
+                  className="flex items-center px-4 py-2 text-sm font-medium text-gray-100 hover:text-white transition-colors duration-200 rounded-md hover:bg-primary-700/20"
                 >
-                  <Icon name="ArrowRightOnRectangleIcon" className="mr-2 h-5 w-5 text-gray-400 group-hover:text-blue-400" aria-hidden="true" />
+                  <Icon name="ArrowRightOnRectangleIcon" className="mr-2 h-5 w-5 text-gray-200 group-hover:text-white" aria-hidden="true" />
                   Iniciar sesión
                 </Link>
               </motion.div>
@@ -186,7 +186,7 @@ const Register: React.FC = () => {
               >
                 <Link
                   to="/register"
-                  className="flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/30 transition-all duration-200"
+                  className="flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200"
                 >
                   <Icon name="UserPlusIcon" className="mr-2 h-5 w-5" aria-hidden="true" />
                   Registrarse
@@ -204,10 +204,10 @@ const Register: React.FC = () => {
           <div className="md:col-span-2 bg-white p-8 rounded-lg shadow border border-gray-200">
             <div>
               <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-                Inicia sesión o regístrate para comenzar
+                Regístrate en Gastify para gestionar tus gastos
               </h2>
               <p className="text-sm text-gray-600 mb-6">
-                ¿Ya tienes una cuenta? <Link to="/?showLogin=true" className="text-blue-600 hover:text-blue-500">Inicia sesión aquí</Link>
+                ¿Ya tienes una cuenta? <Link to="/?showLogin=true" className="text-primary-600 hover:text-primary-500">Inicia sesión aquí</Link>
               </p>
             </div>
         
@@ -247,7 +247,7 @@ const Register: React.FC = () => {
             
             <div className="bg-white rounded-lg p-5 border border-green-100 shadow-inner">
               <p className="text-gray-700 text-center leading-relaxed">
-                Gracias por unirte a <span className="font-semibold">EncoderGroup</span>. <br/>
+                Gracias por unirte a <span className="font-semibold">Gastify</span>. <br/>
                 Hemos enviado un correo de confirmación a tu dirección de email.<br/>
                 <span className="font-medium text-blue-600">Por favor, verifica tu bandeja de entrada para activar tu cuenta.</span>
               </p>
@@ -257,7 +257,7 @@ const Register: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate('/login')}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200"
               >
                 <Icon name="ArrowRightOnRectangleIcon" className="-ml-1 mr-2 h-5 w-5" />
                 Ir a iniciar sesión
@@ -291,7 +291,7 @@ const Register: React.FC = () => {
                       onChange={formik.handleChange}
                       onBlur={formik.handleBlur}
                       value={formik.values.firstName}
-                      className={`appearance-none relative block w-full px-3 py-2 pl-10 border ${formik.touched.firstName && formik.errors.firstName ? 'border-red-300 text-red-900 placeholder-red-300' : 'border-gray-300 placeholder-gray-500 text-gray-900'} rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
+                      className={`appearance-none relative block w-full px-3 py-2 pl-10 border ${formik.touched.firstName && formik.errors.firstName ? 'border-red-300 text-red-900 placeholder-red-300' : 'border-gray-300 placeholder-gray-500 text-gray-900'} rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm`}
                       placeholder="Tu nombre"
                     />
                   </div>
@@ -445,7 +445,7 @@ const Register: React.FC = () => {
               <button
                 type="submit"
                 disabled={formik.isSubmitting}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
               >
                 {formik.isSubmitting ? 'Registrando...' : 'Registrarse'}
               </button>
@@ -458,26 +458,26 @@ const Register: React.FC = () => {
           {/* Columna de beneficios */}
           <div className="hidden md:block md:col-span-1">
             <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Beneficios de EncoderGroup</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Beneficios de Gastify</h3>
               
               <div className="space-y-4">
                 <div className="flex items-start">
                   <div className="flex-shrink-0 bg-blue-100 rounded-full p-1">
-                    <Icon name="CodeBracketIcon" className="h-5 w-5 text-blue-500" />
+                    <Icon name="ReceiptRefundIcon" className="h-5 w-5 text-blue-500" />
                   </div>
                   <div className="ml-3">
-                    <h4 className="text-sm font-medium text-gray-900">Tecnologías de vanguardia</h4>
-                    <p className="text-sm text-gray-500">Accede a las últimas tecnologías y metodologías de desarrollo.</p>
+                    <h4 className="text-sm font-medium text-gray-900">Control completo de gastos</h4>
+                    <p className="text-sm text-gray-500">Gestiona todas tus facturas y gastos en un solo lugar.</p>
                   </div>
                 </div>
                 
                 <div className="flex items-start">
                   <div className="flex-shrink-0 bg-blue-100 rounded-full p-1">
-                    <Icon name="UserGroupIcon" className="h-5 w-5 text-blue-500" />
+                    <Icon name="ChartPieIcon" className="h-5 w-5 text-blue-500" />
                   </div>
                   <div className="ml-3">
-                    <h4 className="text-sm font-medium text-gray-900">Comunidad colaborativa</h4>
-                    <p className="text-sm text-gray-500">Forma parte de una comunidad global de desarrolladores y expertos.</p>
+                    <h4 className="text-sm font-medium text-gray-900">Reportes inteligentes</h4>
+                    <p className="text-sm text-gray-500">Obtén análisis detallados de tus patrones de gasto.</p>
                   </div>
                 </div>
                 
@@ -487,7 +487,7 @@ const Register: React.FC = () => {
                   </div>
                   <div className="ml-3">
                     <h4 className="text-sm font-medium text-gray-900">Seguridad garantizada</h4>
-                    <p className="text-sm text-gray-500">Tus proyectos y datos personales están protegidos con los más altos estándares.</p>
+                    <p className="text-sm text-gray-500">Tus datos financieros están protegidos con los más altos estándares de seguridad.</p>
                   </div>
                 </div>
                 
@@ -496,8 +496,8 @@ const Register: React.FC = () => {
                     <Icon name="ArrowTrendingUpIcon" className="h-5 w-5 text-blue-500" />
                   </div>
                   <div className="ml-3">
-                    <h4 className="text-sm font-medium text-gray-900">Soluciones escalables</h4>
-                    <p className="text-sm text-gray-500">Desarrolla proyectos que crecen junto con tu negocio y tus necesidades.</p>
+                    <h4 className="text-sm font-medium text-gray-900">Categorización IA</h4>
+                    <p className="text-sm text-gray-500">Inteligencia artificial que categoriza automáticamente tus gastos.</p>
                   </div>
                 </div>
               </div>
