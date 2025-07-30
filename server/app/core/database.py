@@ -8,36 +8,32 @@ db = None
 
 async def create_indexes(database):
     """Create necessary indexes for the application."""
-    # Índices para la colección de proyectos
-    await database.projects.create_index("clientId")
-    await database.projects.create_index("status")
-    await database.projects.create_index("assignedTeam")
-    await database.projects.create_index("createdAt")
+    # Índices para la colección de recibos (Gastify)
+    await database.receipts.create_index("userId")
+    await database.receipts.create_index("date")
+    await database.receipts.create_index("category")
+    await database.receipts.create_index("amount")
     
-    # Índices para búsquedas por texto
-    await database.projects.create_index([
-        ("title", "text"),
-        ("description", "text")
+    # Índices para búsquedas por texto en recibos
+    await database.receipts.create_index([
+        ("description", "text"),
+        ("merchant", "text")
     ])
     
-    # Índices compuestos para consultas frecuentes
-    await database.projects.create_index([
-        ("clientId", 1),
-        ("status", 1)
+    # Índices compuestos para consultas frecuentes de Gastify
+    await database.receipts.create_index([
+        ("userId", 1),
+        ("date", -1)
     ])
     
-    # Índices para tareas anidadas
-    await database.projects.create_index("tasks._id")
-    await database.projects.create_index("tasks.assignee")
-    await database.projects.create_index("tasks.status")
-    await database.projects.create_index("tasks.dueDate")
-    await database.projects.create_index("tasks.priority")
+    # Índices para usuarios
+    await database.users.create_index("email", unique=True)
+    await database.users.create_index("username")
     
-    # Índice para búsqueda de tareas por asignado
-    await database.projects.create_index([
-        ("tasks.assignee", 1),
-        ("tasks.status", 1)
-    ])
+    # Índices para notificaciones
+    await database.notifications.create_index("userId")
+    await database.notifications.create_index("createdAt")
+    await database.notifications.create_index("read")
 
 async def connect_to_mongo():
     """Connect to MongoDB and create indexes."""

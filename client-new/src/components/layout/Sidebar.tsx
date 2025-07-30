@@ -20,16 +20,6 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
   // Get user's full name
   const fullName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.name || 'Usuario' : 'Usuario';
 
-  // Elementos de navegación comunes para todos los usuarios
-  const commonNavigation = [
-    { 
-      name: 'Reuniones', 
-      href: '/app/meetings', 
-      iconName: 'CalendarIcon',
-      description: 'Programa y gestiona reuniones'
-    }
-  ];
-
   // Elementos de navegación para administradores
   const adminNavigation = [
     { 
@@ -64,8 +54,8 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
 
   // Determinar la navegación según el rol del usuario
   const navigation = user?.role === 'admin' 
-    ? [...adminNavigation, ...commonNavigation]
-    : [...clientNavigation, ...commonNavigation];
+    ? adminNavigation
+    : clientNavigation;
 
   // Cerrar el sidebar con tecla Escape
   useEffect(() => {
@@ -83,17 +73,17 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
 
   // Verificar si una ruta está activa (incluyendo subrutas)
   const isActive = (href: string) => {
-    // Para rutas específicas como '/app/requests/new', verificar una coincidencia exacta
-    if (href === '/app/requests/new' || href === '/app/projects/request/new') {
+    // Para rutas específicas como '/app/receipts/new', verificar una coincidencia exacta
+    if (href === '/app/receipts/new') {
       return location.pathname === href;
     }
     
-    // Para rutas base como '/app/requests', verificar que empiece con esta ruta
+    // Para rutas base como '/app/receipts', verificar que empiece con esta ruta
     // pero no coincida con subrutas específicas que tienen sus propias entradas
-    if (href === '/app/requests') {
+    if (href === '/app/receipts') {
       return location.pathname === href || 
              (location.pathname.startsWith(href + '/') && 
-              location.pathname !== '/app/requests/new');
+              location.pathname !== '/app/receipts/new');
     }
     
     // Para el resto de rutas, verificar coincidencia exacta o que empiece con la ruta + '/'

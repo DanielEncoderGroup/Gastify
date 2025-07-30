@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuth } from './contexts/AuthContext';
 import { NotificationProvider } from './contexts/NotificationContext';
@@ -10,7 +10,7 @@ import PrivateRoute from './components/routes/PrivateRoute';
 import ClientRoute from './components/routes/ClientRoute';
 
 // Landing page
-import LandingPage from './pages/landing/LandingPage';
+import GastifyLandingPage from './pages/landing/GastifyLandingPage';
 
 // Auth pages
 import Login from './pages/auth/Login';
@@ -20,7 +20,6 @@ import ResetPassword from './pages/auth/ResetPassword';
 import VerifyEmail from './pages/auth/VerifyEmail';
 
 // Dashboard and app pages
-import MeetingsScheduler from './pages/meetings/MeetingsScheduler';
 import NotificationsPage from './components/notifications/NotificationsPage';
 import Profile from './pages/profile/Profile';
 import NotFound from './pages/NotFound';
@@ -120,7 +119,7 @@ function App() {
       <AppInitializer>
         <Routes>
           {/* Rutas públicas SIN NotificationProvider */}
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={<GastifyLandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -129,8 +128,8 @@ function App() {
 
           {/* Rutas protegidas CON NotificationProvider */}
           <Route path="/app" element={<PrivateRoute element={<ProtectedLayoutWithNotifications />} />}>
-            <Route path="" element={<ReceiptsListPage />} />
-            <Route path="meetings" element={<MeetingsScheduler />} />
+            {/* Redirección del índice a receipts */}
+            <Route path="" element={<Navigate to="/app/receipts" replace />} />
             <Route path="notifications" element={<NotificationsPage />} />
             
             {/* Rutas de Gastify - Gestión de gastos */}
