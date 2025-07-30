@@ -7,14 +7,14 @@ services:
   # ───────────────────────────────────────────────────────────────────────────────
   mongo:
     image: mongo:latest
-    container_name: encodergroup-mongo
+    container_name: gastify-mongo
     # Changed port to avoid conflict with host MongoDB
     ports:
       - "27018:27017"
     volumes:
       - mongo-data:/data/db
     networks:
-      - encodergroup-network
+      - gastify-network
     restart: unless-stopped
 
   # ───────────────────────────────────────────────────────────────────────────────
@@ -24,21 +24,21 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
-    container_name: encodergroup-server
+    container_name: gastify-server
     ports:
       - "8000:8000"
     depends_on:
       - mongo
     environment:
       # variables para producción (se usan en server/app/core/config.py)
-      - MONGO_URI=mongodb://host.docker.internal:27017/encodergroup
+      - MONGO_URI=mongodb://mongo:27017/gastify
       - ENVIRONMENT=production
       - JWT_SECRET=your_jwt_secret_key
       - JWT_ALGORITHM=HS256
       - ACCESS_TOKEN_EXPIRE_MINUTES=10080   # 7 días
       - SMTP_HOST=cpmail1.ghservers.net
       - SMTP_PORT=465
-      - SMTP_USER=noreply@encodergroup.cl
+      - SMTP_USER=noreply@gastify.com
       - SMTP_PASSWORD=dd)c}{F]P]U#
       - SMTP_SSL=true
       - SMTP_VERIFY_SSL=false
@@ -50,7 +50,7 @@ services:
       - ./server/scripts:/app/scripts
       - ./server/uploads:/app/uploads
     networks:
-      - encodergroup-network
+      - gastify-network
     restart: unless-stopped
 
   # ───────────────────────────────────────────────────────────────────────────────
@@ -60,13 +60,13 @@ services:
     build:
       context: ./client-new
       dockerfile: Dockerfile
-    container_name: encodergroup-client
+    container_name: gastify-client
     ports:
       - "80:80"
     depends_on:
       - server
     networks:
-      - encodergroup-network
+      - gastify-network
     restart: unless-stopped
 
 # Volúmenes persistentes
@@ -75,5 +75,5 @@ volumes:
 
 # Red compartida
 networks:
-  encodergroup-network:
+  gastify-network:
     driver: bridge

@@ -7,7 +7,6 @@ import { NotificationProvider } from './contexts/NotificationContext';
 // Layout components
 import Layout from './components/layout/Layout';
 import PrivateRoute from './components/routes/PrivateRoute';
-import AdminRoute from './components/routes/AdminRoute';
 import ClientRoute from './components/routes/ClientRoute';
 
 // Landing page
@@ -21,17 +20,15 @@ import ResetPassword from './pages/auth/ResetPassword';
 import VerifyEmail from './pages/auth/VerifyEmail';
 
 // Dashboard and app pages
-import ProjectForm from './pages/projects/ProjectForm';
-import ProjectsList from './pages/projects/ProjectsList';
-import ProjectDetail from './pages/projects/ProjectDetail';
-import RequestDetailPage from './pages/requests/RequestDetailPage';
 import MeetingsScheduler from './pages/meetings/MeetingsScheduler';
-import ProjectRequestsAdmin from './pages/projects/ProjectRequestsAdmin';
-import NewProjectRequest from './pages/projects/NewProjectRequest';
-import RequestsList from './pages/requests/RequestsList';
 import NotificationsPage from './components/notifications/NotificationsPage';
 import Profile from './pages/profile/Profile';
 import NotFound from './pages/NotFound';
+
+// Gastify - Páginas para gestión de gastos
+import ReceiptsListPage from './pages/receipts/ReceiptsListPage';
+import ReceiptFormPage from './pages/receipts/ReceiptFormPage';
+import ReceiptDetailPage from './pages/receipts/ReceiptDetailPage';
 
 // Componente de inicialización para garantizar que se revisa la autenticación
 // antes de renderizar las rutas
@@ -132,21 +129,15 @@ function App() {
 
           {/* Rutas protegidas CON NotificationProvider */}
           <Route path="/app" element={<PrivateRoute element={<ProtectedLayoutWithNotifications />} />}>
-            <Route path="projects" element={<ProjectsList />} />
-            <Route path="projects/:id" element={<ProjectDetail />} />
-            <Route path="projects/new" element={<ProjectForm />} />
-            <Route path="projects/:id/edit" element={<ProjectForm />} />
+            <Route path="" element={<ReceiptsListPage />} />
             <Route path="meetings" element={<MeetingsScheduler />} />
-            <Route path="requests" element={<RequestsList />} />
-            <Route path="requests/:id" element={<RequestDetailPage />} />
-            <Route path="requests/:id/edit" element={<NewProjectRequest />} />
-            <Route path="projects/request/new" element={<NewProjectRequest />} />
             <Route path="notifications" element={<NotificationsPage />} />
             
-            {/* Rutas protegidas para administradores */}
-            <Route element={<AdminRoute />}>
-              <Route path="projects/admin" element={<ProjectRequestsAdmin />} />
-            </Route>
+            {/* Rutas de Gastify - Gestión de gastos */}
+            <Route path="receipts" element={<ReceiptsListPage />} />
+            <Route path="receipts/new" element={<ReceiptFormPage />} />
+            <Route path="receipts/:id" element={<ReceiptDetailPage />} />
+            <Route path="receipts/:id/edit" element={<ReceiptFormPage />} />
             
             {/* Rutas protegidas para clientes */}
             <Route element={<ClientRoute />}>

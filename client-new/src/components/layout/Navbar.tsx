@@ -42,12 +42,11 @@ const Navbar: React.FC<NavbarProps> = ({ sidebarOpen, setSidebarOpen }) => {
         <div className="flex-1 flex items-center">
           {/* Espacio para búsqueda u otros elementos en el futuro */}
           <div className="md:hidden flex items-center">
-            <img
-              className="h-8 w-auto"
-              src="/assets/encoder-logo.svg"
-              alt="EncoderGroup"
+            <Icon 
+              name="ReceiptRefundIcon" 
+              className="h-8 w-8 text-green-600" 
             />
-            <span className="ml-2 text-xl font-bold text-primary-700">EncoderGroup</span>
+            <span className="ml-2 text-xl font-bold text-green-700">Gastify</span>
           </div>
         </div>
         

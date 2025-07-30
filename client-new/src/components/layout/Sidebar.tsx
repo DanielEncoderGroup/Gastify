@@ -33,32 +33,32 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
   // Elementos de navegación para administradores
   const adminNavigation = [
     { 
-      name: 'Gestión de Solicitudes', 
-      href: '/app/requests', 
-      iconName: 'ClipboardDocumentListIcon',
-      description: 'Administra todas las solicitudes'
+      name: 'Gestión de Recibos', 
+      href: '/app/receipts', 
+      iconName: 'ReceiptRefundIcon',
+      description: 'Gestiona todos los recibos'
     },
     { 
-      name: 'Proyectos Informáticos', 
-      href: '/app/projects/admin', 
-      iconName: 'ComputerDesktopIcon',
-      description: 'Panel de administración de proyectos'
+      name: 'Estadísticas', 
+      href: '/app/receipts', 
+      iconName: 'ChartBarIcon',
+      description: 'Visualiza estadísticas de gastos'
     },
   ];
 
   // Elementos de navegación para clientes
   const clientNavigation = [
     { 
-      name: 'Mis Solicitudes', 
-      href: '/app/requests', 
-      iconName: 'DocumentTextIcon',
-      description: 'Revisa tus solicitudes de proyecto'
+      name: 'Mis Recibos', 
+      href: '/app/receipts', 
+      iconName: 'ReceiptRefundIcon',
+      description: 'Gestiona tus recibos y gastos'
     },
     { 
-      name: 'Mis Proyectos', 
-      href: '/app/projects', 
-      iconName: 'FolderIcon',
-      description: 'Explora tus proyectos activos'
+      name: 'Nuevo Recibo', 
+      href: '/app/receipts/new', 
+      iconName: 'PlusCircleIcon',
+      description: 'Añade un nuevo recibo de gastos'
     }
   ];
 
@@ -144,7 +144,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
           >
             <div className="relative flex-1 flex flex-col max-w-xs w-full">
               {/* Fondo con glassmorphism */}
-              <div className="absolute inset-0 bg-gradient-to-br from-slate-900/95 via-blue-900/95 to-indigo-900/95 backdrop-blur-xl"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-slate-900/95 via-green-900/95 to-emerald-900/95 backdrop-blur-xl"></div>
               <div className="absolute inset-0 bg-white/5"></div>
               
               {/* Contenido del sidebar móvil */}
@@ -173,12 +173,12 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
                 {/* Header del sidebar */}
                 <div className="flex-shrink-0 pt-6 pb-4 px-6">
                   <div className="flex items-center space-x-3">
-                    <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl shadow-lg">
-                      <Icon name="CommandLineIcon" className="h-6 w-6 text-white" />
+                    <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl shadow-lg">
+                      <Icon name="ReceiptRefundIcon" className="h-6 w-6 text-white" />
                     </div>
                     <div>
                       <h1 className="text-white text-lg font-bold">
-                        <span className="text-blue-300">Encoder</span>Group
+                        <span className="text-green-300">Gas</span>tify
                       </h1>
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium text-white ${roleBadge.color}`}>
                         {roleBadge.label}
@@ -197,7 +197,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
                       className={`
                         group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200
                         ${isActive(item.href) 
-                          ? 'bg-gradient-to-r from-blue-500/90 to-cyan-500/90 text-white shadow-lg backdrop-blur-sm' 
+                          ? 'bg-gradient-to-r from-green-500 to-green-700 text-white shadow-lg backdrop-blur-sm' 
                           : 'text-white/80 hover:bg-white/10 hover:text-white hover:backdrop-blur-sm'
                         }
                       `}
@@ -269,7 +269,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
       <div className="hidden md:flex md:w-72 md:flex-col md:fixed md:inset-y-0 z-20">
         <div className="flex-1 flex flex-col min-h-0">
           {/* Fondo con glassmorphism */}
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-900/95 via-blue-900/95 to-indigo-900/95 backdrop-blur-xl"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-900/95 via-green-900/95 to-emerald-900/95 backdrop-blur-xl"></div>
           <div className="absolute inset-0 bg-white/5 border-r border-white/10"></div>
           
           {/* Contenido del sidebar */}
@@ -277,12 +277,12 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
             {/* Header del sidebar */}
             <div className="flex-shrink-0 pt-8 pb-6 px-6">
               <div className="flex items-center space-x-4">
-                <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl shadow-lg">
-                  <Icon name="CommandLineIcon" className="h-7 w-7 text-white" />
+                <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl shadow-lg">
+                  <Icon name="ReceiptRefundIcon" className="h-7 w-7 text-white" />
                 </div>
                 <div>
                   <h1 className="text-white text-xl font-bold">
-                    <span className="text-blue-300">Encoder</span>Group
+                    <span className="text-green-300">Gas</span>tify
                   </h1>
                   <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium text-white ${roleBadge.color} shadow-sm`}>
                     {roleBadge.label}
@@ -300,7 +300,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
                   className={`
                     group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200
                     ${isActive(item.href) 
-                      ? 'bg-gradient-to-r from-blue-500/90 to-cyan-500/90 text-white shadow-lg backdrop-blur-sm transform scale-[1.02]' 
+                      ? 'bg-gradient-to-r from-green-500/90 to-emerald-500/90 text-white shadow-lg backdrop-blur-sm transform scale-[1.02]' 
                       : 'text-white/80 hover:bg-white/10 hover:text-white hover:backdrop-blur-sm hover:scale-[1.01]'
                     }
                   `}
