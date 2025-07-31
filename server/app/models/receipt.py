@@ -1,4 +1,4 @@
-from typing import Optional, Literal, Annotated, Any
+from typing import Optional, Literal, Annotated, Any, List, Dict
 from datetime import datetime
 from bson import ObjectId
 from pydantic import BaseModel, Field, BeforeValidator
@@ -14,6 +14,14 @@ def validate_object_id(v: Any) -> ObjectId:
 # Tipo anotado para ObjectId
 PyObjectId = Annotated[ObjectId, BeforeValidator(validate_object_id)]
 
+class OCRDataModel(BaseModel):
+    vendor: Optional[str] = None
+    total_amount: Optional[float] = None
+    date: Optional[str] = None
+    items: List[str] = []
+    raw_text: str
+    confidence: float
+
 class ReceiptModel(BaseModel):
     id: Optional[PyObjectId] = Field(default=None, alias="_id")
     user: PyObjectId
@@ -24,6 +32,7 @@ class ReceiptModel(BaseModel):
     totalAmount: float
     imageUrl: Optional[str] = None
     status: Literal["en_revision", "aceptada", "rechazada"] = "en_revision"
+    ocrData: Optional[OCRDataModel] = None
     createdAt: datetime = Field(default_factory=datetime.utcnow)
     updatedAt: datetime = Field(default_factory=datetime.utcnow)
 
@@ -104,6 +113,7 @@ class ReceiptResponse(BaseModel):
     totalAmount: float
     imageUrl: Optional[str] = None
     status: str
+    ocrData: Optional[OCRDataModel] = None
     createdAt: datetime
     updatedAt: datetime
 
@@ -119,6 +129,14 @@ class ReceiptResponse(BaseModel):
                 "totalAmount": 150.50,
                 "imageUrl": "/uploads/receipt-123456.jpg",
                 "status": "en_revision",
+                "ocrData": {
+                    "vendor": "Empresa ABC",
+                    "total_amount": 150.50,
+                    "date": "2023-08-28",
+                    "items": ["Item 1", "Item 2"],
+                    "raw_text": "texto completo extraído",
+                    "confidence": 0.85
+                },
                 "createdAt": "2023-08-28T12:34:56.789Z",
                 "updatedAt": "2023-08-28T12:34:56.789Z"
             }

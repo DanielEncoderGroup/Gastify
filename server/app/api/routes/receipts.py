@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Body, UploadFile, File, Form
 from typing import List, Optional, Any
-from app.models.receipt import ReceiptCreate, ReceiptUpdate, ReceiptStatusUpdate, ReceiptResponse, ReceiptStats
+from app.models.receipt import ReceiptCreate, ReceiptUpdate, ReceiptStatusUpdate, ReceiptResponse, ReceiptStats, OCRDataModel
 from app.models.user import UserPublic
 from app.api.deps import get_current_user
 from app.core.database import get_database
@@ -9,6 +9,14 @@ from datetime import datetime
 import os
 import shutil
 import uuid
+from app.services.ocr_service import FreeOCRService
+from app.services.chile_ml_categorization import ChileCategorizerService
+from app.models.category import CategoryModel, CategoryPrediction, ChileCategory, ChileSpecificData
+import logging
+
+# Configurar logger
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -27,52 +35,150 @@ async def create_receipt(
     """
     db = get_database()
     
+    # Inicializar el servicio OCR y categorización
+    ocr_service = FreeOCRService()
+    categorizer = ChileCategorizerService()
+    ocr_data = None
+    category_data = None
+    
     # Handle image upload if present
     image_url = None
     if image:
-        # Create uploads directory if it doesn't exist
-        os.makedirs("uploads", exist_ok=True)
-        
-        # Generate unique filename for the image
-        file_extension = os.path.splitext(image.filename)[1]
-        unique_filename = f"{uuid.uuid4()}{file_extension}"
-        file_path = os.path.join("uploads", unique_filename)
-        
-        # Save the file
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(image.file, buffer)
-        
-        # Set image URL for database
-        image_url = f"/uploads/{unique_filename}"
+        try:
+            # Create uploads directory if it doesn't exist
+            os.makedirs("uploads", exist_ok=True)
+            
+            # Generate unique filename for the image
+            file_extension = os.path.splitext(image.filename)[1]
+            unique_filename = f"{uuid.uuid4()}{file_extension}"
+            file_path = os.path.join("uploads", unique_filename)
+            
+            # Save the file
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(image.file, buffer)
+            
+            # Set image URL for database
+            image_url = f"/uploads/{unique_filename}"
+            
+            # Procesar la imagen con OCR si se ha guardado correctamente
+            try:
+                # Obtener datos del recibo mediante OCR
+                extracted_data = ocr_service.extract_receipt_data(file_path)
+                
+                # Crear el modelo de datos OCR
+                ocr_data = OCRDataModel(
+                    vendor=extracted_data.get("vendor"),
+                    total_amount=extracted_data.get("total_amount"),
+                    date=extracted_data.get("date"),
+                    items=extracted_data.get("items", []),
+                    raw_text=extracted_data.get("raw_text", ""),
+                    confidence=extracted_data.get("confidence", 0.0)
+                )
+                
+                # Categorizar el recibo usando ML
+                if extracted_data.get("raw_text"):
+                    try:
+                        categorization_result = categorizer.categorize_receipt(extracted_data.get("raw_text"))
+                        
+                        # Crear datos de categoría
+                        chile_specific = ChileSpecificData(
+                            rut_detected=categorization_result["chile_specific"]["rut_detected"],
+                            document_type=categorization_result["chile_specific"]["document_type"],
+                            iva_detected=categorization_result["chile_specific"]["iva_detected"],
+                            known_brand=categorization_result["chile_specific"]["known_brand"]
+                        )
+                        
+                        category_prediction = CategoryPrediction(
+                            category=categorization_result["category"],
+                            confidence=categorization_result["confidence"],
+                            method=categorization_result["method"],
+                            chile_specific=chile_specific,
+                            all_probabilities=categorization_result["all_probabilities"]
+                        )
+                        
+                        logger.info(f"Categorización automática: {categorization_result['category']} con confianza {categorization_result['confidence']}")
+                    except Exception as e:
+                        logger.error(f"Error en la categorización automática: {str(e)}")
+                        category_prediction = None
+                
+                logger.info(f"OCR exitoso con confianza: {ocr_data.confidence}")
+                
+                # Auto-completar campos vacíos con datos del OCR
+                if not companyName and ocr_data.vendor:
+                    companyName = ocr_data.vendor
+                    
+                if totalAmount == 0 and ocr_data.total_amount:
+                    totalAmount = ocr_data.total_amount
+                    
+                # Si hay fecha extraída y es válida, intentar usarla
+                if ocr_data.date:
+                    try:
+                        # Convertir fecha de string a datetime si es posible
+                        ocr_date = datetime.fromisoformat(ocr_data.date)
+                        # Solo usar si la fecha del formulario es vacía o inválida
+                        if not date or date == "":
+                            date = ocr_date.isoformat()
+                    except (ValueError, TypeError):
+                        pass
+                        
+            except Exception as e:
+                logger.error(f"Error en OCR: {str(e)}")
+                # Si el OCR falla, continuamos sin datos OCR
+                pass
+                
+        except Exception as e:
+            logger.error(f"Error al procesar la imagen: {str(e)}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error al procesar la imagen: {str(e)}"
+            )
     
     # Create receipt document
     receipt_data = {
         "user": ObjectId(current_user.id),
         "companyName": companyName,
         "folioNumber": folioNumber,
-        "date": datetime.fromisoformat(date.replace('Z', '+00:00')),
+        "date": datetime.fromisoformat(date.replace('Z', '+00:00')) if 'Z' in date else datetime.fromisoformat(date),
         "description": description,
         "totalAmount": totalAmount,
         "imageUrl": image_url,
+        "ocrData": ocr_data.dict() if ocr_data else None,
         "status": "en_revision",
         "createdAt": datetime.utcnow(),
         "updatedAt": datetime.utcnow()
     }
     
+    # Agregar datos OCR si están disponibles
+    if ocr_data:
+        receipt_data["ocrData"] = ocr_data.model_dump()
+    
     # Insert receipt into database
     result = await db.receipts.insert_one(receipt_data)
     receipt_id = result.inserted_id
     
-    # Get created receipt
-    created_receipt = await db.receipts.find_one({"_id": receipt_id})
+    # Guardar categorización si existe
+    if 'category_prediction' in locals() and category_prediction:
+        try:
+            category_model = CategoryModel(
+                receipt_id=receipt_id,
+                user_id=current_user.id,
+                category=category_prediction.category,
+                prediction=category_prediction,
+                user_corrected=False,
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+            
+            await db.categories.insert_one(category_model.dict(by_alias=True))
+            logger.info(f"Categoría guardada para el recibo {str(receipt_id)}")
+        except Exception as e:
+            logger.error(f"Error al guardar categoría: {str(e)}")
     
-    # Format response
-    created_receipt["id"] = str(created_receipt["_id"])
-    created_receipt["user"] = str(created_receipt["user"])
-    
+    # Return created receipt
     return {
-        "success": True,
-        "data": created_receipt
+        "id": str(receipt_id), 
+        "message": "Receipt created successfully",
+        "category": str(category_prediction.category) if 'category_prediction' in locals() and category_prediction else None
     }
 
 @router.get("/", response_model=dict)
