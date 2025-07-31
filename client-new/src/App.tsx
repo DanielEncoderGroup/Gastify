@@ -29,6 +29,9 @@ import ReceiptsListPage from './pages/receipts/ReceiptsListPage';
 import ReceiptFormPage from './pages/receipts/ReceiptFormPage';
 import ReceiptDetailPage from './pages/receipts/ReceiptDetailPage';
 
+// Gastify - Dashboard de Analytics
+import AnalyticsDashboard from './pages/analytics/AnalyticsDashboard';
+
 // Componente de inicialización para garantizar que se revisa la autenticación
 // antes de renderizar las rutas
 const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -137,6 +140,9 @@ function App() {
             <Route path="receipts/new" element={<ReceiptFormPage />} />
             <Route path="receipts/:id" element={<ReceiptDetailPage />} />
             <Route path="receipts/:id/edit" element={<ReceiptFormPage />} />
+            
+            {/* Rutas de Analytics */}
+            <Route path="analytics" element={<AnalyticsDashboard />} />
             
             {/* Rutas protegidas para clientes */}
             <Route element={<ClientRoute />}>

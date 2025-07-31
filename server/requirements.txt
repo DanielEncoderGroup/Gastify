@@ -1,5 +1,6 @@
 fastapi==0.103.1
-uvicorn==0.23.2
+uvicorn[standard]==0.23.2
+websockets==11.0.3
 pydantic==2.3.0
 python-jose==3.3.0
 passlib==1.7.4
@@ -14,7 +15,7 @@ pydantic-settings==2.0.3
 sendgrid==6.10.0
 # OCR Dependencies
 pytesseract==0.3.10
-opencv-python==4.8.0.74
+opencv-python-headless==4.8.0.74
 pillow==10.0.0
 numpy<2.0.0
 # ML Dependencies

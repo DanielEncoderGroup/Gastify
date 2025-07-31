@@ -8,10 +8,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_DEFAULT_TIMEOUT=100 \
-    POETRY_VERSION=1.6.1 \
-    POETRY_HOME="/opt/poetry" \
-    POETRY_VIRTUALENVS_CREATE=false \
-    POETRY_NO_INTERACTION=1
+    MPLCONFIGDIR=/tmp/matplotlib
 
 # Set work directory
 WORKDIR /app
@@ -20,17 +17,22 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
+    tesseract-ocr \
+    tesseract-ocr-spa \
+    tesseract-ocr-eng \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libgomp1 \
+    libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Poetry
-RUN curl -sSL https://install.python-poetry.org | python3 -
-ENV PATH="${POETRY_HOME}/bin:${PATH}"
-
-# Copy only requirements first to leverage Docker cache
-COPY pyproject.toml poetry.lock* ./
+# Copy requirements first to leverage Docker cache
+COPY requirements.txt ./
 
 # Install Python dependencies
-RUN poetry install --no-dev --no-root --no-interaction --no-ansi
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application
 COPY . .
