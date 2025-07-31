@@ -29,9 +29,15 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
       description: 'Gestiona todos los recibos'
     },
     { 
+      name: 'Analytics', 
+      href: '/app/analytics', 
+      iconName: 'ChartBarIcon',
+      description: 'Dashboard predictivo de gastos'
+    },
+    { 
       name: 'Estadísticas', 
       href: '/app/receipts', 
-      iconName: 'ChartBarIcon',
+      iconName: 'PresentationChartLineIcon',
       description: 'Visualiza estadísticas de gastos'
     },
   ];
@@ -49,6 +55,12 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
       href: '/app/receipts/new', 
       iconName: 'PlusCircleIcon',
       description: 'Añade un nuevo recibo de gastos'
+    },
+    { 
+      name: 'Analytics', 
+      href: '/app/analytics', 
+      iconName: 'ChartBarIcon',
+      description: 'Visualiza predicciones de gastos'
     }
   ];
 

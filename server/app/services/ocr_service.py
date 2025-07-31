@@ -24,7 +24,7 @@ class FreeOCRService:
         Args:
             language (str): Idiomas para Tesseract ('spa' para español, 'eng' para inglés)
         """
-        pytesseract.pytesseract.tesseract_cmd = r'C:\Archivos de programa\Tesseract-OCR\tesseract.exe'
+        # No configurar la ruta de tesseract en Linux/Docker
         self.language = language
         
         # Verificar la instalación de tesseract
@@ -46,9 +46,12 @@ class FreeOCRService:
                     if os.path.exists(path):
                         pytesseract.pytesseract.tesseract_cmd = path
                         break
+            # Prueba simple para verificar que Tesseract está disponible
+            pytesseract.get_tesseract_version()
+            logger.info("Tesseract OCR verificado correctamente")
         except Exception as e:
             logger.error(f"Error al configurar Tesseract: {str(e)}")
-            raise Exception("No se pudo inicializar Tesseract. Asegúrese de que esté instalado correctamente.")
+            raise Exception(f"No se pudo inicializar Tesseract: {str(e)}")
 
     def preprocess_image(self, image_path: str) -> np.ndarray:
         """
