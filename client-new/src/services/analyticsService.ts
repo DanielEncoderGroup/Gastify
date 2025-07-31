@@ -17,7 +17,7 @@ export const analyticsService = {
   // Obtener predicción de gastos futuros
   getPrediction: async (userId: string, days: number = 30): Promise<PredictionResponse> => {
     try {
-      const response = await api.get(`/api/analytics/predict/${userId}?days=${days}`);
+      const response = await api.get(`/analytics/predict/${userId}?days=${days}`);
       // Asegurar que la respuesta cumple con la interfaz PredictionResponse
       const trend = response.data.trend;
       // Validar que trend sea uno de los valores permitidos
@@ -49,7 +49,7 @@ export const analyticsService = {
   // Detectar anomalías en gastos
   detectAnomalies: async (userId: string, threshold: number = 0.05): Promise<AnomaliesResponse> => {
     try {
-      const response = await api.get(`/api/analytics/anomalies/${userId}?threshold=${threshold}`);
+      const response = await api.get(`/analytics/anomalies/${userId}?threshold=${threshold}`);
       return {
         anomalies: response.data.anomalies || [],
         count: response.data.anomalies?.length || 0,
@@ -70,7 +70,7 @@ export const analyticsService = {
   getSpendingPatterns: async (userId: string): Promise<PatternsResponse> => {
     try {
       // Usar la ruta correcta para obtener tendencias
-      const response = await api.get(`/api/analytics/trends/${userId}`);
+      const response = await api.get(`/analytics/trends/${userId}`);
       const patterns = response.data.spending_patterns || [];
       
       return {
@@ -90,7 +90,7 @@ export const analyticsService = {
   // Obtener insights de gastos
   getInsights: async (userId: string): Promise<InsightsResponse> => {
     try {
-      const response = await api.get(`/api/analytics/insights/${userId}`);
+      const response = await api.get(`/analytics/insights/${userId}`);
       return {
         insights: response.data.insights || [],
         total_savings_potential: response.data.savings_potential || 0,
@@ -112,7 +112,7 @@ export const analyticsService = {
     try {
       // Esta ruta puede que necesite ser creada en el servidor
       // Por ahora usamos el dashboard que tiene datos de categorías
-      const response = await api.get(`/api/analytics/dashboard/${userId}?period=${period}`);
+      const response = await api.get(`/analytics/dashboard/${userId}?period=${period}`);
       const stats = response.data?.trends?.spending_patterns?.by_category || [];
       
       return {
@@ -136,7 +136,7 @@ export const analyticsService = {
   // Obtener tendencias de gastos
   getTrends: async (userId: string, months: number = 3): Promise<TrendsResponse> => {
     try {
-      const response = await api.get(`/api/analytics/trends/${userId}?months=${months}`);
+      const response = await api.get(`/analytics/trends/${userId}?months=${months}`);
       const overall: TrendDataPoint[] = response.data.trend_data || [];
       const byCategory: CategoryTrend[] = response.data.category_trends || [];
       
