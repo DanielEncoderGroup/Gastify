@@ -24,13 +24,13 @@ import NotificationsPage from './components/notifications/NotificationsPage';
 import Profile from './pages/profile/Profile';
 import NotFound from './pages/NotFound';
 
-// Gastify - Páginas para gestión de gastos
+// Gastify - Páginas para gestión de gastos (PREMIUM UX/UI)
 import ReceiptsListPage from './pages/receipts/ReceiptsListPage';
-import ReceiptFormPage from './pages/receipts/ReceiptFormPage';
+import ReceiptFormPageNew from './pages/receipts/ReceiptFormPageNew';
 import ReceiptDetailPage from './pages/receipts/ReceiptDetailPage';
 
-// Gastify - Dashboard de Analytics
-import AnalyticsDashboard from './pages/analytics/AnalyticsDashboard';
+// Gastify - Dashboard de Analytics (PREMIUM UX/UI)
+import AnalyticsDashboardPremium from './pages/analytics/AnalyticsDashboardPremium';
 
 // Componente de inicialización para garantizar que se revisa la autenticación
 // antes de renderizar las rutas
@@ -135,14 +135,14 @@ function App() {
             <Route path="" element={<Navigate to="/app/receipts" replace />} />
             <Route path="notifications" element={<NotificationsPage />} />
             
-            {/* Rutas de Gastify - Gestión de gastos */}
+            {/* Rutas de Gastify - Gestión de gastos (PREMIUM UX/UI) */}
             <Route path="receipts" element={<ReceiptsListPage />} />
-            <Route path="receipts/new" element={<ReceiptFormPage />} />
+            <Route path="receipts/new" element={<ReceiptFormPageNew />} />
             <Route path="receipts/:id" element={<ReceiptDetailPage />} />
-            <Route path="receipts/:id/edit" element={<ReceiptFormPage />} />
+            <Route path="receipts/:id/edit" element={<ReceiptFormPageNew />} />
             
-            {/* Rutas de Analytics */}
-            <Route path="analytics" element={<AnalyticsDashboard />} />
+            {/* Rutas de Analytics (PREMIUM UX/UI) */}
+            <Route path="analytics" element={<AnalyticsDashboardPremium />} />
             
             {/* Rutas protegidas para clientes */}
             <Route element={<ClientRoute />}>
