@@ -1,7 +1,7 @@
-from typing import Optional, Literal, Annotated, Any, List, Dict
+from typing import Optional, Literal, Any, List, Dict, Union
 from datetime import datetime
 from bson import ObjectId
-from pydantic import BaseModel, Field, BeforeValidator
+from pydantic import BaseModel, Field, validator
 
 # Función para validar ObjectId
 def validate_object_id(v: Any) -> ObjectId:
@@ -11,8 +11,8 @@ def validate_object_id(v: Any) -> ObjectId:
         return ObjectId(v)
     raise ValueError("Invalid ObjectId")
 
-# Tipo anotado para ObjectId
-PyObjectId = Annotated[ObjectId, BeforeValidator(validate_object_id)]
+# Tipo para ObjectId en Pydantic v1
+PyObjectId = Union[str, ObjectId]
 
 class OCRDataModel(BaseModel):
     vendor: Optional[str] = None
@@ -35,16 +35,27 @@ class ReceiptModel(BaseModel):
     ocrData: Optional[OCRDataModel] = None
     createdAt: datetime = Field(default_factory=datetime.utcnow)
     updatedAt: datetime = Field(default_factory=datetime.utcnow)
+    
+    # Validadores para ObjectId en Pydantic v1
+    @validator('id', pre=True, always=True)
+    def validate_id(cls, v):
+        if v is None:
+            return None
+        return validate_object_id(v)
+        
+    @validator('user', pre=True, always=True)
+    def validate_user(cls, v):
+        return validate_object_id(v)
 
     # Configurar serialización de ObjectId
-    model_config = {
-        "populate_by_name": True,
-        "arbitrary_types_allowed": True,
-        "json_encoders": {
+    class Config:
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {
             ObjectId: str,
             datetime: lambda dt: dt.isoformat()
-        },
-        "json_schema_extra": {
+        }
+        schema_extra = {
             "example": {
                 "user": "507f1f77bcf86cd799439011",
                 "companyName": "Empresa ABC",
@@ -55,7 +66,6 @@ class ReceiptModel(BaseModel):
                 "status": "en_revision"
             }
         }
-    }
 
 class ReceiptCreate(BaseModel):
     companyName: str
@@ -64,8 +74,8 @@ class ReceiptCreate(BaseModel):
     description: str
     totalAmount: float
     
-    model_config = {
-        "json_schema_extra": {
+    class Config:
+        schema_extra = {
             "example": {
                 "companyName": "Empresa ABC",
                 "folioNumber": "F001-123456",
@@ -74,7 +84,6 @@ class ReceiptCreate(BaseModel):
                 "totalAmount": 150.50
             }
         }
-    }
 
 class ReceiptUpdate(BaseModel):
     companyName: Optional[str] = None
@@ -83,25 +92,23 @@ class ReceiptUpdate(BaseModel):
     description: Optional[str] = None
     totalAmount: Optional[float] = None
     
-    model_config = {
-        "json_schema_extra": {
+    class Config:
+        schema_extra = {
             "example": {
                 "companyName": "Empresa XYZ",
                 "totalAmount": 175.25
             }
         }
-    }
         
 class ReceiptStatusUpdate(BaseModel):
     status: Literal["en_revision", "aceptada", "rechazada"]
     
-    model_config = {
-        "json_schema_extra": {
+    class Config:
+        schema_extra = {
             "example": {
                 "status": "aceptada"
             }
         }
-    }
 
 class ReceiptResponse(BaseModel):
     id: str
@@ -117,8 +124,8 @@ class ReceiptResponse(BaseModel):
     createdAt: datetime
     updatedAt: datetime
 
-    model_config = {
-        "json_schema_extra": {
+    class Config:
+        schema_extra = {
             "example": {
                 "id": "507f1f77bcf86cd799439011",
                 "user": "507f1f77bcf86cd799439022",
@@ -141,7 +148,6 @@ class ReceiptResponse(BaseModel):
                 "updatedAt": "2023-08-28T12:34:56.789Z"
             }
         }
-    }
 
 class ReceiptStats(BaseModel):
     totalReceipts: int
@@ -150,8 +156,8 @@ class ReceiptStats(BaseModel):
     rechazadas: int
     totalAmount: float
 
-    model_config = {
-        "json_schema_extra": {
+    class Config:
+        schema_extra = {
             "example": {
                 "totalReceipts": 10,
                 "enRevision": 3,
@@ -160,4 +166,3 @@ class ReceiptStats(BaseModel):
                 "totalAmount": 750.25
             }
         }
-    }
