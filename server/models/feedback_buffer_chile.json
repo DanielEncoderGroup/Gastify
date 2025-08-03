@@ -1,0 +1,50 @@
+[
+  {
+    "text": "Texto de prueba",
+    "predicted_category": "Supermercado",
+    "correct_category": "Farmacia",
+    "user_id": "test_user_123",
+    "timestamp": "2025-08-03T18:03:02.985913",
+    "region": "chile"
+  },
+  {
+    "text": "Texto de prueba",
+    "predicted_category": "Supermercado",
+    "correct_category": "Farmacia",
+    "user_id": "test_user_123",
+    "timestamp": "2025-08-03T18:05:54.701591",
+    "region": "chile"
+  },
+  {
+    "text": "Texto de prueba",
+    "predicted_category": "Supermercado",
+    "correct_category": "Farmacia",
+    "user_id": "test_user_123",
+    "timestamp": "2025-08-03T18:07:24.660612",
+    "region": "chile"
+  },
+  {
+    "text": "Texto de prueba",
+    "predicted_category": "Supermercado",
+    "correct_category": "Farmacia",
+    "user_id": "test_user_123",
+    "timestamp": "2025-08-03T18:09:11.179524",
+    "region": "chile"
+  },
+  {
+    "text": "Texto de prueba",
+    "predicted_category": "Supermercado",
+    "correct_category": "Farmacia",
+    "user_id": "test_user_123",
+    "timestamp": "2025-08-03T18:10:46.537468",
+    "region": "chile"
+  },
+  {
+    "text": "Texto de prueba",
+    "predicted_category": "Supermercado",
+    "correct_category": "Farmacia",
+    "user_id": "test_user_123",
+    "timestamp": "2025-08-03T18:11:36.157768",
+    "region": "chile"
+  }
+]
