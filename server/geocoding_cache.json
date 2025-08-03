@@ -1,0 +1,82 @@
+{
+  "2964abd08fcfc3da298f4046cdd8e809": {
+    "key": "2964abd08fcfc3da298f4046cdd8e809",
+    "location": {
+      "id": null,
+      "coordinates": {
+        "latitude": -33.4367522,
+        "longitude": -70.6328718,
+        "accuracy": null,
+        "altitude": null
+      },
+      "address": {
+        "street": "Avenida Providencia",
+        "city": "Providencia",
+        "state": "Región Metropolitana de Santiago",
+        "postal_code": "7520339",
+        "country": "Chile",
+        "formatted_address": "Avenida Providencia, Barrio Plaza Italia, Providencia, Provincia de Santiago, Región Metropolitana de Santiago, 7520339, Chile"
+      },
+      "metadata": {
+        "place_id": null,
+        "place_name": "Avenida Providencia",
+        "business_hours": null,
+        "phone": null,
+        "website": null,
+        "rating": null,
+        "price_level": null,
+        "categories": [
+          "primary"
+        ]
+      },
+      "location_type": "other",
+      "source": "geocoded",
+      "confidence": 0.8,
+      "created_at": "2025-08-03T18:40:55.487764",
+      "updated_at": "2025-08-03T18:40:55.487764"
+    },
+    "hits": 0,
+    "last_used": "2025-08-03T18:40:55.488764",
+    "expires_at": "2025-08-04T18:40:55.488764"
+  },
+  "c00ef81c093df1665ac062b98b1f1c31": {
+    "key": "c00ef81c093df1665ac062b98b1f1c31",
+    "location": {
+      "id": null,
+      "coordinates": {
+        "latitude": -33.4367522,
+        "longitude": -70.6328718,
+        "accuracy": null,
+        "altitude": null
+      },
+      "address": {
+        "street": "Avenida Providencia",
+        "city": "Providencia",
+        "state": "Región Metropolitana de Santiago",
+        "postal_code": "7520339",
+        "country": "Chile",
+        "formatted_address": "Avenida Providencia, Barrio Plaza Italia, Providencia, Provincia de Santiago, Región Metropolitana de Santiago, 7520339, Chile"
+      },
+      "metadata": {
+        "place_id": null,
+        "place_name": "Avenida Providencia",
+        "business_hours": null,
+        "phone": null,
+        "website": null,
+        "rating": null,
+        "price_level": null,
+        "categories": [
+          "primary"
+        ]
+      },
+      "location_type": "other",
+      "source": "geocoded",
+      "confidence": 0.8,
+      "created_at": "2025-08-03T18:40:57.117437",
+      "updated_at": "2025-08-03T18:40:57.117437"
+    },
+    "hits": 0,
+    "last_used": "2025-08-03T18:40:57.117437",
+    "expires_at": "2025-08-04T18:40:57.117437"
+  }
+}

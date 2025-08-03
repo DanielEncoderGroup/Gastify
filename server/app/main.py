@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 import uvicorn
 import os
 from app.api.routes import auth, receipts, notifications, categories, analytics
+from app.routers import geolocation
 from app.core.config import settings
 from app.core.database import connect_to_mongo, close_mongo_connection
 
@@ -28,6 +29,7 @@ app.include_router(receipts.router, prefix="/api/receipts", tags=["Receipts"])
 app.include_router(notifications.router, prefix="/api/notifications", tags=["Notifications"])
 app.include_router(categories.router, prefix="/api/categories", tags=["Categories"])
 app.include_router(analytics.router, prefix="/api/analytics", tags=["Analytics"])
+app.include_router(geolocation.router, prefix="/api", tags=["Geolocation"])
 
 # Mount static files for uploads
 os.makedirs("uploads", exist_ok=True)

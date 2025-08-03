@@ -717,3 +717,23 @@ class EnhancedCategorizationService:
         """Fuerza el reentrenamiento del modelo"""
         logger.info("Forzando reentrenamiento del modelo...")
         self._retrain_with_feedback()
+
+
+# Instancia global del servicio
+_categorization_service = None
+
+def get_enhanced_categorization_service(region: Region = Region.CHILE) -> EnhancedCategorizationService:
+    """Factory function para obtener una instancia del servicio de categorización"""
+    global _categorization_service
+    
+    if _categorization_service is None:
+        _categorization_service = EnhancedCategorizationService(region=region)
+        # Inicializar el modelo si no existe
+        try:
+            _categorization_service.load_model()
+        except Exception as e:
+            logger.warning(f"No se pudo cargar modelo existente: {e}")
+            logger.info("Inicializando modelo desde cero...")
+            _categorization_service._initialize_model()
+    
+    return _categorization_service
