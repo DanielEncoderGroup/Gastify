@@ -35,8 +35,8 @@
       "created_at": "2025-08-03T18:40:55.487764",
       "updated_at": "2025-08-03T18:40:55.487764"
     },
-    "hits": 0,
-    "last_used": "2025-08-03T18:40:55.488764",
+    "hits": 2,
+    "last_used": "2025-08-03T19:34:48.976551",
     "expires_at": "2025-08-04T18:40:55.488764"
   },
   "c00ef81c093df1665ac062b98b1f1c31": {
@@ -78,5 +78,85 @@
     "hits": 0,
     "last_used": "2025-08-03T18:40:57.117437",
     "expires_at": "2025-08-04T18:40:57.117437"
+  },
+  "6066bc158529c406037a853290bee6a5": {
+    "key": "6066bc158529c406037a853290bee6a5",
+    "location": {
+      "id": null,
+      "coordinates": {
+        "latitude": -33.4321835,
+        "longitude": -70.6095284,
+        "accuracy": null,
+        "altitude": null
+      },
+      "address": {
+        "street": null,
+        "city": "Providencia",
+        "state": "Región Metropolitana de Santiago",
+        "postal_code": "7500000",
+        "country": "Chile",
+        "formatted_address": "Providencia, Provincia de Santiago, Región Metropolitana de Santiago, 7500000, Chile"
+      },
+      "metadata": {
+        "place_id": null,
+        "place_name": "Providencia",
+        "business_hours": null,
+        "phone": null,
+        "website": null,
+        "rating": null,
+        "price_level": null,
+        "categories": [
+          "suburb"
+        ]
+      },
+      "location_type": "other",
+      "source": "geocoded",
+      "confidence": 0.8,
+      "created_at": "2025-08-03T19:19:48.716703",
+      "updated_at": "2025-08-03T19:19:48.716703"
+    },
+    "hits": 0,
+    "last_used": "2025-08-03T19:19:48.716703",
+    "expires_at": "2025-08-04T19:19:48.716703"
+  },
+  "b7cf7acdc59b8c5217b9276b8d636307": {
+    "key": "b7cf7acdc59b8c5217b9276b8d636307",
+    "location": {
+      "id": null,
+      "coordinates": {
+        "latitude": -33.4321835,
+        "longitude": -70.6095284,
+        "accuracy": null,
+        "altitude": null
+      },
+      "address": {
+        "street": null,
+        "city": "Providencia",
+        "state": "Región Metropolitana de Santiago",
+        "postal_code": "7500000",
+        "country": "Chile",
+        "formatted_address": "Providencia, Provincia de Santiago, Región Metropolitana de Santiago, 7500000, Chile"
+      },
+      "metadata": {
+        "place_id": null,
+        "place_name": "Providencia",
+        "business_hours": null,
+        "phone": null,
+        "website": null,
+        "rating": null,
+        "price_level": null,
+        "categories": [
+          "suburb"
+        ]
+      },
+      "location_type": "other",
+      "source": "geocoded",
+      "confidence": 0.8,
+      "created_at": "2025-08-03T19:34:49.980835",
+      "updated_at": "2025-08-03T19:34:49.980835"
+    },
+    "hits": 0,
+    "last_used": "2025-08-03T19:34:49.981839",
+    "expires_at": "2025-08-04T19:34:49.981839"
   }
 }

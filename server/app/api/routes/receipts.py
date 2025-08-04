@@ -12,6 +12,8 @@ import uuid
 from app.services.ocr_service import FreeOCRService
 from app.services.chile_ml_categorization import ChileCategorizerService
 from app.models.category import CategoryModel, CategoryPrediction, ChileCategory, ChileSpecificData
+from app.services.geolocation_service import GeolocationService
+from app.models.location_models import LocationDataModel
 import logging
 
 # Configurar logger
@@ -35,11 +37,13 @@ async def create_receipt(
     """
     db = get_database()
     
-    # Inicializar el servicio OCR y categorización
+    # Inicializar servicios OCR, categorización y geolocalización
     ocr_service = FreeOCRService()
     categorizer = ChileCategorizerService()
+    geolocation_service = GeolocationService()
     ocr_data = None
     category_data = None
+    location_data = None
     
     # Handle image upload if present
     image_url = None
@@ -101,6 +105,20 @@ async def create_receipt(
                         logger.error(f"Error en la categorización automática: {str(e)}")
                         category_prediction = None
                 
+                # Procesar geolocalización del recibo
+                try:
+                    location_result = await geolocation_service.process_receipt_location(extracted_data.get("raw_text", ""))
+                    if location_result:
+                        location_data = LocationDataModel(
+                            location=location_result,
+                            extraction_method=location_result.get("extraction_method", "unknown"),
+                            confidence=location_result.get("confidence", 0.0)
+                        )
+                        logger.info(f"Geolocalización exitosa con confianza: {location_data.confidence}")
+                except Exception as e:
+                    logger.error(f"Error en la geolocalización: {str(e)}")
+                    location_data = None
+                
                 logger.info(f"OCR exitoso con confianza: {ocr_data.confidence}")
                 
                 # Auto-completar campos vacíos con datos del OCR
@@ -143,6 +161,7 @@ async def create_receipt(
         "totalAmount": totalAmount,
         "imageUrl": image_url,
         "ocrData": ocr_data.dict() if ocr_data else None,
+        "locationData": location_data.dict() if location_data else None,
         "status": "en_revision",
         "createdAt": datetime.utcnow(),
         "updatedAt": datetime.utcnow()
@@ -178,7 +197,13 @@ async def create_receipt(
     return {
         "id": str(receipt_id), 
         "message": "Receipt created successfully",
-        "category": str(category_prediction.category) if 'category_prediction' in locals() and category_prediction else None
+        "category": str(category_prediction.category) if 'category_prediction' in locals() and category_prediction else None,
+        "location": {
+            "extracted": location_data is not None,
+            "confidence": location_data.confidence if location_data else 0.0,
+            "method": location_data.extraction_method if location_data else None,
+            "address": location_data.location.get("address", {}).get("formatted_address") if location_data and location_data.location else None
+        } if location_data else None
     }
 
 @router.get("/", response_model=dict)
@@ -452,3 +477,60 @@ async def delete_receipt(
         "success": True,
         "message": "Receipt deleted successfully"
     }
+
+@router.get("/location-analytics", response_model=dict)
+async def get_location_analytics(
+    current_user: UserPublic = Depends(get_current_user)
+) -> Any:
+    """
+    Get location analytics for user's receipts
+    """
+    db = get_database()
+    geolocation_service = GeolocationService()
+    
+    # Obtener todos los recibos del usuario con datos de ubicación
+    receipts_cursor = db.receipts.find({
+        "user": ObjectId(current_user.id),
+        "locationData": {"$exists": True, "$ne": None}
+    })
+    
+    receipts = await receipts_cursor.to_list(length=None)
+    
+    if not receipts:
+        return {
+            "total_locations": 0,
+            "top_locations": [],
+            "total_spent": 0.0,
+            "avg_distance_from_home": 0.0,
+            "most_frequent_category": None,
+            "business_trip_percentage": 0.0,
+            "business_trips": []
+        }
+    
+    # Convertir a modelos de recibo con ubicación
+    from app.models.receipt_with_location import ReceiptWithLocationModel
+    receipt_models = []
+    
+    for receipt in receipts:
+        try:
+            # Convertir ObjectId a string para el modelo
+            receipt["_id"] = str(receipt["_id"])
+            receipt["user"] = str(receipt["user"])
+            
+            # Crear modelo de recibo con ubicación
+            receipt_model = ReceiptWithLocationModel(**receipt)
+            receipt_models.append(receipt_model)
+        except Exception as e:
+            logger.error(f"Error al convertir recibo {receipt.get('_id')}: {str(e)}")
+            continue
+    
+    # Obtener análisis de geolocalización
+    try:
+        analytics = await geolocation_service.get_location_analytics(receipt_models)
+        return analytics
+    except Exception as e:
+        logger.error(f"Error en análisis de geolocalización: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al generar análisis de geolocalización: {str(e)}"
+        )
