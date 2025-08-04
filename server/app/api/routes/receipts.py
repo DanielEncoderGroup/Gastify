@@ -13,7 +13,9 @@ from app.services.ocr_service import FreeOCRService
 from app.services.chile_ml_categorization import ChileCategorizerService
 from app.models.category import CategoryModel, CategoryPrediction, ChileCategory, ChileSpecificData
 from app.services.geolocation_service import GeolocationService
-from app.models.location_models import LocationDataModel
+from app.models.receipt_with_location import LocationDataModel
+from app.services.workflow_service import WorkflowService
+from app.models.workflow import ApprovalStatus
 import logging
 
 # Configurar logger
@@ -37,13 +39,16 @@ async def create_receipt(
     """
     db = get_database()
     
-    # Inicializar servicios OCR, categorización y geolocalización
+    # Inicializar servicios OCR, categorización, geolocalización y workflow
     ocr_service = FreeOCRService()
     categorizer = ChileCategorizerService()
     geolocation_service = GeolocationService()
+    workflow_service = WorkflowService(db)
     ocr_data = None
     category_data = None
     location_data = None
+    workflow_evaluation = None
+    approval_instance = None
     
     # Handle image upload if present
     image_url = None
@@ -175,6 +180,51 @@ async def create_receipt(
     result = await db.receipts.insert_one(receipt_data)
     receipt_id = result.inserted_id
     
+    # Crear modelo de recibo para evaluación de workflow
+    from app.models.receipt import ReceiptModel
+    receipt_for_workflow = ReceiptModel(
+        id=receipt_id,
+        user=ObjectId(current_user.id),
+        companyName=companyName,
+        folioNumber=folioNumber,
+        totalAmount=totalAmount,
+        date=receipt_data["date"],
+        description=description
+    )
+    
+    # Evaluar workflow de aprobación
+    try:
+        # TODO: Obtener company_id del usuario actual
+        company_id = "default_company"  # Placeholder
+        
+        workflow_evaluation = await workflow_service.evaluate_receipt_approval(
+            receipt_for_workflow,
+            current_user,
+            company_id
+        )
+        
+        # Crear instancia de aprobación
+        approval_instance = await workflow_service.create_approval_instance(
+            str(receipt_id),
+            workflow_evaluation,
+            company_id
+        )
+        
+        # Actualizar estado del recibo basado en la evaluación
+        new_status = "aprobado" if workflow_evaluation.auto_approved else "pendiente_aprobacion"
+        await db.receipts.update_one(
+            {"_id": receipt_id},
+            {"$set": {"status": new_status, "updatedAt": datetime.utcnow()}}
+        )
+        
+        logger.info(f"Workflow evaluado para recibo {receipt_id}: {workflow_evaluation.action}")
+        
+    except Exception as e:
+        logger.error(f"Error en evaluación de workflow: {str(e)}")
+        # Si falla el workflow, mantener estado original
+        workflow_evaluation = None
+        approval_instance = None
+    
     # Guardar categorización si existe
     if 'category_prediction' in locals() and category_prediction:
         try:
@@ -193,8 +243,8 @@ async def create_receipt(
         except Exception as e:
             logger.error(f"Error al guardar categoría: {str(e)}")
     
-    # Return created receipt
-    return {
+    # Return created receipt with workflow information
+    response_data = {
         "id": str(receipt_id), 
         "message": "Receipt created successfully",
         "category": str(category_prediction.category) if 'category_prediction' in locals() and category_prediction else None,
@@ -203,8 +253,18 @@ async def create_receipt(
             "confidence": location_data.confidence if location_data else 0.0,
             "method": location_data.extraction_method if location_data else None,
             "address": location_data.location.get("address", {}).get("formatted_address") if location_data and location_data.location else None
-        } if location_data else None
+        } if location_data else None,
+        "approval": {
+            "status": approval_instance.status if approval_instance else "en_revision",
+            "auto_approved": workflow_evaluation.auto_approved if workflow_evaluation else False,
+            "workflow_applied": workflow_evaluation.applied_rule_id if workflow_evaluation else None,
+            "reason": workflow_evaluation.reason if workflow_evaluation else None,
+            "next_approver": workflow_evaluation.next_approver_id if workflow_evaluation else None,
+            "approval_instance_id": str(approval_instance.id) if approval_instance else None
+        } if workflow_evaluation else None
     }
+    
+    return response_data
 
 @router.get("/", response_model=dict)
 async def get_receipts(current_user: UserPublic = Depends(get_current_user)) -> Any:

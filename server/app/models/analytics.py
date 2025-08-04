@@ -117,13 +117,12 @@ class PredictionModel(BaseModel):
     chile_context: Dict[str, Any] = {}  # Contexto específico de Chile
     created_at: datetime = Field(default_factory=datetime.utcnow)
     
-    model_config = {
-        "populate_by_name": True,
-        "arbitrary_types_allowed": True,
-        "json_encoders": {
+    class Config:
+        populate_by_name = True,
+        arbitrary_types_allowed = True,
+        json_encoders = {
             ObjectId: str,
             datetime: lambda dt: dt.isoformat()
-        }
     }
 
 
@@ -150,13 +149,12 @@ class AnomalyModel(BaseModel):
     chile_context: Optional[ChileAnomalyContext] = None  # Contexto específico de Chile
     detected_at: datetime = Field(default_factory=datetime.utcnow)
     
-    model_config = {
-        "populate_by_name": True,
-        "arbitrary_types_allowed": True,
-        "json_encoders": {
+    class Config:
+        populate_by_name = True,
+        arbitrary_types_allowed = True,
+        json_encoders = {
             ObjectId: str,
             datetime: lambda dt: dt.isoformat()
-        }
     }
 
 
@@ -190,13 +188,12 @@ class InsightModel(BaseModel):
     chile_context: Optional[ChileInsightContext] = None  # Contexto específico de Chile
     created_at: datetime = Field(default_factory=datetime.utcnow)
     
-    model_config = {
-        "populate_by_name": True,
-        "arbitrary_types_allowed": True,
-        "json_encoders": {
+    class Config:
+        populate_by_name = True,
+        arbitrary_types_allowed = True,
+        json_encoders = {
             ObjectId: str,
             datetime: lambda dt: dt.isoformat()
-        }
     }
 
 

@@ -1,7 +1,7 @@
-from typing import Optional, List, Literal, Any, Dict, Annotated
+from typing import Optional, List, Literal, Any, Dict
 from datetime import datetime
 from bson import ObjectId
-from pydantic import BaseModel, Field, BeforeValidator
+from pydantic import BaseModel, Field, validator
 from enum import Enum
 
 # Función para validar ObjectId
@@ -12,8 +12,8 @@ def validate_object_id(v: Any) -> ObjectId:
         return ObjectId(v)
     raise ValueError("Invalid ObjectId")
 
-# Tipo anotado para ObjectId
-PyObjectId = Annotated[ObjectId, BeforeValidator(validate_object_id)]
+# Tipo para ObjectId compatible con Pydantic v1
+PyObjectId = ObjectId
 
 # Enum con categorías específicas de Chile
 class ChileCategory(str, Enum):
@@ -34,6 +34,9 @@ class ChileSpecificData(BaseModel):
     document_type: Optional[str] = None
     iva_detected: bool = False
     known_brand: Optional[str] = None
+    
+    class Config:
+        arbitrary_types_allowed = True
 
 class CategoryPrediction(BaseModel):
     category: ChileCategory
@@ -41,6 +44,9 @@ class CategoryPrediction(BaseModel):
     method: str
     chile_specific: ChileSpecificData
     all_probabilities: Dict[str, float]
+    
+    class Config:
+        arbitrary_types_allowed = True
 
 class CategoryModel(BaseModel):
     id: Optional[PyObjectId] = Field(default=None, alias="_id")
@@ -48,19 +54,19 @@ class CategoryModel(BaseModel):
     user_id: PyObjectId
     category: ChileCategory
     prediction: CategoryPrediction
+    
     user_corrected: bool = False
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
-
-    # Configurar serialización de ObjectId
-    model_config = {
-        "populate_by_name": True,
-        "arbitrary_types_allowed": True,
-        "json_encoders": {
+    
+    class Config:
+        populate_by_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {
             ObjectId: str,
             datetime: lambda dt: dt.isoformat()
-        },
-        "json_schema_extra": {
+        }
+        schema_extra = {
             "example": {
                 "receipt_id": "507f1f77bcf86cd799439011",
                 "user_id": "507f1f77bcf86cd799439022",
@@ -86,7 +92,6 @@ class CategoryModel(BaseModel):
                 "updated_at": "2023-08-28T12:34:56.789Z"
             }
         }
-    }
 
 class UserCategoryFeedback(BaseModel):
     id: Optional[PyObjectId] = Field(default=None, alias="_id")
@@ -97,14 +102,14 @@ class UserCategoryFeedback(BaseModel):
     receipt_text: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
-    model_config = {
-        "populate_by_name": True,
-        "arbitrary_types_allowed": True,
-        "json_encoders": {
+    class Config:
+        populate_by_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {
             ObjectId: str,
             datetime: lambda dt: dt.isoformat()
-        },
-        "json_schema_extra": {
+        }
+        schema_extra = {
             "example": {
                 "receipt_id": "507f1f77bcf86cd799439011",
                 "user_id": "507f1f77bcf86cd799439022",
@@ -114,7 +119,6 @@ class UserCategoryFeedback(BaseModel):
                 "created_at": "2023-08-28T12:34:56.789Z"
             }
         }
-    }
 
 class CategoryResponse(BaseModel):
     id: str
@@ -126,8 +130,8 @@ class CategoryResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = {
-        "json_schema_extra": {
+    class Config:
+        schema_extra = {
             "example": {
                 "id": "507f1f77bcf86cd799439011",
                 "receipt_id": "507f1f77bcf86cd799439022",
@@ -154,18 +158,16 @@ class CategoryResponse(BaseModel):
                 "updated_at": "2023-08-28T12:34:56.789Z"
             }
         }
-    }
 
 class CategoryUpdate(BaseModel):
     category: ChileCategory
 
-    model_config = {
-        "json_schema_extra": {
+    class Config:
+        schema_extra = {
             "example": {
                 "category": "Combustible"
             }
         }
-    }
 
 class CategoryStats(BaseModel):
     total_categorized: int
@@ -173,8 +175,8 @@ class CategoryStats(BaseModel):
     auto_categorized: int
     user_corrected: int
 
-    model_config = {
-        "json_schema_extra": {
+    class Config:
+        schema_extra = {
             "example": {
                 "total_categorized": 25,
                 "categories_count": {
@@ -187,4 +189,3 @@ class CategoryStats(BaseModel):
                 "user_corrected": 5
             }
         }
-    }
