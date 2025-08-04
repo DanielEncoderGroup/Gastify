@@ -25,8 +25,8 @@ class LocationDataModel(BaseModel):
     geocoding_provider: Optional[str] = None  # Proveedor de geocodificación
     processing_time_ms: float = 0.0  # Tiempo de procesamiento
     
-    model_config = {
-        "json_schema_extra": {
+    class Config:
+        schema_extra = {
             "example": {
                 "location": {
                     "coordinates": {"latitude": -33.4489, "longitude": -70.6693},
@@ -41,7 +41,6 @@ class LocationDataModel(BaseModel):
                 "processing_time_ms": 150.5
             }
         }
-    }
 
 
 class EnhancedOCRDataModel(OCRDataModel):
@@ -51,8 +50,8 @@ class EnhancedOCRDataModel(OCRDataModel):
     location_keywords: List[str] = Field(default_factory=list)  # Palabras clave de ubicación
     phone_numbers: List[str] = Field(default_factory=list)  # Números de teléfono
     
-    model_config = {
-        "json_schema_extra": {
+    class Config:
+        schema_extra = {
             "example": {
                 "vendor": "Jumbo",
                 "total_amount": 25000.0,
@@ -66,7 +65,6 @@ class EnhancedOCRDataModel(OCRDataModel):
                 "phone_numbers": ["+56 2 2234 5678"]
             }
         }
-    }
 
 
 class ReceiptWithLocationModel(ReceiptModel):
@@ -82,14 +80,14 @@ class ReceiptWithLocationModel(ReceiptModel):
     distanceFromHome: Optional[float] = None  # Distancia desde casa (km)
     locationCluster: Optional[str] = None  # Cluster de ubicación
     
-    model_config = {
-        "populate_by_name": True,
-        "arbitrary_types_allowed": True,
-        "json_encoders": {
+    class Config:
+        populate_by_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {
             ObjectId: str,
             datetime: lambda dt: dt.isoformat()
-        },
-        "json_schema_extra": {
+        }
+        schema_extra = {
             "example": {
                 "user": "507f1f77bcf86cd799439011",
                 "companyName": "Jumbo",
@@ -114,7 +112,6 @@ class ReceiptWithLocationModel(ReceiptModel):
                 "tags": ["supermercado", "alimentacion"]
             }
         }
-    }
 
 
 class LocationAnalyticsModel(BaseModel):
@@ -130,8 +127,8 @@ class LocationAnalyticsModel(BaseModel):
     last_visit: datetime
     visit_frequency: float  # visitas por mes
     
-    model_config = {
-        "json_schema_extra": {
+    class Config:
+        schema_extra = {
             "example": {
                 "location_id": "loc_123456",
                 "location_name": "Jumbo Providencia",
@@ -141,8 +138,7 @@ class LocationAnalyticsModel(BaseModel):
                 "avg_expense": 12500.0,
                 "categories": {
                     "Supermercado": 120000.0,
-                    "Farmacia": 30000.0
-                },
+                    "Farmacia": 30000.0,
                 "first_visit": "2024-01-15T10:30:00Z",
                 "last_visit": "2024-08-03T14:30:00Z",
                 "visit_frequency": 2.4
@@ -159,10 +155,9 @@ class HeatmapDataModel(BaseModel):
     date_range: Dict[str, datetime]  # Rango de fechas
     categories: List[str]  # Categorías incluidas
     
-    model_config = {
-        "json_encoders": {
-            datetime: lambda dt: dt.isoformat()
-        },
+    class Config:
+        json_encoders = {
+            datetime: lambda dt: dt.isoformat(),
         "json_schema_extra": {
             "example": {
                 "points": [
@@ -200,10 +195,9 @@ class BusinessTripModel(BaseModel):
     is_confirmed: bool = False  # Si fue confirmado por el usuario
     confidence: float = 0.0  # Confianza en la detección automática
     
-    model_config = {
-        "json_encoders": {
-            datetime: lambda dt: dt.isoformat()
-        },
+    class Config:
+        json_encoders = {
+            datetime: lambda dt: dt.isoformat(),
         "json_schema_extra": {
             "example": {
                 "trip_id": "trip_123456",
@@ -245,8 +239,8 @@ class LocationStatsResponse(BaseModel):
     most_frequent_category: str
     business_trip_percentage: float
     
-    model_config = {
-        "json_schema_extra": {
+    class Config:
+        schema_extra = {
             "example": {
                 "total_locations": 25,
                 "top_locations": [],  # Lista de LocationAnalyticsModel
@@ -254,7 +248,6 @@ class LocationStatsResponse(BaseModel):
                 "avg_distance_from_home": 8.5,
                 "most_frequent_category": "Supermercado",
                 "business_trip_percentage": 15.2
-            }
         }
     }
 
@@ -268,14 +261,13 @@ class GeocodingResponse(BaseModel):
     cache_hit: bool = False
     processing_time_ms: float = 0.0
     
-    model_config = {
-        "json_schema_extra": {
+    class Config:
+        schema_extra = {
             "example": {
                 "success": True,
                 "location": {
                     "coordinates": {"latitude": -33.4489, "longitude": -70.6693},
-                    "address": {"street": "Av. Providencia 1234", "city": "Santiago"}
-                },
+                    "address": {"street": "Av. Providencia 1234", "city": "Santiago"},
                 "provider": "google_maps",
                 "cache_hit": False,
                 "processing_time_ms": 245.7

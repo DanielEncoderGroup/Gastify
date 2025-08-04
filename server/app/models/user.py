@@ -1,7 +1,7 @@
-from typing import Optional, Annotated, Any
+from typing import Optional, Any
 from datetime import datetime
 from bson import ObjectId
-from pydantic import BaseModel, EmailStr, Field, BeforeValidator
+from pydantic import BaseModel, EmailStr, Field, validator
 
 # Función para validar ObjectId
 def validate_object_id(v: Any) -> ObjectId:
@@ -11,8 +11,8 @@ def validate_object_id(v: Any) -> ObjectId:
         return ObjectId(v)
     raise ValueError("Invalid ObjectId")
 
-# Tipo anotado para ObjectId
-PyObjectId = Annotated[ObjectId, BeforeValidator(validate_object_id)]
+# Tipo para ObjectId compatible con Pydantic v1
+PyObjectId = ObjectId
 
 # Definición de roles disponibles
 class UserRole:
@@ -38,15 +38,20 @@ class UserModel(BaseModel):
     createdAt: datetime = Field(default_factory=datetime.utcnow)
     updatedAt: Optional[datetime] = None
     
-    # Configuración unificada usando model_config (Pydantic v2)
-    model_config = {
-        "populate_by_name": True,
-        "arbitrary_types_allowed": True,
-        "json_encoders": {
+    @validator('id', pre=True, always=True)
+    def validate_id(cls, v):
+        if v is None:
+            return v
+        return validate_object_id(v)
+
+    class Config:
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {
             ObjectId: str,
             datetime: lambda dt: dt.isoformat()
-        },
-        "json_schema_extra": {
+        }
+        schema_extra = {
             "example": {
                 "firstName": "John",
                 "lastName": "Doe",
@@ -54,7 +59,6 @@ class UserModel(BaseModel):
                 "password": "securepassword"
             }
         }
-    }
 
 class UserInDB(UserModel):
     """User as stored in the database (including hashed password)"""
@@ -69,8 +73,8 @@ class UserPublic(BaseModel):
     role: str
     createdAt: datetime
 
-    model_config = {
-        "json_schema_extra": {
+    class Config:
+        schema_extra = {
             "example": {
                 "id": "507f1f77bcf86cd799439011",
                 "firstName": "John",
@@ -80,7 +84,6 @@ class UserPublic(BaseModel):
                 "createdAt": "2023-08-28T12:34:56.789000"
             }
         }
-    }
 
 class UserCreate(BaseModel):
     """Request model for user creation"""
@@ -89,8 +92,8 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
 
-    model_config = {
-        "json_schema_extra": {
+    class Config:
+        schema_extra = {
             "example": {
                 "firstName": "John",
                 "lastName": "Doe",
@@ -98,7 +101,6 @@ class UserCreate(BaseModel):
                 "password": "securepassword"
             }
         }
-    }
 
 class UserUpdate(BaseModel):
     """Request model for user update"""
@@ -107,63 +109,58 @@ class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     password: Optional[str] = None
 
-    model_config = {
-        "json_schema_extra": {
+    class Config:
+        schema_extra = {
             "example": {
                 "firstName": "John",
                 "lastName": "Smith"
             }
         }
-    }
 
 class UserLogin(BaseModel):
     """Request model for user login"""
     email: EmailStr
     password: str
 
-    model_config = {
-        "json_schema_extra": {
+    class Config:
+        schema_extra = {
             "example": {
                 "email": "john@example.com",
                 "password": "securepassword"
             }
         }
-    }
 
 class ForgotPassword(BaseModel):
     """Request model for password reset request"""
     email: EmailStr
 
-    model_config = {
-        "json_schema_extra": {
+    class Config:
+        schema_extra = {
             "example": {
                 "email": "john@example.com"
             }
         }
-    }
 
 class ResetPassword(BaseModel):
     """Request model for password reset"""
     password: str
 
-    model_config = {
-        "json_schema_extra": {
+    class Config:
+        schema_extra = {
             "example": {
                 "password": "newsecurepassword"
             }
         }
-    }
 
 class Token(BaseModel):
     """Response model for JWT token"""
     access_token: str
     token_type: str = "bearer"
 
-    model_config = {
-        "json_schema_extra": {
+    class Config:
+        schema_extra = {
             "example": {
                 "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
                 "token_type": "bearer"
             }
         }
-    }

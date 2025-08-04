@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 from bson import ObjectId
-from pydantic import BaseModel, Field, BeforeValidator
+from pydantic import BaseModel, Field, validator
 from app.models.user import PyObjectId
 
 class NotificationType:
@@ -22,11 +22,35 @@ class Notification(BaseModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     read_at: Optional[datetime] = None
 
-    model_config = {
-        "populate_by_name": True,
-        "arbitrary_types_allowed": True,
-        "json_encoders": {
+    class Config:
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {
             ObjectId: str,
             datetime: lambda dt: dt.isoformat()
         }
-    }
+
+# Alias para compatibilidad
+NotificationModel = Notification
+
+class NotificationCreate(BaseModel):
+    """Modelo para crear notificaciones"""
+    user_id: PyObjectId
+    type: str
+    title: str
+    message: str
+    data: Optional[Dict[str, Any]] = None
+    
+    class Config:
+        arbitrary_types_allowed = True
+        json_encoders = {
+            ObjectId: str
+        }
+
+class NotificationUpdate(BaseModel):
+    """Modelo para actualizar notificaciones"""
+    read: Optional[bool] = None
+    read_at: Optional[datetime] = None
+    
+    class Config:
+        arbitrary_types_allowed = True

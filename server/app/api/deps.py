@@ -127,6 +127,18 @@ async def get_current_user_ws(token: str) -> UserPublic:
     except Exception as e:
         print(f"❌ Error al buscar usuario en BD: {e}")
         raise credentials_exception
+
+def require_role(allowed_roles: List[str]):
+    """Dependencia para requerir roles específicos"""
+    async def role_checker(current_user: UserPublic = Depends(get_current_user)):
+        if current_user.role not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Usuario no tiene permisos suficientes. Se requiere uno de estos roles: {', '.join(allowed_roles)}"
+            )
+        return current_user
+    return role_checker
+
 # Common role-based dependencies
 get_admin_user = check_roles([UserRole.ADMIN])
 get_client_user = check_roles([UserRole.CLIENT])

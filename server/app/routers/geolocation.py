@@ -18,8 +18,8 @@ from ..models.receipt_with_location import (
 from ..models.location_models import Location, Coordinates
 from ..services.geolocation_service import get_geolocation_service
 from ..services.geocoding_service import get_geocoding_service
-from ..database import get_database
-from ..auth import get_current_user
+from ..core.database import get_database
+from ..api.deps import get_current_user
 
 router = APIRouter(prefix="/geolocation", tags=["geolocation"])
 
