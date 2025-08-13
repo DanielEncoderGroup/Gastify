@@ -32,10 +32,7 @@ app.include_router(analytics.router, prefix="/api/analytics", tags=["Analytics"]
 app.include_router(workflows.router, prefix="/api", tags=["Workflows"])
 app.include_router(geolocation.router, prefix="/api", tags=["Geolocation"])
 app.include_router(hybrid_ocr.router, prefix="/api/hybrid-ocr", tags=["Hybrid OCR"])
-
 # Mount static files for uploads
-os.makedirs("uploads", exist_ok=True)
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # Eventos de inicio y cierre para la conexión a MongoDB
 @app.on_event("startup")
