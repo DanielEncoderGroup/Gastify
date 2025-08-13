@@ -45,10 +45,27 @@ services:
       - CLIENT_URL=http://localhost             # para enlaces de verificación
       - ADMIN_EMAIL=admin@example.com
       - PYTHONUNBUFFERED=1
+      # ======================================
+      # CONFIGURACIÓN GOOGLE VISION API (OCR)
+      # ======================================
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/google-vision-credentials.json
+      # Configuración OCR Híbrido
+      - OCR_CACHE_ENABLED=true
+      - OCR_CACHE_TTL=3600
+      - OCR_CONFIDENCE_THRESHOLD=0.9
+      - OCR_MAX_GOOGLE_REQUESTS_PER_MONTH=1000
+      # Configuración Tesseract
+      - TESSERACT_CMD_PATH=tesseract
+      # Configuración avanzada
+      - OCR_ENABLE_PREPROCESSING=true
+      - OCR_LOG_PROCESSING_TIME=true
+      - OCR_ENABLE_METRICS=true
     volumes:
       - ./server/app:/app/app
       - ./server/scripts:/app/scripts
       - ./server/uploads:/app/uploads
+      # Montar archivo de credenciales de Google Vision API
+      - ./rock-embassy-467919-s1-d53f733890fa.json:/app/credentials/google-vision-credentials.json:ro
     networks:
       - gastify-network
     restart: unless-stopped

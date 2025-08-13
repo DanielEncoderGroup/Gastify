@@ -1,19 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authService } from '../services/api';
-
-// Definición de tipos
-interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: string;
-  isVerified: boolean;
-  profileImage?: string;
-  name?: string; // Keep for backward compatibility
-  position?: string;
-  department?: string;
-}
+import { User } from '../types'; // ✅ USAR TIPO UNIFICADO MULTI-TENANT
 
 interface AuthContextType {
   user: User | null;

@@ -18,10 +18,12 @@ PyObjectId = ObjectId
 class UserRole:
     ADMIN = "admin"
     CLIENT = "client"
+    EMPLOYER = "employer"      # Empleador que gestiona empleados
+    EMPLOYEE = "employee"      # Empleado que reporta gastos
     
     @classmethod
     def all_roles(cls):
-        return [cls.ADMIN, cls.CLIENT]
+        return [cls.ADMIN, cls.CLIENT, cls.EMPLOYER, cls.EMPLOYEE]
 
 class UserModel(BaseModel):
     id: Optional[PyObjectId] = Field(default=None, alias="_id")
@@ -37,6 +39,14 @@ class UserModel(BaseModel):
     emailVerificationExpire: Optional[datetime] = None
     createdAt: datetime = Field(default_factory=datetime.utcnow)
     updatedAt: Optional[datetime] = None
+    
+    # ======================================
+    # CAMPOS MULTI-TENANT
+    # ======================================
+    company_name: Optional[str] = None      # Nombre de la empresa (para empleadores y empleados)
+    employer_id: Optional[PyObjectId] = None  # ID del empleador (solo para empleados)
+    department: Optional[str] = None        # Departamento del empleado
+    position: Optional[str] = None          # Cargo/posición del empleado
     
     @validator('id', pre=True, always=True)
     def validate_id(cls, v):
@@ -72,6 +82,14 @@ class UserPublic(BaseModel):
     email: EmailStr
     role: str
     createdAt: datetime
+    
+    # ======================================
+    # CAMPOS MULTI-TENANT
+    # ======================================
+    company_name: Optional[str] = None      # Nombre de la empresa
+    employer_id: Optional[str] = None       # ID del empleador (como string para API)
+    department: Optional[str] = None        # Departamento del empleado
+    position: Optional[str] = None          # Cargo/posición del empleado
 
     class Config:
         schema_extra = {
@@ -80,8 +98,12 @@ class UserPublic(BaseModel):
                 "firstName": "John",
                 "lastName": "Doe",
                 "email": "john@example.com",
-                "role": "client",
-                "createdAt": "2023-08-28T12:34:56.789000"
+                "role": "employee",
+                "createdAt": "2023-08-28T12:34:56.789000",
+                "company_name": "Empresa ABC",
+                "employer_id": "507f1f77bcf86cd799439012",
+                "department": "Ventas",
+                "position": "Ejecutivo de Cuentas"
             }
         }
 

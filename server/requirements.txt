@@ -18,6 +18,12 @@ pytesseract==0.3.10
 opencv-python-headless==4.8.0.74
 pillow==10.0.0
 numpy<2.0.0
+# Multi-Engine OCR Dependencies (for FreeUltraOCRService)
+easyocr==1.7.0
+paddlepaddle==2.5.1
+paddleocr==2.7.0.3
+# Google Vision API for Hybrid OCR System
+google-cloud-vision==3.4.4
 # Language Detection
 langdetect==1.0.9
 # Text Processing

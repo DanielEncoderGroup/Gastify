@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 import os
-from app.api.routes import auth, receipts, notifications, categories, analytics, workflows
+from app.api.routes import auth, receipts, notifications, categories, analytics, workflows, hybrid_ocr
 from app.routers import geolocation
 from app.core.config import settings
 from app.core.database import connect_to_mongo, close_mongo_connection
@@ -31,6 +31,7 @@ app.include_router(categories.router, prefix="/api/categories", tags=["Categorie
 app.include_router(analytics.router, prefix="/api/analytics", tags=["Analytics"])
 app.include_router(workflows.router, prefix="/api", tags=["Workflows"])
 app.include_router(geolocation.router, prefix="/api", tags=["Geolocation"])
+app.include_router(hybrid_ocr.router, prefix="/api/hybrid-ocr", tags=["Hybrid OCR"])
 
 # Mount static files for uploads
 os.makedirs("uploads", exist_ok=True)

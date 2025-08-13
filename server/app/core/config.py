@@ -50,6 +50,15 @@ class Settings(BaseSettings):
     # Client URL for password reset
     CLIENT_URL: str = os.getenv("CLIENT_URL", "http://localhost")
     
+    # OCR Hybrid System Configuration
+    GOOGLE_VISION_ENABLED: bool = os.getenv("GOOGLE_VISION_ENABLED", "true").lower() in ("true", "1", "t")
+    GOOGLE_VISION_API_KEY: str = os.getenv("GOOGLE_VISION_API_KEY", "")
+    GOOGLE_APPLICATION_CREDENTIALS: str = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "")
+    GOOGLE_VISION_MONTHLY_LIMIT: int = int(os.getenv("GOOGLE_VISION_MONTHLY_LIMIT", "1000"))
+    OCR_CONFIDENCE_THRESHOLD: float = float(os.getenv("OCR_CONFIDENCE_THRESHOLD", "0.90"))
+    OCR_CACHE_ENABLED: bool = os.getenv("OCR_CACHE_ENABLED", "true").lower() in ("true", "1", "t")
+    OCR_DEFAULT_ENGINE: str = os.getenv("OCR_DEFAULT_ENGINE", "hybrid")  # tesseract, google_vision, hybrid
+    
     class Config:
         case_sensitive = True
 

@@ -5,10 +5,20 @@ export interface User {
   lastName: string;
   email: string;
   role?: string;
-  company?: string;
   token?: string;
   profileImage?: string;
   name?: string; // Campo necesario para compatibilidad
+  
+  // ======================================
+  // CAMPOS MULTI-TENANT
+  // ======================================
+  company_name?: string;      // Nombre de la empresa (FIX DIRECTO para el error)
+  employer_id?: string;       // ID del empleador
+  department?: string;        // Departamento del empleado
+  position?: string;          // Cargo/posición del empleado
+  
+  // Mantener compatibilidad retroactiva
+  company?: string;           // Para retrocompatibilidad con código existente
 }
 
 // Authentication related types

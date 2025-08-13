@@ -166,3 +166,34 @@ class ReceiptStats(BaseModel):
                 "totalAmount": 750.25
             }
         }
+
+# ======================================
+# MODELOS PARA SISTEMA OCR HÍBRIDO
+# ======================================
+
+class CategoryPrediction(BaseModel):
+    """Predicción de categoría ML para recibos"""
+    category: str
+    confidence: float
+    subcategory: Optional[str] = None
+    vendor_detected: Optional[str] = None
+    method: str = "ml_prediction"  # ml_prediction, vendor_match, keyword_match
+
+class ChileSpecificData(BaseModel):
+    """Datos específicos de recibos chilenos"""
+    rut: Optional[str] = None
+    iva: Optional[float] = None
+    folio: Optional[str] = None
+    vendor_type: Optional[str] = None
+    tax_percentage: Optional[float] = None
+    currency: str = "CLP"
+
+class LocationDataModel(BaseModel):
+    """Datos de geolocalización para recibos"""
+    address: Optional[str] = None
+    city: Optional[str] = None
+    region: Optional[str] = None
+    country: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    confidence: Optional[float] = None

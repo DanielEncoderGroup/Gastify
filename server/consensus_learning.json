@@ -1,0 +1,25 @@
+{
+  "successful_patterns": {},
+  "error_patterns": {
+    "low_confidence": [
+      {
+        "timestamp": "2025-08-12T17:43:41.581764",
+        "low_confidence_factors": [
+          "low_vendor_confidence",
+          "low_total_confidence",
+          "low_line_items_confidence"
+        ],
+        "engine_disagreements": []
+      },
+      {
+        "timestamp": "2025-08-12T17:44:20.767009",
+        "low_confidence_factors": [
+          "low_vendor_confidence",
+          "low_total_confidence",
+          "low_line_items_confidence"
+        ],
+        "engine_disagreements": []
+      }
+    ]
+  }
+}
