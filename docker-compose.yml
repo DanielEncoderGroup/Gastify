@@ -65,7 +65,7 @@ services:
       - ./server/scripts:/app/scripts
       - ./server/uploads:/app/uploads
       # Montar archivo de credenciales de Google Vision API
-      - ./rock-embassy-467919-s1-d53f733890fa.json:/app/credentials/google-vision-credentials.json:ro
+      - ./rock-embassy-467919-s1-d4988ace62e6.json:/app/credentials/google-vision-credentials.json:ro
     networks:
       - gastify-network
     restart: unless-stopped

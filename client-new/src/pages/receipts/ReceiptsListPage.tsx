@@ -5,23 +5,27 @@ import Button from '../../components/ui/Button';
 import Card, { StatsCard } from '../../components/ui/Card';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import { useToast, ToastContainer } from '../../components/ui/Toast';
+import { receiptService } from '../../services/receiptService';
 
 interface Receipt {
-  id: number;
-  vendor: string;
-  amount: string;
+  id: string;
+  companyName: string;
+  folioNumber: string;
   date: string;
+  description: string;
+  totalAmount: number;
   category: string;
-  status: 'approved' | 'pending' | 'rejected';
-  description?: string;
-  imageUrl?: string;
+  status?: 'approved' | 'pending' | 'rejected';
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface ReceiptStats {
   totalReceipts: number;
-  totalAmount: string;
-  pendingCount: number;
-  thisMonth: string;
+  totalAmount: number;
+  enRevision: number;
+  aceptadas: number;
+  rechazadas: number;
 }
 
 const ReceiptsListPage: React.FC = () => {
@@ -33,96 +37,74 @@ const ReceiptsListPage: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [stats, setStats] = useState<ReceiptStats>({
     totalReceipts: 0,
-    totalAmount: '$0',
-    pendingCount: 0,
-    thisMonth: '$0'
+    totalAmount: 0,
+    enRevision: 0,
+    aceptadas: 0,
+    rechazadas: 0
   });
   const toast = useToast();
 
   const categories = ['Comida', 'Alojamiento', 'Transporte', 'Material Oficina', 'Entretenimiento', 'Salud'];
 
   useEffect(() => {
-    // Simular carga de datos con más recibos
-    const mockReceipts: Receipt[] = [
-      { 
-        id: 1, 
-        vendor: 'Restaurante El Gourmet', 
-        amount: '235.50', 
-        date: '2025-07-15', 
-        category: 'Comida', 
-        status: 'approved',
-        description: 'Almuerzo de negocios con cliente',
-        imageUrl: '/api/placeholder/receipt1.jpg'
-      },
-      { 
-        id: 2, 
-        vendor: 'Hotel Continental', 
-        amount: '890.00', 
-        date: '2025-07-10', 
-        category: 'Alojamiento', 
-        status: 'pending',
-        description: 'Estadía de 2 noches - conferencia',
-        imageUrl: '/api/placeholder/receipt2.jpg'
-      },
-      { 
-        id: 3, 
-        vendor: 'Taxi Ciudad', 
-        amount: '45.75', 
-        date: '2025-07-12', 
-        category: 'Transporte', 
-        status: 'approved',
-        description: 'Traslado aeropuerto-hotel'
-      },
-      { 
-        id: 4, 
-        vendor: 'Papelería Moderna', 
-        amount: '127.80', 
-        date: '2025-07-08', 
-        category: 'Material Oficina', 
-        status: 'rejected',
-        description: 'Suministros de oficina - Q2'
-      },
-      { 
-        id: 5, 
-        vendor: 'Cine Premium', 
-        amount: '89.90', 
-        date: '2025-07-20', 
-        category: 'Entretenimiento', 
-        status: 'approved',
-        description: 'Evento corporativo - team building'
-      },
-      { 
-        id: 6, 
-        vendor: 'Farmacia Central', 
-        amount: '156.30', 
-        date: '2025-07-18', 
-        category: 'Salud', 
-        status: 'pending',
-        description: 'Medicamentos recetados'
+    const loadReceipts = async () => {
+      setLoading(true);
+      try {
+        // Cargar recibos reales del backend
+        const backendReceipts = await receiptService.getReceipts();
+        
+        // Convertir los recibos del backend al formato de la interfaz local
+        const formattedReceipts: Receipt[] = backendReceipts.map(receipt => ({
+          id: receipt.id,
+          companyName: receipt.companyName,
+          folioNumber: receipt.folioNumber,
+          date: receipt.date,
+          description: receipt.description,
+          totalAmount: receipt.totalAmount,
+          category: receipt.category,
+          status: 'pending', // Por defecto, ya que el backend no maneja estados de aprobación aún
+          createdAt: receipt.createdAt,
+          updatedAt: receipt.updatedAt
+        }));
+        
+        setReceipts(formattedReceipts);
+        setFilteredReceipts(formattedReceipts);
+        
+        // Cargar estadísticas reales del backend
+        try {
+          const backendStats = await receiptService.getReceiptStats();
+          setStats({
+            totalReceipts: backendStats.totalReceipts,
+            totalAmount: backendStats.totalAmount,
+            enRevision: backendStats.enRevision,
+            aceptadas: backendStats.aceptadas,
+            rechazadas: backendStats.rechazadas
+          });
+        } catch (statsError) {
+          console.warn('Error loading stats, using calculated values:', statsError);
+          // Fallback: calcular estadísticas localmente
+          const total = formattedReceipts.reduce((sum, receipt) => sum + receipt.totalAmount, 0);
+          setStats({
+            totalReceipts: formattedReceipts.length,
+            totalAmount: total,
+            enRevision: formattedReceipts.filter(r => r.status === 'pending').length,
+            aceptadas: formattedReceipts.filter(r => r.status === 'approved').length,
+            rechazadas: formattedReceipts.filter(r => r.status === 'rejected').length
+          });
+        }
+        
+      } catch (error) {
+        console.error('Error loading receipts:', error);
+        toast.error('Error al cargar los recibos. Intenta nuevamente.');
+        setReceipts([]);
+        setFilteredReceipts([]);
+      } finally {
+        setLoading(false);
       }
-    ];
+    };
 
-    setTimeout(() => {
-      setReceipts(mockReceipts);
-      setFilteredReceipts(mockReceipts);
-      
-      // Calcular estadísticas
-      const totalAmount = mockReceipts.reduce((sum, receipt) => sum + parseFloat(receipt.amount), 0);
-      const pendingCount = mockReceipts.filter(r => r.status === 'pending').length;
-      const thisMonthAmount = mockReceipts
-        .filter(r => new Date(r.date).getMonth() === new Date().getMonth())
-        .reduce((sum, receipt) => sum + parseFloat(receipt.amount), 0);
-      
-      setStats({
-        totalReceipts: mockReceipts.length,
-        totalAmount: `$${totalAmount.toLocaleString('es-CL')}`,
-        pendingCount,
-        thisMonth: `$${thisMonthAmount.toLocaleString('es-CL')}`
-      });
-      
-      setLoading(false);
-    }, 1200);
-  }, []);
+    loadReceipts();
+  }, [toast]);
 
   // Filtrar recibos
   useEffect(() => {
@@ -130,7 +112,7 @@ const ReceiptsListPage: React.FC = () => {
     
     if (searchTerm) {
       filtered = filtered.filter(receipt => 
-        receipt.vendor.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        receipt.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         receipt.description?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
@@ -219,21 +201,21 @@ const ReceiptsListPage: React.FC = () => {
             />
             <StatsCard
               title="Monto Total"
-              value={stats.totalAmount}
+              value={`$${stats.totalAmount.toLocaleString('es-CL')}`}
               change="+8.2% vs mes anterior"
               changeType="positive"
               icon={<Icon name="CurrencyDollarIcon" className="h-6 w-6" />}
             />
             <StatsCard
-              title="Pendientes"
-              value={stats.pendingCount.toString()}
+              title="En Revisión"
+              value={stats.enRevision.toString()}
               change="-2 vs semana anterior"
               changeType="positive"
               icon={<Icon name="ClockIcon" className="h-6 w-6" />}
             />
             <StatsCard
-              title="Este Mes"
-              value={stats.thisMonth}
+              title="Aprobadas"
+              value={stats.aceptadas.toString()}
               change="+15.3% vs promedio"
               changeType="positive"
               icon={<Icon name="TrendingUpIcon" className="h-6 w-6" />}
@@ -339,19 +321,19 @@ const ReceiptsListPage: React.FC = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">
-                        {receipt.vendor}
+                        {receipt.companyName}
                       </p>
                       <p className="text-sm text-gray-500">
                         {receipt.category}
                       </p>
                     </div>
                   </div>
-                  {getStatusBadge(receipt.status)}
+                  {getStatusBadge(receipt.status || 'pending')}
                 </div>
 
                 <div className="mb-4">
                   <div className="text-2xl font-bold text-gray-900 mb-1">
-                    ${receipt.amount}
+                    ${receipt.totalAmount.toLocaleString('es-CL')}
                   </div>
                   <div className="text-sm text-gray-500">
                     {new Date(receipt.date).toLocaleDateString('es-CL', {
