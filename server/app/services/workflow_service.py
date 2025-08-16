@@ -25,7 +25,7 @@ class WorkflowService:
     """Servicio principal para gestión de workflows de aprobación"""
     
     def __init__(self, db: AsyncIOMotorDatabase = None):
-        self.db = db or get_database()
+        self.db = db if db is not None else get_database()
         self.engine = WorkflowEngine()
         self.workflows_collection = self.db.workflows
         self.approval_instances_collection = self.db.approval_instances

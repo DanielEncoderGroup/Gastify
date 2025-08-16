@@ -26,8 +26,8 @@ import NotFound from './pages/NotFound';
 
 // Gastify - Páginas para gestión de gastos (PREMIUM UX/UI)
 import ReceiptsListPage from './pages/receipts/ReceiptsListPage';
-import ReceiptFormPageNew from './pages/receipts/ReceiptFormPageNew';
 import ReceiptDetailPage from './pages/receipts/ReceiptDetailPage';
+import { UploadReceiptImproved } from './pages/receipts/UploadReceiptImproved';
 
 // Gastify - Dashboard de Analytics (PREMIUM UX/UI)
 import AnalyticsDashboardPremium from './pages/analytics/AnalyticsDashboardPremium';
@@ -137,9 +137,9 @@ function App() {
             
             {/* Rutas de Gastify - Gestión de gastos (PREMIUM UX/UI) */}
             <Route path="receipts" element={<ReceiptsListPage />} />
-            <Route path="receipts/new" element={<ReceiptFormPageNew />} />
+            <Route path="receipts/new" element={<UploadReceiptImproved />} />
             <Route path="receipts/:id" element={<ReceiptDetailPage />} />
-            <Route path="receipts/:id/edit" element={<ReceiptFormPageNew />} />
+            <Route path="receipts/:id/edit" element={<UploadReceiptImproved />} />
             
             {/* Rutas de Analytics (PREMIUM UX/UI) */}
             <Route path="analytics" element={<AnalyticsDashboardPremium />} />

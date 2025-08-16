@@ -64,7 +64,7 @@ services:
       - ./server/app:/app/app
       - ./server/scripts:/app/scripts
       - ./server/uploads:/app/uploads
-      # Montar archivo de credenciales de Google Vision API
+      # Montar archivo de credenciales de Google Vision API (archivo correcto encontrado)
       - ./rock-embassy-467919-s1-d4988ace62e6.json:/app/credentials/google-vision-credentials.json:ro
     networks:
       - gastify-network

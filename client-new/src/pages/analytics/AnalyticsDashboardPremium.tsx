@@ -298,7 +298,7 @@ const AnalyticsDashboardPremium: React.FC = () => {
                       : 'bg-gray-100 text-gray-800'
                   }`}>
                     <Icon 
-                      name={data.predictions.trend === 'up' ? 'TrendingUpIcon' : data.predictions.trend === 'down' ? 'TrendingDownIcon' : 'MinusIcon'} 
+                      name={data.predictions.trend === 'up' ? 'ArrowTrendingUpIcon' : data.predictions.trend === 'down' ? 'ArrowTrendingDownIcon' : 'MinusIcon'} 
                       className="h-4 w-4 mr-1" 
                     />
                     {data.predictions.trendPercentage}%

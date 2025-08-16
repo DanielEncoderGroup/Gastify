@@ -18,7 +18,7 @@ class WorkflowNotificationService:
     """Servicio de notificaciones para workflows de aprobación"""
     
     def __init__(self, db=None):
-        self.db = db or get_database()
+        self.db = db if db is not None else get_database()
         # NotificationService usa métodos estáticos, no necesita instanciación
         self.notification_service = NotificationService
     

@@ -105,7 +105,7 @@ class OCRService {
     const formData = new FormData();
     formData.append('image', imageFile);
 
-    const response = await api.post('/ocr/analyze-receipt', formData, {
+    const response = await api.post('/ocr/analyze-receipt-intelligent', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

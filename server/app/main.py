@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 import os
-from app.api.routes import auth, receipts, notifications, categories, analytics, workflows, hybrid_ocr
+from app.api.routes import auth, receipts, notifications, categories, analytics, workflows, hybrid_ocr, ocr
 from app.routers import geolocation
 from app.core.config import settings
 from app.core.database import connect_to_mongo, close_mongo_connection
@@ -32,6 +32,8 @@ app.include_router(analytics.router, prefix="/api/analytics", tags=["Analytics"]
 app.include_router(workflows.router, prefix="/api", tags=["Workflows"])
 app.include_router(geolocation.router, prefix="/api", tags=["Geolocation"])
 app.include_router(hybrid_ocr.router, prefix="/api/hybrid-ocr", tags=["Hybrid OCR"])
+app.include_router(ocr.router, prefix="/api/ocr", tags=["OCR"])
+
 # Mount static files for uploads
 
 # Eventos de inicio y cierre para la conexión a MongoDB

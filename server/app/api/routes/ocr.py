@@ -11,6 +11,7 @@ from app.api.deps import get_current_user
 from app.models.user import UserPublic
 from app.services.ocr_service import FreeOCRService
 from app.services.intelligent_ocr_service import IntelligentOCRService
+from app.services.hybrid_ocr_service import HybridOCRService
 from app.services.chile_ml_categorization import ChileCategorizerService
 from app.services.geolocation_service import GeolocationService
 from app.models.receipt import ReceiptModel, OCRDataModel, CategoryPrediction, ChileSpecificData, LocationDataModel
@@ -202,11 +203,17 @@ async def analyze_receipt_intelligent(
         with open(temp_file_path, "wb") as buffer:
             shutil.copyfileobj(image.file, buffer)
         
-        logger.info(f"Iniciando análisis inteligente para: {unique_filename}")
+        logger.info(f"Iniciando análisis con Google Vision API (primario) para: {unique_filename}")
         
-        # Usar el servicio OCR inteligente
-        intelligent_ocr = IntelligentOCRService()
-        ocr_result = intelligent_ocr.extract_receipt_data_intelligent(temp_file_path)
+        # Usar Google Vision API directamente como engine primario
+        hybrid_ocr = HybridOCRService()
+        hybrid_result = await hybrid_ocr.process_receipt_hybrid(temp_file_path, force_engine="google_vision")
+        
+        # Extraer datos del resultado híbrido
+        ocr_result = hybrid_result.data
+        ocr_result['engine_used'] = hybrid_result.engine_used
+        ocr_result['processing_time'] = hybrid_result.processing_time
+        ocr_result['fallback_used'] = hybrid_result.fallback_used
         
         # Servicios adicionales (categorización y geolocalización)
         categorizer = ChileCategorizerService()
@@ -255,9 +262,10 @@ async def analyze_receipt_intelligent(
                 ocr_result.get('category_prediction', {}).get('category') or
                 (categorization_result.get('category') if categorization_result else 'Otros')
             ),
-            "description": f"Recibo procesado automáticamente - {len(ocr_result.get('extracted_items', []))} productos",
+            "description": ocr_result.get('description', f"Recibo procesado automáticamente - {len(ocr_result.get('items', []))} productos"),
             "folioNumber": ocr_result.get('folio_number', ''),
-            "items": ocr_result.get('extracted_items', [])
+            "location": ocr_result.get('location', ''),
+            "items": ocr_result.get('items', [])
         }
         
         # Respuesta completa

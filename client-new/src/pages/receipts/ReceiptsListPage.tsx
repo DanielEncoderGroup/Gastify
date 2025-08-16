@@ -104,7 +104,7 @@ const ReceiptsListPage: React.FC = () => {
     };
 
     loadReceipts();
-  }, [toast]);
+  }, []); // ✅ FIXED: Removed toast from dependencies to prevent infinite loop
 
   // Filtrar recibos
   useEffect(() => {
@@ -218,7 +218,7 @@ const ReceiptsListPage: React.FC = () => {
               value={stats.aceptadas.toString()}
               change="+15.3% vs promedio"
               changeType="positive"
-              icon={<Icon name="TrendingUpIcon" className="h-6 w-6" />}
+              icon={<Icon name="ArrowTrendingUpIcon" className="h-6 w-6" />}
             />
           </div>
 

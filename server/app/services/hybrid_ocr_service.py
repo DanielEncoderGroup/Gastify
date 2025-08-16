@@ -104,31 +104,52 @@ class HybridOCRService:
     
     def _initialize_google_vision(self):
         """Inicializa el cliente de Google Vision API"""
+        logger.info("🔍 Iniciando configuración de Google Vision API...")
+        
         if not GOOGLE_VISION_AVAILABLE:
-            logger.warning("google-cloud-vision no está instalado")
+            logger.error("❌ google-cloud-vision no está instalado en requirements.txt")
             self.google_vision_available = False
             return
         
         if not self.google_vision_enabled:
-            logger.info("Google Vision API deshabilitado en configuración")
+            logger.warning("⚠️ Google Vision API deshabilitado en configuración (.env GOOGLE_VISION_ENABLED=false)")
             self.google_vision_available = False
             return
+        
+        # Verificar credenciales
+        logger.info(f"🔑 Verificando credenciales...")
+        logger.info(f"   - GOOGLE_APPLICATION_CREDENTIALS: {self.google_credentials_path}")
+        logger.info(f"   - GOOGLE_VISION_API_KEY: {'✅ Configurada' if self.google_api_key else '❌ No configurada'}")
+        
+        if self.google_credentials_path:
+            if os.path.exists(self.google_credentials_path):
+                logger.info(f"✅ Archivo de credenciales encontrado: {self.google_credentials_path}")
+            else:
+                logger.error(f"❌ Archivo de credenciales NO encontrado: {self.google_credentials_path}")
+                self.google_vision_available = False
+                return
+        else:
+            logger.warning("⚠️ GOOGLE_APPLICATION_CREDENTIALS no configurada")
         
         try:
             # Configurar credenciales si están especificadas
             if self.google_credentials_path and os.path.exists(self.google_credentials_path):
                 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = self.google_credentials_path
+                logger.info("✅ Variable de entorno GOOGLE_APPLICATION_CREDENTIALS configurada")
             
             # Crear cliente
+            logger.info("🔧 Creando cliente Google Vision...")
             self.google_client = vision.ImageAnnotatorClient()
+            logger.info("✅ Cliente Google Vision creado exitosamente")
             
-            # Test de conectividad simple
+            # Si llegamos aquí, las credenciales son válidas y el cliente funciona
             self.google_vision_available = True
-            logger.info("Google Vision API inicializado correctamente")
+            logger.info("🎉 Google Vision API inicializado y LISTO para usar")
             
         except Exception as e:
-            logger.error(f"Error inicializando Google Vision API: {e}")
-            logger.warning("Funcionando solo con Tesseract")
+            logger.error(f"❌ Error crítico inicializando Google Vision API: {type(e).__name__}: {e}")
+            logger.error(f"   Detalles completos: {str(e)}")
+            logger.warning("⚠️ Funcionando SOLO con Tesseract (precisión reducida)")
             self.google_vision_available = False
     
     def load_metrics(self):
@@ -264,26 +285,53 @@ class HybridOCRService:
     async def _process_with_google_vision(self, image_path: str) -> Dict[str, Any]:
         """Procesa imagen con Google Vision API"""
         if not self.google_vision_available:
+            logger.error("❌ Google Vision API no disponible - usando Tesseract como fallback")
             raise Exception("Google Vision API no disponible")
         
+        if not self.google_client:
+            logger.error("❌ Cliente Google Vision no inicializado")
+            raise Exception("Cliente Google Vision no inicializado")
+        
         # Verificar límite mensual
-        if self.metrics.get("google_usage_month", 0) >= self.google_monthly_limit:
+        current_usage = self.metrics.get("google_usage_month", 0)
+        if current_usage >= self.google_monthly_limit:
+            logger.error(f"❌ Límite mensual de Google Vision alcanzado ({current_usage}/{self.google_monthly_limit})")
             raise Exception(f"Límite mensual de Google Vision alcanzado ({self.google_monthly_limit})")
         
         try:
-            logger.info("🔍 Procesando con Google Vision API...")
+            logger.info(f"🚀 Procesando con Google Vision API... (uso: {current_usage}/{self.google_monthly_limit})")
             start_time = time.time()
             
+            # Verificar que el archivo existe
+            if not os.path.exists(image_path):
+                logger.error(f"❌ Archivo de imagen no encontrado: {image_path}")
+                raise FileNotFoundError(f"Archivo no encontrado: {image_path}")
+            
             # Leer imagen
+            logger.info(f"📁 Leyendo imagen: {image_path}")
             with open(image_path, 'rb') as image_file:
                 content = image_file.read()
+                
+            if not content:
+                logger.error("❌ Archivo de imagen está vacío")
+                raise Exception("Archivo de imagen vacío")
+            
+            logger.info(f"📊 Imagen leída exitosamente ({len(content)} bytes)")
             
             # Crear request para Google Vision
             image = vision.Image(content=content)
             
             # Ejecutar OCR
+            logger.info("🔍 Ejecutando text_detection en Google Vision...")
             response = self.google_client.text_detection(image=image)
+            
+            # Verificar errores en la respuesta
+            if response.error.message:
+                logger.error(f"❌ Error de Google Vision API: {response.error.message}")
+                raise Exception(f"Google Vision API error: {response.error.message}")
+                
             texts = response.text_annotations
+            logger.info(f"📝 Google Vision detectó {len(texts)} anotaciones de texto")
             
             processing_time = time.time() - start_time
             
@@ -330,12 +378,77 @@ class HybridOCRService:
             raise
     
     def _extract_structured_data_from_text(self, raw_text: str) -> Dict[str, Any]:
-        """Extrae datos estructurados del texto usando lógica existente"""
+        """Extrae datos estructurados del texto usando extractores avanzados"""
         try:
-            # Reutilizar la lógica del FreeOCRService existente
-            temp_service = FreeOCRService()
+            # Usar extractores avanzados en lugar del parser básico
+            from app.services.receipt_parser.extractors.vendor_extractor import VendorExtractor
+            from app.services.receipt_parser.extractors.item_extractor import ItemExtractor
+            from app.services.receipt_parser.extractors.date_extractor import DateExtractor
+            from app.services.receipt_parser.extractors.total_extractor import TotalExtractor
             
-            # Extraer componentes individuales
+            # Inicializar extractores avanzados
+            vendor_extractor = VendorExtractor()
+            item_extractor = ItemExtractor()
+            date_extractor = DateExtractor()
+            total_extractor = TotalExtractor()
+            
+            logger.info("🔍 Iniciando extracción avanzada de datos estructurados...")
+            
+            # Extraer usando extractores especializados
+            vendor_result = vendor_extractor.extract(raw_text, language='spa')
+            vendor = vendor_result.get('value', '')
+            vendor_confidence = vendor_result.get('confidence', 0.0)
+            
+            items_result = item_extractor.extract(raw_text, language='spa')
+            items = items_result.get('items', [])
+            items_confidence = items_result.get('confidence', 0.0)
+            
+            date_result = date_extractor.extract(raw_text, language='spa')
+            date = date_result.get('value', '')
+            date_confidence = date_result.get('confidence', 0.0)
+            
+            total_result = total_extractor.extract(raw_text, language='spa')
+            total_amount = total_result.get('value', 0)
+            total_confidence = total_result.get('confidence', 0.0)
+            
+            # Convertir a formato chileno (8.360 en lugar de 8.36)
+            if total_amount and total_amount > 0:
+                # Si es un decimal pequeño, multiplicar por 1000 para formato chileno
+                if total_amount < 100:
+                    total_amount = total_amount * 1000
+                    logger.info(f"💰 Monto convertido a formato chileno: ${total_amount}")
+            
+            
+            # Extraer número de folio (Bol. Electrónica)
+            folio_number = self._extract_folio_from_text(raw_text)
+            
+            # Extraer ubicación del local
+            location = self._extract_location_from_text(raw_text)
+            
+            # Generar descripción legible de items
+            description = self._generate_readable_description(items, len(items))
+            
+            logger.info(f"✅ Extracción completada - Vendor: '{vendor}' ({vendor_confidence:.1%}), Items: {len(items)}, Total: ${total_amount}, Folio: {folio_number}")
+            
+            return {
+                "vendor": vendor,
+                "total_amount": total_amount,
+                "date": date,
+                "items": items,
+                "folio_number": folio_number,
+                "location": location,
+                "description": description,
+                "extraction_metadata": {
+                    "vendor_confidence": vendor_confidence,
+                    "items_confidence": items_confidence,
+                    "date_confidence": date_confidence,
+                    "total_confidence": total_confidence
+                }
+            }
+        except ImportError as e:
+            logger.warning(f"Extractores avanzados no disponibles, usando parser básico: {e}")
+            # Fallback al parser básico si no están disponibles
+            temp_service = FreeOCRService()
             vendor = temp_service.extract_vendor(raw_text)
             total_amount = temp_service.extract_total_amount(raw_text)
             date = temp_service.extract_date(raw_text)
@@ -350,6 +463,86 @@ class HybridOCRService:
         except Exception as e:
             logger.error(f"Error extrayendo datos estructurados: {e}")
             return {}
+    
+    def _extract_folio_from_text(self, raw_text: str) -> str:
+        """Extrae número de folio de boleta electrónica del raw text"""
+        try:
+            # Patrón para boleta electrónica chilena
+            folio_patterns = [
+                r'bol\.?\s*electr[oó]nica\s*:?\s*(\d+)',
+                r'boleta\s*electr[oó]nica\s*:?\s*(\d+)',
+                r'n[úu]mero\s*de\s*boleta\s*:?\s*(\d+)',
+                r'folio\s*:?\s*(\d+)',
+            ]
+            
+            for pattern in folio_patterns:
+                match = re.search(pattern, raw_text, re.IGNORECASE)
+                if match:
+                    folio = match.group(1)
+                    logger.info(f"📄 Folio extraído: {folio}")
+                    return folio
+            
+            return ""
+        except Exception as e:
+            logger.error(f"Error extrayendo folio: {e}")
+            return ""
+    
+    def _extract_location_from_text(self, raw_text: str) -> str:
+        """Extrae ubicación del local del raw text"""
+        try:
+            # Buscar líneas que contengan dirección/sucursal
+            lines = raw_text.split('\n')
+            for line in lines:
+                line = line.strip()
+                # Buscar patrones de dirección
+                if re.search(r'(?:suc|sucursal|av|avenida|calle)[\s:]*(.{10,50})', line, re.IGNORECASE):
+                    match = re.search(r'(?:suc|sucursal|av|avenida|calle)[\s:]*(.{10,50})', line, re.IGNORECASE)
+                    if match:
+                        location = match.group(1).strip()
+                        logger.info(f"📍 Ubicación extraída: {location}")
+                        return location
+                        
+                # También buscar líneas que parezcan direcciones
+                if re.search(r'\d+', line) and len(line) > 10 and len(line) < 60:
+                    if any(keyword in line.lower() for keyword in ['av.', 'calle', 'street', 'ave']):
+                        logger.info(f"📍 Ubicación extraída: {line}")
+                        return line
+            
+            return ""
+        except Exception as e:
+            logger.error(f"Error extrayendo ubicación: {e}")
+            return ""
+    
+    def _generate_readable_description(self, items: List[Dict], items_count: int) -> str:
+        """Genera descripción legible de los artículos comprados"""
+        try:
+            if items and len(items) > 0:
+                # Si tenemos items estructurados, usarlos
+                item_descriptions = []
+                for item in items[:5]:  # Máximo 5 items en descripción
+                    name = item.get('name', 'Producto')
+                    price = item.get('price', 0)
+                    quantity = item.get('quantity', 1)
+                    if price and price > 0:
+                        item_descriptions.append(f"{quantity}x {name} (${price:,.0f})")
+                    else:
+                        item_descriptions.append(f"{quantity}x {name}")
+                
+                if len(items) > 5:
+                    item_descriptions.append(f"y {len(items) - 5} productos más")
+                
+                return f"Compra de {len(items)} productos: " + ", ".join(item_descriptions)
+            
+            else:
+                # Si no hay items estructurados pero sabemos que hay productos, indicarlo
+                if items_count > 0:
+                    return f"Recibo procesado automáticamente - {items_count} productos identificados"
+                else:
+                    return "Recibo procesado automáticamente - Análisis de productos en proceso"
+                    
+        except Exception as e:
+            logger.error(f"Error generando descripción: {e}")
+            return "Recibo procesado automáticamente"
     
     def _decide_engine(self, image_path: str) -> str:
         """Decide qué engine usar basado en imagen y configuración"""
@@ -436,14 +629,25 @@ class HybridOCRService:
             # Decidir engine a usar
             if force_engine:
                 chosen_engine = force_engine
+                logger.info(f"🎯 Engine FORZADO: {force_engine} -> chosen_engine: {chosen_engine}")
             else:
                 chosen_engine = self._decide_engine(image_path)
+                logger.info(f"🤖 Engine AUTOMÁTICO: {chosen_engine}")
+            
+            # DIAGNÓSTICO CRÍTICO - Verificar comparaciones
+            logger.info(f"🔍 DIAGNÓSTICO:")
+            logger.info(f"   chosen_engine = '{chosen_engine}' (tipo: {type(chosen_engine)})")
+            logger.info(f"   OCREngine.TESSERACT = '{OCREngine.TESSERACT}' (tipo: {type(OCREngine.TESSERACT)})")
+            logger.info(f"   OCREngine.GOOGLE_VISION = '{OCREngine.GOOGLE_VISION}' (tipo: {type(OCREngine.GOOGLE_VISION)})")
+            logger.info(f"   ¿chosen_engine == OCREngine.TESSERACT? {chosen_engine == OCREngine.TESSERACT}")
+            logger.info(f"   ¿chosen_engine == OCREngine.GOOGLE_VISION? {chosen_engine == OCREngine.GOOGLE_VISION}")
             
             fallback_used = False
             google_usage = 0
             
             # Procesar con engine elegido
             if chosen_engine == OCREngine.TESSERACT:
+                logger.info("🚀 EJECUTANDO: Tesseract")
                 result = await self._process_with_tesseract(image_path)
                 
                 # Si confianza es baja y Google Vision está disponible, usar fallback
