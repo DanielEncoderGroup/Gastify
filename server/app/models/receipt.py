@@ -14,6 +14,50 @@ def validate_object_id(v: Any) -> ObjectId:
 # Tipo para ObjectId en Pydantic v1
 PyObjectId = Union[str, ObjectId]
 
+class DetailedProductItem(BaseModel):
+    """Item de producto estructurado para boletas chilenas"""
+    name: str
+    quantity: float = 1.0
+    unit_price: Optional[float] = None
+    total_price: Optional[float] = None
+    barcode: Optional[str] = None
+    sku: Optional[str] = None
+    category: Optional[str] = None
+    confidence: float = 0.7
+    raw_line: Optional[str] = None
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "name": "AGUA BENEDICTINO",
+                "quantity": 2.0,
+                "unit_price": 1000.0,
+                "total_price": 2000.0,
+                "barcode": "7802820454208",
+                "confidence": 0.8,
+                "raw_line": "2X1.000 BEN AGUA PER $ 2.000"
+            }
+        }
+
+class ChileReceiptMetadata(BaseModel):
+    """Metadatos específicos de recibos chilenos"""
+    rut_emisor: Optional[str] = None
+    folio: Optional[str] = None
+    subtotal: Optional[float] = None
+    iva_amount: Optional[float] = None
+    iva_percentage: Optional[float] = 19.0
+    currency: str = "CLP"
+    
+    # Datos de reconciliación
+    reconciliation_needed: bool = False
+    reconciliation_applied: bool = False
+    items_total_calculated: Optional[float] = None
+    difference: Optional[float] = None
+    
+    # Confianza del parsing
+    parsing_confidence: Optional[float] = None
+    parsing_method: str = "basic_ocr"
+
 class OCRDataModel(BaseModel):
     vendor: Optional[str] = None
     total_amount: Optional[float] = None
@@ -21,6 +65,48 @@ class OCRDataModel(BaseModel):
     items: List[str] = []
     raw_text: str
     confidence: float
+    
+    # ======================================
+    # CAMPOS EXPANDIDOS PARA PARSING DETALLADO
+    # ======================================
+    detailed_items: List[DetailedProductItem] = []
+    total_items_count: int = 0
+    chile_metadata: Optional[ChileReceiptMetadata] = None
+    
+    # Información de procesamiento
+    ocr_engine_used: str = "tesseract"
+    processing_time: Optional[float] = None
+    language_detected: Optional[str] = None
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "vendor": "SUPERMERCADO LIDER",
+                "total_amount": 8360.0,
+                "date": "2025-08-10",
+                "items": ["2X1.000 BEN AGUA PER $ 2.000", "GALLETAS OBSE $ 1.000"],
+                "raw_text": "texto completo OCR...",
+                "confidence": 0.85,
+                "detailed_items": [
+                    {
+                        "name": "AGUA BENEDICTINO",
+                        "quantity": 2.0,
+                        "unit_price": 1000.0,
+                        "total_price": 2000.0,
+                        "barcode": "7802820454208",
+                        "confidence": 0.8
+                    }
+                ],
+                "total_items_count": 7,
+                "chile_metadata": {
+                    "rut_emisor": "96.790.240-3",
+                    "folio": "002426936168",
+                    "subtotal": 7025.0,
+                    "iva_amount": 1335.0,
+                    "parsing_confidence": 0.9
+                }
+            }
+        }
 
 class ReceiptModel(BaseModel):
     id: Optional[PyObjectId] = Field(default=None, alias="_id")
@@ -142,7 +228,15 @@ class ReceiptResponse(BaseModel):
                     "date": "2023-08-28",
                     "items": ["Item 1", "Item 2"],
                     "raw_text": "texto completo extraído",
-                    "confidence": 0.85
+                    "confidence": 0.85,
+                    "detailed_items": [
+                        {
+                            "name": "PRODUCTO EJEMPLO",
+                            "quantity": 1.0,
+                            "total_price": 150.50,
+                            "confidence": 0.8
+                        }
+                    ]
                 },
                 "createdAt": "2023-08-28T12:34:56.789Z",
                 "updatedAt": "2023-08-28T12:34:56.789Z"

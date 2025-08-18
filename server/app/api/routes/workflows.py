@@ -15,7 +15,7 @@ from app.models.workflow import (
 )
 from app.models.user import UserModel
 from app.services.workflow_service import WorkflowService
-from app.api.deps import get_current_user, require_role
+from app.api.deps import get_current_user, get_admin_user
 from app.core.database import get_database
 
 router = APIRouter(prefix="/workflows", tags=["workflows"])
@@ -291,7 +291,7 @@ async def create_organization_role(
     approval_limit: Optional[float] = None,
     can_approve_categories: Optional[List[str]] = None,
     parent_role_id: Optional[str] = None,
-    current_user: UserModel = Depends(require_role("admin")),
+    current_user: UserModel = Depends(get_admin_user),
     workflow_service: WorkflowService = Depends(get_workflow_service)
 ):
     """Crea un rol organizacional (solo administradores)"""
@@ -320,7 +320,7 @@ async def create_organization_role(
 async def assign_user_role(
     user_id: str,
     role_id: str,
-    current_user: UserModel = Depends(require_role("admin")),
+    current_user: UserModel = Depends(get_admin_user),
     workflow_service: WorkflowService = Depends(get_workflow_service)
 ):
     """Asigna un rol a un usuario (solo administradores)"""

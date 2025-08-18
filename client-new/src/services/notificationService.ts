@@ -105,10 +105,8 @@ class NotificationService {
   // Crear conexión WebSocket para notificaciones en tiempo real
   connectWebSocket(userId: string): WebSocket {
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const token = localStorage.getItem('token');
-    const wsUrl = `${wsProtocol}//${window.location.host}/api/notifications/ws/notifications/${userId}?token=${token}`;
+    const wsUrl = `${wsProtocol}//${window.location.host}/api/v1/websockets/ws/${userId}`;
     console.log('🔗 URL WebSocket generada:', wsUrl);
-    console.log('🎫 Token usado:', token ? token.substring(0, 20) + '...' : 'NO TOKEN');
     return new WebSocket(wsUrl);
   }
 }

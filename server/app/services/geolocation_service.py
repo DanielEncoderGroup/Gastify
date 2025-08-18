@@ -233,7 +233,7 @@ class GeolocationAnalytics:
                 continue
             
             location_dict = receipt.locationData.location
-            coords_dict = location_dict.get('coordinates')
+            coords_dict = getattr(location_dict, 'coordinates', None)
             
             if not coords_dict:
                 continue
@@ -291,13 +291,13 @@ class GeolocationAnalytics:
             is_weekend = receipt.date.weekday() >= 5
             
             if is_evening or is_weekend:
-                coords_dict = receipt.locationData.location.get('coordinates')
+                coords_dict = getattr(receipt.locationData.location, 'coordinates', None)
                 if coords_dict:
                     key = f"{coords_dict['latitude']:.3f},{coords_dict['longitude']:.3f}"
                     location_frequency[key] += 2  # Mayor peso
             
             # También contar todos los gastos con menor peso
-            coords_dict = receipt.locationData.location.get('coordinates')
+            coords_dict = getattr(receipt.locationData.location, 'coordinates', None)
             if coords_dict:
                 key = f"{coords_dict['latitude']:.3f},{coords_dict['longitude']:.3f}"
                 location_frequency[key] += 1
@@ -320,7 +320,7 @@ class GeolocationAnalytics:
                 continue
             
             date_key = receipt.date.date()
-            coords_dict = receipt.locationData.location.get('coordinates')
+            coords_dict = getattr(receipt.locationData.location, 'coordinates', None)
             
             coordinates = None
             if coords_dict:

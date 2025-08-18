@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   BellIcon,
   CheckCircleIcon,
@@ -9,9 +9,7 @@ import {
   CheckIcon,
 } from '@heroicons/react/24/outline';
 import { useNotifications } from '../../contexts/NotificationContext';
-import { Notification } from '../../services/notificationService';
-import { formatDistanceToNow } from 'date-fns';
-import { es } from 'date-fns/locale';
+import type { Notification } from '../../services/notificationService';
 
 interface NotificationDropdownProps {
   isOpen: boolean;
@@ -27,10 +25,8 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   const {
     notifications,
     loading,
-    unreadCount,
     markAsRead,
     markAllAsRead,
-    fetchNotifications,
   } = useNotifications();
 
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -55,11 +51,28 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, anchorRef]);
 
   // Obtener icono según el tipo de notificación
   const getNotificationIcon = (type: string) => {
     switch (type) {
+      case 'INVITATION_SENT':
+        return <InformationCircleIcon className="w-5 h-5 text-blue-500" />;
+      case 'INVITATION_ACCEPTED':
+        return <CheckCircleIcon className="w-5 h-5 text-green-500" />;
+      case 'INVITATION_DECLINED':
+        return <ExclamationTriangleIcon className="w-5 h-5 text-red-500" />;
+      case 'INVITATION_EXPIRED':
+        return <ClockIcon className="w-5 h-5 text-amber-500" />;
+      case 'EMPLOYEE_REGISTERED':
+        return <CheckCircleIcon className="w-5 h-5 text-green-500" />;
+      case 'RECEIPT_PROCESSED':
+        return <CheckCircleIcon className="w-5 h-5 text-blue-500" />;
+      case 'WORKFLOW_APPROVED':
+        return <CheckCircleIcon className="w-5 h-5 text-green-500" />;
+      case 'WORKFLOW_REJECTED':
+        return <ExclamationTriangleIcon className="w-5 h-5 text-red-500" />;
+      // Legacy types
       case 'request_created':
         return <InformationCircleIcon className="w-5 h-5 text-blue-500" />;
       case 'status_updated':

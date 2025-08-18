@@ -32,6 +32,13 @@ import { UploadReceiptImproved } from './pages/receipts/UploadReceiptImproved';
 // Gastify - Dashboard de Analytics (PREMIUM UX/UI)
 import AnalyticsDashboardPremium from './pages/analytics/AnalyticsDashboardPremium';
 
+// Gastify - Gestión de Empleados (PREMIUM UX/UI)
+import { EmployeeManagement } from './components/gastify/employees/EmployeeManagement';
+
+// Gastify - Workflows de Aprobación (PREMIUM UX/UI)
+import ApprovalDashboard from './pages/workflows/ApprovalDashboard';
+import WorkflowConfiguration from './components/workflows/WorkflowConfiguration';
+
 // Componente de inicialización para garantizar que se revisa la autenticación
 // antes de renderizar las rutas
 const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -143,6 +150,13 @@ function App() {
             
             {/* Rutas de Analytics (PREMIUM UX/UI) */}
             <Route path="analytics" element={<AnalyticsDashboardPremium />} />
+            
+            {/* Rutas de Gestión de Empleados (PREMIUM UX/UI) */}
+            <Route path="employees" element={<EmployeeManagement />} />
+            
+            {/* Rutas de Workflows de Aprobación (PREMIUM UX/UI) */}
+            <Route path="approvals" element={<ApprovalDashboard />} />
+            <Route path="workflows" element={<WorkflowConfiguration />} />
             
             {/* Rutas protegidas para clientes */}
             <Route element={<ClientRoute />}>

@@ -24,12 +24,12 @@ export interface CreateReceiptData {
 
 class ReceiptService {
   /**
-   * Crear un nuevo recibo (método legacy)
+   * Crear un nuevo recibo desde JSON (método corregido)
    */
   async createReceipt(receiptData: CreateReceiptData): Promise<Receipt> {
     try {
-      const response = await api.post('/receipts', receiptData);
-      return response.data;
+      const response = await api.post('/receipts/json', receiptData);
+      return response.data.receipt;
     } catch (error) {
       throw error;
     }
@@ -86,12 +86,12 @@ class ReceiptService {
   }
 
   /**
-   * Obtener todos los recibos del usuario
+   * Obtener todos los recibos del usuario con estadísticas
    */
   async getReceipts(): Promise<Receipt[]> {
     try {
       const response = await api.get('/receipts');
-      // El backend devuelve {success: boolean, count: number, data: Receipt[]}
+      // El backend devuelve {success: boolean, count: number, data: Receipt[], stats: {...}}
       if (response.data && response.data.success && Array.isArray(response.data.data)) {
         return response.data.data;
       }
@@ -100,6 +100,41 @@ class ReceiptService {
       return [];
     } catch (error) {
       console.error('Error fetching receipts:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtener recibos y estadísticas en una sola llamada (optimizado)
+   */
+  async getReceiptsWithStats(): Promise<{
+    receipts: Receipt[];
+    stats: {
+      totalReceipts: number;
+      totalAmount: number;
+      enRevision: number;
+      aceptadas: number;
+      rechazadas: number;
+    };
+  }> {
+    try {
+      const response = await api.get('/receipts');
+      // El backend devuelve {success: boolean, count: number, data: Receipt[], stats: {...}}
+      if (response.data && response.data.success) {
+        return {
+          receipts: response.data.data || [],
+          stats: response.data.stats || {
+            totalReceipts: 0,
+            totalAmount: 0,
+            enRevision: 0,
+            aceptadas: 0,
+            rechazadas: 0
+          }
+        };
+      }
+      throw new Error('Invalid response structure');
+    } catch (error) {
+      console.error('Error fetching receipts with stats:', error);
       throw error;
     }
   }

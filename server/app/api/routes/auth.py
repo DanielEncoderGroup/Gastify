@@ -59,7 +59,7 @@ async def register_user(user_in: UserCreate = Body(...)) -> Any:
         "lastName": user_in.lastName,
         "email": user_in.email,
         "password": get_password_hash(user_in.password),
-        "role": UserRole.CLIENT,  # Por defecto, todos los usuarios nuevos son clientes
+        "role": UserRole.EMPLOYEE,  # Por defecto, todos los usuarios nuevos son empleados
         "emailVerified": False,
         "emailVerificationToken": verification_token,
         "emailVerificationExpire": token_expiry,

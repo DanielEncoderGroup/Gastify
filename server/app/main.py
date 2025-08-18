@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 import os
-from app.api.routes import auth, receipts, notifications, categories, analytics, workflows, hybrid_ocr, ocr
+from app.api.routes import auth, receipts, notifications, categories, analytics, workflows, hybrid_ocr, ocr, invitations, websockets, spending_limits, advanced_notifications, employees
 from app.routers import geolocation
 from app.core.config import settings
 from app.core.database import connect_to_mongo, close_mongo_connection
@@ -33,6 +33,11 @@ app.include_router(workflows.router, prefix="/api", tags=["Workflows"])
 app.include_router(geolocation.router, prefix="/api", tags=["Geolocation"])
 app.include_router(hybrid_ocr.router, prefix="/api/hybrid-ocr", tags=["Hybrid OCR"])
 app.include_router(ocr.router, prefix="/api/ocr", tags=["OCR"])
+app.include_router(invitations.router, prefix="/api/invitations", tags=["Invitations"])
+app.include_router(websockets.router, prefix="/api/v1/websockets", tags=["WebSockets"])
+app.include_router(employees.router, prefix="/api/employees", tags=["Employees"])
+app.include_router(spending_limits.router, prefix="/api/spending-limits", tags=["Spending Limits"])
+app.include_router(advanced_notifications.router, prefix="/api/advanced-notifications", tags=["Advanced Notifications"])
 
 # Mount static files for uploads
 

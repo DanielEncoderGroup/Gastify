@@ -129,9 +129,9 @@ class WorkflowEngine:
         if hasattr(receipt, 'locationData') and receipt.locationData:
             location_data = receipt.locationData
             context.update({
-                "location_city": location_data.get("city", ""),
-                "location_country": location_data.get("country", ""),
-                "location_confidence": location_data.get("confidence", 0.0),
+                "location_city": getattr(location_data, "city", ""),
+                "location_country": getattr(location_data, "country", ""),
+                "location_confidence": getattr(location_data, "confidence", 0.0),
             })
         
         return context

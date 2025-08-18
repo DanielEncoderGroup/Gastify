@@ -1,22 +1,17 @@
 import api from './api';
+import type {
+  ReceiptProduct,
+  ChileReceiptMetadata,
+  ReceiptTransaction,
+  ReceiptLocation,
+  OCRDataExpanded
+} from '../types';
 
 export interface OCRAnalysisResult {
   success: boolean;
   message: string;
   analysis: {
-    ocr: {
-      vendor: string | null;
-      total_amount: number | null;
-      date: string | null;
-      items: Array<{
-        name: string;
-        quantity: number;
-        unit_price: number;
-        total_price: number;
-      }>;
-      raw_text: string;
-      confidence: number;
-    };
+    ocr: OCRDataExpanded;
     categorization: {
       category: string;
       confidence: number;
@@ -41,7 +36,11 @@ export interface OCRAnalysisResult {
       category: string;
       description: string;
       folioNumber: string;
-      items: Array<any>;
+      // Datos estructurados del parser avanzado
+      detailed_products?: ReceiptProduct[];
+      transaction_data?: ReceiptTransaction;
+      location_data?: ReceiptLocation;
+      chile_metadata?: ChileReceiptMetadata;
     };
   };
   confidence_summary: {
@@ -49,6 +48,10 @@ export interface OCRAnalysisResult {
     category_confidence: number;
     location_confidence: number;
     overall_confidence: number;
+    // Nuevas métricas de confianza del parser avanzado
+    products_confidence?: number;
+    transaction_confidence?: number;
+    parsing_confidence?: number;
   };
 }
 
@@ -99,9 +102,49 @@ export interface AllEmployeeReceipts {
 
 class OCRService {
   /**
-   * Analiza automáticamente un recibo usando OCR, ML y geolocalización
+   * Procesa y estructura datos OCR crudos
+   */
+  private processOCRData(ocrData: any): OCRDataExpanded {
+    return {
+      vendor: ocrData.vendor || null,
+      total_amount: ocrData.total_amount || null,
+      date: ocrData.date || null,
+      items: ocrData.items || [],
+      raw_text: ocrData.raw_text || '',
+      confidence: ocrData.confidence || 0,
+      detailed_items: ocrData.detailed_items || [],
+      total_items_count: ocrData.total_items_count || 0,
+      chile_metadata: ocrData.chile_metadata || null,
+      transaction_data: ocrData.transaction_data || null,
+      location_data: ocrData.location_data || null,
+      ocr_engine_used: ocrData.ocr_engine_used || 'tesseract',
+      processing_time: ocrData.processing_time || null,
+      language_detected: ocrData.language_detected || null,
+      parsing_confidence: ocrData.parsing_confidence || null
+    };
+  }
+  /**
+   * Analiza automáticamente un recibo usando OCR avanzado, ML y geolocalización
+   * Ahora incluye extracción detallada de productos con el parser chileno avanzado
    */
   async analyzeReceipt(imageFile: File): Promise<OCRAnalysisResult> {
+    const formData = new FormData();
+    formData.append('image', imageFile);
+
+    // Usar el endpoint avanzado que incluye el parser estructurado
+    const response = await api.post('/ocr/analyze-receipt-advanced', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    return response.data;
+  }
+
+  /**
+   * Analiza un recibo con el método inteligente (fallback)
+   */
+  async analyzeReceiptIntelligent(imageFile: File): Promise<OCRAnalysisResult> {
     const formData = new FormData();
     formData.append('image', imageFile);
 
@@ -151,6 +194,32 @@ class OCRService {
    */
   async getAllEmployeeReceipts(): Promise<AllEmployeeReceipts> {
     const response = await api.get('/employees/all-employee-receipts');
+    return response.data;
+  }
+
+  /**
+   * Extrae productos detallados de un texto OCR usando el parser avanzado
+   */
+  async extractDetailedProducts(rawText: string): Promise<ReceiptProduct[]> {
+    const response = await api.post('/ocr/extract-products', {
+      raw_text: rawText
+    });
+    return response.data.products || [];
+  }
+
+  /**
+   * Valida la consistencia de datos extraídos
+   */
+  async validateReceiptData(products: ReceiptProduct[], totalAmount: number): Promise<{
+    is_valid: boolean;
+    discrepancies: string[];
+    calculated_total: number;
+    confidence: number;
+  }> {
+    const response = await api.post('/ocr/validate-receipt', {
+      products,
+      declared_total: totalAmount
+    });
     return response.data;
   }
 }

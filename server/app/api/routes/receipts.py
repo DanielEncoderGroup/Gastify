@@ -1,28 +1,201 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Body, UploadFile, File, Form
-from typing import List, Optional, Any
-from app.models.receipt import ReceiptCreate, ReceiptUpdate, ReceiptStatusUpdate, ReceiptResponse, ReceiptStats, OCRDataModel
-from app.models.user import UserPublic
-from app.api.deps import get_current_user
-from app.core.database import get_database
+from typing import List, Optional, Any, Dict
 from bson import ObjectId
-from datetime import datetime
-import os
-import shutil
-import uuid
-from app.services.ocr_service import FreeOCRService
+from app.models.receipt import ReceiptCreate, ReceiptUpdate, ReceiptStatusUpdate, ReceiptResponse, ReceiptStats, OCRDataModel, CategoryPrediction, ChileSpecificData
+from app.models.user import UserPublic
+from app.api.deps import get_current_user, get_database
+from app.services.hybrid_ocr_service import HybridOCRService
 from app.services.chile_ml_categorization import ChileCategorizerService
-from app.models.category import CategoryModel, CategoryPrediction, ChileCategory, ChileSpecificData
 from app.services.geolocation_service import GeolocationService
-from app.models.receipt_with_location import LocationDataModel
 from app.services.workflow_service import WorkflowService
+from app.models.location_models import Location
 from app.models.workflow import ApprovalStatus
 import logging
+from datetime import datetime
 
 # Configurar logger
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+@router.get("", response_model=dict)
+async def get_user_receipts(
+    current_user: UserPublic = Depends(get_current_user),
+    db = Depends(get_database)
+):
+    """Obtener todos los recibos del usuario actual"""
+    try:
+        # Buscar recibos del usuario
+        receipts_cursor = db.receipts.find({"user": ObjectId(current_user.id)})
+        receipts = await receipts_cursor.to_list(length=None)
+        
+        # Convertir ObjectId a string y formatear respuesta
+        formatted_receipts = []
+        for receipt in receipts:
+            receipt["id"] = str(receipt["_id"])
+            del receipt["_id"]
+            # Convertir user a string si es ObjectId
+            if hasattr(receipt.get("user"), "generation_time"):
+                receipt["user"] = str(receipt["user"])
+            formatted_receipts.append(receipt)
+        
+        # Calcular estadísticas
+        total_receipts = len(formatted_receipts)
+        total_amount = sum(r.get("total_amount", 0) for r in formatted_receipts)
+        pending_count = sum(1 for r in formatted_receipts if r.get("approval_status") == "en_revision")
+        approved_count = sum(1 for r in formatted_receipts if r.get("approval_status") == "aceptada") 
+        rejected_count = sum(1 for r in formatted_receipts if r.get("approval_status") == "rechazada")
+        
+        return {
+            "success": True,
+            "count": total_receipts,
+            "data": formatted_receipts,
+            "stats": {
+                "totalReceipts": total_receipts,
+                "totalAmount": total_amount,
+                "enRevision": pending_count,
+                "aceptadas": approved_count,
+                "rechazadas": rejected_count
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error obteniendo recibos: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error interno del servidor"
+        )
+
+@router.post("/json", response_model=dict, status_code=status.HTTP_201_CREATED)
+async def create_receipt_json(
+    receipt_data: ReceiptCreate,
+    current_user: UserPublic = Depends(get_current_user)
+) -> Any:
+    """
+    Create new receipt from JSON data (without image)
+    """
+    db = get_database()
+    
+    # Inicializar servicios
+    categorizer = ChileCategorizerService()
+    geolocation_service = GeolocationService()
+    workflow_service = WorkflowService(db)
+    
+    try:
+        # Categorización automática basada en companyName
+        category_data = None
+        try:
+            # Usar el nombre de la empresa para categorización
+            categorization_result = categorizer.categorize_receipt(receipt_data.companyName + " " + receipt_data.description)
+            category_data = CategoryPrediction(
+                category=categorization_result["category"],
+                confidence=categorization_result["confidence"],
+                method=categorization_result["method"],
+                chile_specific=ChileSpecificData(
+                    rut_detected=categorization_result["chile_specific"]["rut_detected"],
+                    document_type=categorization_result["chile_specific"]["document_type"],
+                    iva_detected=categorization_result["chile_specific"]["iva_detected"],
+                    known_brand=categorization_result["chile_specific"]["known_brand"]
+                ),
+                all_probabilities=categorization_result["all_probabilities"]
+            )
+        except Exception as e:
+            logger.warning(f"Error en categorización automática: {e}")
+        
+        # Geolocalización automática
+        location_data = None
+        try:
+            location_result = await geolocation_service.process_receipt_location(receipt_data.companyName)
+            if location_result:
+                # location_result ya es un Location, no un diccionario
+                if isinstance(location_result, Location):
+                    location_data = location_result
+                else:
+                    location_data = Location(**location_result) if isinstance(location_result, dict) else location_result
+        except Exception as e:
+            logger.warning(f"Error en geolocalización automática: {e}")
+        
+        # Crear objeto de recibo
+        receipt_obj = {
+            "user": ObjectId(current_user.id),
+            "company_name": receipt_data.companyName,
+            "folio_number": receipt_data.folioNumber,
+            "date": receipt_data.date,
+            "description": receipt_data.description,
+            "total_amount": receipt_data.totalAmount,
+            "category": getattr(receipt_data, 'category', None) or (category_data.category if category_data else "Otros"),
+            "ocr_data": None,  # No hay imagen procesada
+            "category_prediction": category_data.dict() if category_data else None,
+            "location_data": location_data.dict() if location_data else None,
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow(),
+            "approval_status": ApprovalStatus.PENDING.value,
+            "workflow_evaluation": None
+        }
+        
+        # Evaluar workflow automáticamente
+        workflow_evaluation = None
+        try:
+            # Crear modelo de recibo para evaluación - convertir campos a camelCase
+            from app.models.receipt import ReceiptModel
+            receipt_model_data = {
+                "user": receipt_obj["user"],
+                "companyName": receipt_obj["company_name"],
+                "folioNumber": receipt_obj["folio_number"], 
+                "date": receipt_obj["date"],
+                "description": receipt_obj["description"],
+                "totalAmount": receipt_obj["total_amount"],
+                "imageUrl": receipt_obj.get("image_url"),
+                "status": receipt_obj.get("approval_status", "en_revision"),
+                "createdAt": receipt_obj["created_at"],
+                "updatedAt": receipt_obj["updated_at"]
+            }
+            receipt_model = ReceiptModel(**receipt_model_data)
+            company_id = "default_company"  # Placeholder
+            workflow_evaluation = await workflow_service.evaluate_receipt_approval(receipt_model, current_user, company_id)
+            receipt_obj["workflow_evaluation"] = workflow_evaluation.dict() if workflow_evaluation else None
+            receipt_obj["approval_status"] = ApprovalStatus.APPROVED.value if workflow_evaluation and workflow_evaluation.action == "approve" else ApprovalStatus.PENDING.value
+        except Exception as e:
+            logger.warning(f"Error en evaluación de workflow: {e}")
+            receipt_obj["workflow_evaluation"] = None
+            receipt_obj["approval_status"] = ApprovalStatus.PENDING.value
+        
+        # Insertar en base de datos
+        result = await db.receipts.insert_one(receipt_obj)
+        receipt_obj["_id"] = result.inserted_id
+        
+        # Preparar respuesta
+        receipt_response = {
+            "id": str(result.inserted_id),
+            "companyName": receipt_obj["company_name"],
+            "folioNumber": receipt_obj["folio_number"],
+            "date": receipt_obj["date"],
+            "description": receipt_obj["description"],
+            "totalAmount": receipt_obj["total_amount"],
+            "category": receipt_obj["category"],
+            "userId": str(current_user.id),
+            "createdAt": receipt_obj["created_at"].isoformat(),
+            "updatedAt": receipt_obj["updated_at"].isoformat(),
+            "approvalStatus": receipt_obj["approval_status"]
+        }
+        
+        logger.info(f"Recibo creado exitosamente desde JSON: {result.inserted_id}")
+        
+        return {
+            "success": True,
+            "message": "Recibo creado exitosamente",
+            "receipt": receipt_response,
+            "analysis": {
+                "categorization": category_data.dict() if category_data else None,
+                "geolocation": location_data.dict() if location_data else None,
+                "workflow": workflow_evaluation.dict() if workflow_evaluation else None
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error creando recibo desde JSON: {e}")
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
 @router.post("/", response_model=dict, status_code=status.HTTP_201_CREATED)
 async def create_receipt(
@@ -35,12 +208,13 @@ async def create_receipt(
     current_user: UserPublic = Depends(get_current_user)
 ) -> Any:
     """
-    Create new receipt
+    Create new receipt with enhanced OCR parsing including detailed product extraction
     """
     db = get_database()
     
-    # Inicializar servicios OCR, categorización, geolocalización y workflow
+    # Inicializar servicios OCR, parsing detallado, categorización, geolocalización y workflow
     ocr_service = FreeOCRService()
+    chile_parser = ChileReceiptParser()
     categorizer = ChileCategorizerService()
     geolocation_service = GeolocationService()
     workflow_service = WorkflowService(db)
@@ -84,6 +258,9 @@ async def create_receipt(
                     confidence=extracted_data.get("confidence", 0.0)
                 )
                 
+                # Procesar datos del recibo con ChileReceiptParser
+                parsed_data = chile_parser.parse_receipt_data(extracted_data.get("raw_text", ""))
+                
                 # Categorizar el recibo usando ML
                 if extracted_data.get("raw_text"):
                     try:
@@ -114,11 +291,7 @@ async def create_receipt(
                 try:
                     location_result = await geolocation_service.process_receipt_location(extracted_data.get("raw_text", ""))
                     if location_result:
-                        location_data = LocationDataModel(
-                            location=location_result,
-                            extraction_method=location_result.get("extraction_method", "unknown"),
-                            confidence=location_result.get("confidence", 0.0)
-                        )
+                        location_data = location_result
                         logger.info(f"Geolocalización exitosa con confianza: {location_data.confidence}")
                 except Exception as e:
                     logger.error(f"Error en la geolocalización: {str(e)}")
@@ -252,7 +425,7 @@ async def create_receipt(
             "extracted": location_data is not None,
             "confidence": location_data.confidence if location_data else 0.0,
             "method": location_data.extraction_method if location_data else None,
-            "address": location_data.location.get("address", {}).get("formatted_address") if location_data and location_data.location else None
+            "address": getattr(getattr(location_data.location, "address", {}), "formatted_address", None) if location_data and location_data.location else None
         } if location_data else None,
         "approval": {
             "status": approval_instance.status if approval_instance else "en_revision",

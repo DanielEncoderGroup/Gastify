@@ -40,9 +40,9 @@ class ConditionOperator(str, Enum):
     NOT_IN = "not_in"
 
 class ApprovalStatus(str, Enum):
-    PENDING = "pending"
-    APPROVED = "approved"
-    REJECTED = "rejected"
+    PENDING = "en_revision"
+    APPROVED = "aceptada"
+    REJECTED = "rechazada"
     ESCALATED = "escalated"
     AUTO_APPROVED = "auto_approved"
 

@@ -284,3 +284,238 @@ async def get_all_employee_receipts(
             status_code=500,
             detail="Error interno del servidor"
         )
+
+@router.get("/employer-analytics")
+async def get_employer_analytics(
+    period: str = "30d",
+    current_user: UserPublic = Depends(get_current_user)
+) -> Any:
+    """
+    Obtener analytics agregados del empleador con métricas de todos sus empleados
+    """
+    if current_user.role != UserRole.EMPLOYER:
+        raise HTTPException(
+            status_code=403,
+            detail="Solo los empleadores pueden ver analytics agregados"
+        )
+    
+    try:
+        db = get_database()
+        
+        # Calcular período de tiempo
+        from datetime import datetime, timedelta
+        now = datetime.utcnow()
+        period_days = {
+            "7d": 7,
+            "30d": 30,
+            "90d": 90,
+            "1y": 365
+        }.get(period, 30)
+        
+        start_date = now - timedelta(days=period_days)
+        
+        # Obtener todos los empleados del empleador
+        employees_cursor = db.users.find({
+            "employer_id": ObjectId(current_user.id),
+            "role": UserRole.EMPLOYEE
+        })
+        
+        employees = await employees_cursor.to_list(length=None)
+        employee_ids = [emp["_id"] for emp in employees]
+        
+        if not employee_ids:
+            return {
+                "success": True,
+                "data": {
+                    "total_employees": 0,
+                    "total_receipts": 0,
+                    "total_amount": 0,
+                    "average_per_employee": 0,
+                    "category_breakdown": [],
+                    "department_breakdown": [],
+                    "employee_rankings": [],
+                    "monthly_trends": []
+                }
+            }
+        
+        # Pipeline de agregación para analytics consolidados
+        pipeline = [
+            {
+                "$match": {
+                    "user": {"$in": employee_ids},
+                    "date": {"$gte": start_date}
+                }
+            },
+            {
+                "$facet": {
+                    # Estadísticas generales
+                    "general_stats": [
+                        {
+                            "$group": {
+                                "_id": None,
+                                "total_receipts": {"$sum": 1},
+                                "total_amount": {"$sum": "$totalAmount"},
+                                "avg_amount": {"$avg": "$totalAmount"}
+                            }
+                        }
+                    ],
+                    # Por empleado
+                    "by_employee": [
+                        {
+                            "$group": {
+                                "_id": "$user",
+                                "receipts_count": {"$sum": 1},
+                                "total_amount": {"$sum": "$totalAmount"},
+                                "avg_amount": {"$avg": "$totalAmount"}
+                            }
+                        },
+                        {"$sort": {"total_amount": -1}}
+                    ],
+                    # Por categorías
+                    "by_category": [
+                        {
+                            "$group": {
+                                "_id": {"$ifNull": ["$category", "Sin categoría"]},
+                                "count": {"$sum": 1},
+                                "total": {"$sum": "$totalAmount"},
+                                "avg": {"$avg": "$totalAmount"}
+                            }
+                        },
+                        {"$sort": {"total": -1}}
+                    ],
+                    # Por mes
+                    "by_month": [
+                        {
+                            "$group": {
+                                "_id": {
+                                    "year": {"$year": "$date"},
+                                    "month": {"$month": "$date"}
+                                },
+                                "count": {"$sum": 1},
+                                "total": {"$sum": "$totalAmount"}
+                            }
+                        },
+                        {"$sort": {"_id.year": 1, "_id.month": 1}}
+                    ]
+                }
+            }
+        ]
+        
+        result = await db.receipts.aggregate(pipeline).to_list(1)
+        
+        if not result:
+            return {
+                "success": True,
+                "data": {
+                    "total_employees": len(employees),
+                    "total_receipts": 0,
+                    "total_amount": 0,
+                    "average_per_employee": 0,
+                    "category_breakdown": [],
+                    "department_breakdown": [],
+                    "employee_rankings": [],
+                    "monthly_trends": []
+                }
+            }
+        
+        data = result[0]
+        general_stats = data["general_stats"][0] if data["general_stats"] else {}
+        
+        # Procesar rankings de empleados
+        employee_rankings = []
+        employee_map = {str(emp["_id"]): emp for emp in employees}
+        
+        for emp_stat in data["by_employee"]:
+            emp_id = str(emp_stat["_id"])
+            employee_info = employee_map.get(emp_id, {})
+            
+            employee_rankings.append({
+                "employee_id": emp_id,
+                "name": f"{employee_info.get('firstName', '')} {employee_info.get('lastName', '')}".strip() or employee_info.get('email', 'Sin nombre'),
+                "email": employee_info.get('email'),
+                "department": employee_info.get('department'),
+                "position": employee_info.get('position'),
+                "receipts_count": emp_stat["receipts_count"],
+                "total_amount": emp_stat["total_amount"],
+                "average_per_receipt": emp_stat["avg_amount"]
+            })
+        
+        # Procesar categorías
+        categories = []
+        total_amount = general_stats.get("total_amount", 0)
+        for cat in data["by_category"]:
+            percentage = (cat["total"] / total_amount * 100) if total_amount > 0 else 0
+            categories.append({
+                "category": cat["_id"],
+                "count": cat["count"],
+                "total": cat["total"],
+                "average": cat["avg"],
+                "percentage": round(percentage, 2)
+            })
+        
+        # Procesar tendencias mensuales
+        monthly_trends = []
+        for month in data["by_month"]:
+            monthly_trends.append({
+                "year": month["_id"]["year"],
+                "month": month["_id"]["month"],
+                "receipts_count": month["count"],
+                "total_amount": month["total"]
+            })
+        
+        # Procesar breakdown por departamento
+        department_map = {}
+        for emp in employees:
+            dept = emp.get("department", "Sin departamento")
+            if dept not in department_map:
+                department_map[dept] = {"employees": [], "total_amount": 0, "receipts_count": 0}
+            department_map[dept]["employees"].append(str(emp["_id"]))
+        
+        # Agregar datos de gastos por departamento
+        for ranking in employee_rankings:
+            dept = ranking.get("department", "Sin departamento")
+            if dept in department_map:
+                department_map[dept]["total_amount"] += ranking["total_amount"]
+                department_map[dept]["receipts_count"] += ranking["receipts_count"]
+        
+        department_breakdown = []
+        for dept, data_dept in department_map.items():
+            employee_count = len(data_dept["employees"])
+            avg_per_employee = data_dept["total_amount"] / employee_count if employee_count > 0 else 0
+            
+            department_breakdown.append({
+                "department": dept,
+                "employee_count": employee_count,
+                "total_amount": data_dept["total_amount"],
+                "receipts_count": data_dept["receipts_count"],
+                "average_per_employee": avg_per_employee
+            })
+        
+        department_breakdown.sort(key=lambda x: x["total_amount"], reverse=True)
+        
+        # Calcular promedio por empleado
+        total_employees = len(employees)
+        average_per_employee = general_stats.get("total_amount", 0) / total_employees if total_employees > 0 else 0
+        
+        return {
+            "success": True,
+            "period": period,
+            "period_days": period_days,
+            "data": {
+                "total_employees": total_employees,
+                "total_receipts": general_stats.get("total_receipts", 0),
+                "total_amount": general_stats.get("total_amount", 0),
+                "average_per_employee": average_per_employee,
+                "category_breakdown": categories[:10],  # Top 10 categorías
+                "department_breakdown": department_breakdown,
+                "employee_rankings": employee_rankings,
+                "monthly_trends": monthly_trends
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error en analytics del empleador: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener analytics del empleador: {str(e)}"
+        )

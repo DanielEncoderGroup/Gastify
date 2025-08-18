@@ -44,8 +44,13 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> UserPublic:
         firstName=user["firstName"],
         lastName=user["lastName"],
         email=user["email"],
-        role=user.get("role", UserRole.CLIENT),  # Default to CLIENT if role not set
-        createdAt=user["createdAt"]
+        role=user.get("role", UserRole.EMPLOYEE),  # Default to EMPLOYEE if role not set
+        createdAt=user["createdAt"],
+        # Multi-tenant fields
+        company_name=user.get("company_name"),
+        employer_id=str(user.get("employer_id")) if user.get("employer_id") else None,
+        department=user.get("department"),
+        position=user.get("position")
     )
 
 def check_roles(allowed_roles: List[str]):
@@ -128,18 +133,30 @@ async def get_current_user_ws(token: str) -> UserPublic:
         print(f"❌ Error al buscar usuario en BD: {e}")
         raise credentials_exception
 
-def require_role(allowed_roles: List[str]):
-    """Dependencia para requerir roles específicos"""
-    async def role_checker(current_user: UserPublic = Depends(get_current_user)):
-        if current_user.role not in allowed_roles:
+async def require_role(allowed_roles: List[UserRole]):
+    """
+    Dependencia que requiere que el usuario tenga uno de los roles especificados.
+    """
+    def role_checker(current_user: UserPublic = Depends(get_current_user)):
+        if current_user.role not in [role.value for role in allowed_roles]:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Usuario no tiene permisos suficientes. Se requiere uno de estos roles: {', '.join(allowed_roles)}"
+                detail=f"Access denied. Required roles: {[role.value for role in allowed_roles]}"
             )
         return current_user
     return role_checker
 
+async def get_current_user_websocket(websocket):
+    """
+    Dependency para autenticar WebSocket connections.
+    Por ahora placeholder - en producción implementar JWT token validation.
+    """
+    # TODO: Implementar autenticación WebSocket con JWT
+    return None
+
 # Common role-based dependencies
 get_admin_user = check_roles([UserRole.ADMIN])
 get_client_user = check_roles([UserRole.CLIENT])
+get_employer_user = check_roles([UserRole.EMPLOYER])
+get_employee_user = check_roles([UserRole.EMPLOYEE])
 get_any_user = check_roles([UserRole.ADMIN, UserRole.CLIENT])

@@ -10,6 +10,21 @@ class NotificationType:
     COMMENT_ADDED = "comment_added"
     FILE_UPLOADED = "file_uploaded"
     SYSTEM_NOTIFICATION = "system_notification"
+    
+    # Invitation notifications
+    INVITATION_SENT = "invitation_sent"
+    INVITATION_ACCEPTED = "invitation_accepted"
+    INVITATION_DECLINED = "invitation_declined"
+    INVITATION_EXPIRED = "invitation_expired"
+    
+    # Employee notifications
+    EMPLOYEE_JOINED = "employee_joined"
+    EMPLOYEE_LEFT = "employee_left"
+    
+    # Receipt workflow notifications
+    RECEIPT_SUBMITTED = "receipt_submitted"
+    RECEIPT_APPROVED = "receipt_approved"
+    RECEIPT_REJECTED = "receipt_rejected"
 
 class Notification(BaseModel):
     id: Optional[PyObjectId] = Field(default=None, alias="_id")

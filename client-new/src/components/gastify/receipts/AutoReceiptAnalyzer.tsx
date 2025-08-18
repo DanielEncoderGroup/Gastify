@@ -181,21 +181,21 @@ export const AutoReceiptAnalyzer: React.FC<AutoReceiptAnalyzerProps> = ({
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Items:</span>
                   <span className="font-medium">
-                    {analysisResult.analysis.suggested_form_data.items?.length || 0} detectados
+                    {analysisResult.analysis.suggested_form_data.detailed_products?.length || 0} detectados
                   </span>
                 </div>
               </div>
             </div>
 
             {/* Items detectados */}
-            {analysisResult.analysis.suggested_form_data.items && 
-             analysisResult.analysis.suggested_form_data.items.length > 0 && (
+            {analysisResult.analysis.suggested_form_data.detailed_products && 
+             analysisResult.analysis.suggested_form_data.detailed_products.length > 0 && (
               <div className="mt-4">
-                <h5 className="font-medium text-gray-900 mb-2">Items Detectados:</h5>
+                <h5 className="font-medium text-gray-900 mb-2">Productos Detectados:</h5>
                 <div className="bg-gray-50 rounded-lg p-3 max-h-32 overflow-y-auto">
-                  {analysisResult.analysis.suggested_form_data.items.map((item: any, index: number) => (
+                  {analysisResult.analysis.suggested_form_data.detailed_products.map((item: any, index: number) => (
                     <div key={index} className="flex justify-between text-sm py-1">
-                      <span>{item.name}</span>
+                      <span>{item.name} {item.quantity && `(x${item.quantity})`}</span>
                       <span>${item.total_price?.toLocaleString()}</span>
                     </div>
                   ))}

@@ -308,3 +308,114 @@ class NotificationService:
         except Exception as e:
             print(f"ERROR obteniendo estadísticas para usuario {user_id}: {e}")
             return {"total": 0, "read": 0, "unread": 0, "by_type": {}}
+
+    @staticmethod
+    async def create_invitation_notification(
+        user_id: str,
+        notification_type: str,
+        employer_name: str,
+        company_name: str,
+        employee_name: str = None,
+        invitation_id: str = None
+    ) -> str:
+        """
+        Crear notificaciones específicas para el sistema de invitaciones.
+        
+        Args:
+            user_id: ID del usuario destinatario
+            notification_type: Tipo de notificación de invitación
+            employer_name: Nombre del empleador
+            company_name: Nombre de la empresa
+            employee_name: Nombre del empleado (para notificaciones al empleador)
+            invitation_id: ID de la invitación relacionada
+            
+        Returns:
+            str: ID de la notificación creada
+        """
+        from app.models.notification import NotificationType
+        
+        titles = {
+            NotificationType.INVITATION_SENT: f"Invitación enviada a {employee_name}",
+            NotificationType.INVITATION_ACCEPTED: f"¡{employee_name} se ha unido a tu equipo!",
+            NotificationType.INVITATION_DECLINED: f"{employee_name} ha rechazado la invitación",
+            NotificationType.INVITATION_EXPIRED: "Invitación expirada",
+            NotificationType.EMPLOYEE_JOINED: f"Te has unido exitosamente a {company_name}",
+        }
+        
+        messages = {
+            NotificationType.INVITATION_SENT: f"Se ha enviado una invitación a {employee_name} para unirse a {company_name}.",
+            NotificationType.INVITATION_ACCEPTED: f"{employee_name} ha aceptado tu invitación y ahora forma parte del equipo de {company_name}.",
+            NotificationType.INVITATION_DECLINED: f"{employee_name} ha declinado la invitación para unirse a {company_name}.",
+            NotificationType.INVITATION_EXPIRED: f"La invitación para {employee_name or 'un empleado'} ha expirado sin ser aceptada.",
+            NotificationType.EMPLOYEE_JOINED: f"Has sido agregado exitosamente al equipo de {company_name} por {employer_name}.",
+        }
+        
+        data = {
+            "employer_name": employer_name,
+            "company_name": company_name,
+            "employee_name": employee_name,
+            "invitation_id": invitation_id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        return await NotificationService.create_notification(
+            user_id=user_id,
+            type=notification_type,
+            title=titles.get(notification_type, "Notificación de invitación"),
+            message=messages.get(notification_type, "Ha ocurrido un evento relacionado con invitaciones."),
+            data=data
+        )
+
+    @staticmethod
+    async def create_receipt_notification(
+        user_id: str,
+        notification_type: str,
+        receipt_id: str,
+        merchant_name: str = None,
+        amount: float = None
+    ) -> str:
+        """
+        Crear notificaciones específicas para recibos.
+        
+        Args:
+            user_id: ID del usuario destinatario
+            notification_type: Tipo de notificación de recibo
+            receipt_id: ID del recibo
+            merchant_name: Nombre del comercio
+            amount: Monto del recibo
+            
+        Returns:
+            str: ID de la notificación creada
+        """
+        from app.models.notification import NotificationType
+        
+        titles = {
+            NotificationType.RECEIPT_CREATED: "Nuevo recibo procesado",
+            NotificationType.RECEIPT_UPDATED: "Recibo actualizado",
+            NotificationType.RECEIPT_SUBMITTED: "Recibo enviado para aprobación",
+            NotificationType.RECEIPT_APPROVED: "Recibo aprobado",
+            NotificationType.RECEIPT_REJECTED: "Recibo rechazado"
+        }
+        
+        messages = {
+            NotificationType.RECEIPT_CREATED: f"Se ha procesado exitosamente un nuevo recibo{f' de {merchant_name}' if merchant_name else ''}.",
+            NotificationType.RECEIPT_UPDATED: f"El recibo{f' de {merchant_name}' if merchant_name else ''} ha sido actualizado.",
+            NotificationType.RECEIPT_SUBMITTED: f"El recibo{f' de {merchant_name}' if merchant_name else ''} ha sido enviado para aprobación.",
+            NotificationType.RECEIPT_APPROVED: f"Tu recibo{f' de {merchant_name}' if merchant_name else ''} ha sido aprobado.",
+            NotificationType.RECEIPT_REJECTED: f"Tu recibo{f' de {merchant_name}' if merchant_name else ''} ha sido rechazado. Revisa los comentarios."
+        }
+        
+        data = {
+            "receipt_id": receipt_id,
+            "merchant_name": merchant_name,
+            "amount": amount,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        return await NotificationService.create_notification(
+            user_id=user_id,
+            type=notification_type,
+            title=titles.get(notification_type, "Notificación de recibo"),
+            message=messages.get(notification_type, "Ha ocurrido un evento relacionado con un recibo."),
+            data=data
+        )

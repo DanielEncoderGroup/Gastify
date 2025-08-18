@@ -46,65 +46,58 @@ const ReceiptsListPage: React.FC = () => {
 
   const categories = ['Comida', 'Alojamiento', 'Transporte', 'Material Oficina', 'Entretenimiento', 'Salud'];
 
+  // Mapear estados del backend al frontend
+  const mapBackendStatusToFrontend = (backendStatus: string): 'approved' | 'pending' | 'rejected' => {
+    switch (backendStatus) {
+      case 'aceptada':
+        return 'approved';
+      case 'en_revision':
+        return 'pending';
+      case 'rechazada':
+        return 'rejected';
+      default:
+        return 'pending';
+    }
+  };
+
   useEffect(() => {
     const loadReceipts = async () => {
       setLoading(true);
       try {
-        // Cargar recibos reales del backend
-        const backendReceipts = await receiptService.getReceipts();
+        // Cargar recibos y estadísticas en una sola llamada optimizada
+        const { receipts: backendReceipts, stats: backendStats } = await receiptService.getReceiptsWithStats();
         
         // Convertir los recibos del backend al formato de la interfaz local
-        const formattedReceipts: Receipt[] = backendReceipts.map(receipt => ({
+        const formattedReceipts: Receipt[] = backendReceipts.map((receipt: any) => ({
           id: receipt.id,
-          companyName: receipt.companyName,
-          folioNumber: receipt.folioNumber,
+          companyName: receipt.company_name || receipt.companyName,
+          folioNumber: receipt.folio_number || receipt.folioNumber,
           date: receipt.date,
           description: receipt.description,
-          totalAmount: receipt.totalAmount,
+          totalAmount: receipt.total_amount || receipt.totalAmount,
           category: receipt.category,
-          status: 'pending', // Por defecto, ya que el backend no maneja estados de aprobación aún
-          createdAt: receipt.createdAt,
-          updatedAt: receipt.updatedAt
+          status: mapBackendStatusToFrontend(receipt.approval_status || 'en_revision'),
+          createdAt: receipt.created_at || receipt.createdAt,
+          updatedAt: receipt.updated_at || receipt.updatedAt
         }));
         
         setReceipts(formattedReceipts);
         setFilteredReceipts(formattedReceipts);
         
-        // Cargar estadísticas reales del backend
-        try {
-          const backendStats = await receiptService.getReceiptStats();
-          setStats({
-            totalReceipts: backendStats.totalReceipts,
-            totalAmount: backendStats.totalAmount,
-            enRevision: backendStats.enRevision,
-            aceptadas: backendStats.aceptadas,
-            rechazadas: backendStats.rechazadas
-          });
-        } catch (statsError) {
-          console.warn('Error loading stats, using calculated values:', statsError);
-          // Fallback: calcular estadísticas localmente
-          const total = formattedReceipts.reduce((sum, receipt) => sum + receipt.totalAmount, 0);
-          setStats({
-            totalReceipts: formattedReceipts.length,
-            totalAmount: total,
-            enRevision: formattedReceipts.filter(r => r.status === 'pending').length,
-            aceptadas: formattedReceipts.filter(r => r.status === 'approved').length,
-            rechazadas: formattedReceipts.filter(r => r.status === 'rejected').length
-          });
-        }
+        // Usar estadísticas del backend
+        setStats(backendStats);
         
+        toast.success(`✅ Recibos cargados`, `${formattedReceipts.length} recibos cargados exitosamente`);
       } catch (error) {
-        console.error('Error loading receipts:', error);
-        toast.error('Error al cargar los recibos. Intenta nuevamente.');
-        setReceipts([]);
-        setFilteredReceipts([]);
+        console.error('Error cargando recibos:', error);
+        toast.error('❌ Error al cargar recibos', 'Verifique su conexión e intente nuevamente');
       } finally {
         setLoading(false);
       }
     };
 
     loadReceipts();
-  }, []); // ✅ FIXED: Removed toast from dependencies to prevent infinite loop
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Filtrar recibos
   useEffect(() => {
