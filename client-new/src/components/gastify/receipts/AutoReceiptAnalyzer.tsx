@@ -113,24 +113,30 @@ export const AutoReceiptAnalyzer: React.FC<AutoReceiptAnalyzerProps> = ({
 
           {/* Resumen de confianza */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div className="text-center p-3 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">
-                {(analysisResult.confidence_summary.ocr_confidence * 100).toFixed(0)}%
+            {analysisResult.confidence_summary.ocr_confidence !== undefined && (
+              <div className="text-center p-3 bg-blue-50 rounded-lg">
+                <div className="text-2xl font-bold text-blue-600">
+                  {(analysisResult.confidence_summary.ocr_confidence * 100).toFixed(0)}%
+                </div>
+                <div className="text-sm text-blue-700">OCR</div>
               </div>
-              <div className="text-sm text-blue-700">OCR</div>
-            </div>
-            <div className="text-center p-3 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">
-                {(analysisResult.confidence_summary.category_confidence * 100).toFixed(0)}%
+            )}
+            {analysisResult.confidence_summary.category_confidence !== undefined && (
+              <div className="text-center p-3 bg-green-50 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">
+                  {(analysisResult.confidence_summary.category_confidence * 100).toFixed(0)}%
+                </div>
+                <div className="text-sm text-green-700">Categoría</div>
               </div>
-              <div className="text-sm text-green-700">Categoría</div>
-            </div>
-            <div className="text-center p-3 bg-purple-50 rounded-lg">
-              <div className="text-2xl font-bold text-purple-600">
-                {(analysisResult.confidence_summary.location_confidence * 100).toFixed(0)}%
+            )}
+            {analysisResult.confidence_summary.location_confidence !== undefined && (
+              <div className="text-center p-3 bg-purple-50 rounded-lg">
+                <div className="text-2xl font-bold text-purple-600">
+                  {(analysisResult.confidence_summary.location_confidence * 100).toFixed(0)}%
+                </div>
+                <div className="text-sm text-purple-700">Ubicación</div>
               </div>
-              <div className="text-sm text-purple-700">Ubicación</div>
-            </div>
+            )}
             <div className="text-center p-3 bg-emerald-50 rounded-lg">
               <div className="text-2xl font-bold text-emerald-600">
                 {(analysisResult.confidence_summary.overall_confidence * 100).toFixed(0)}%

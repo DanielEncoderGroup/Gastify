@@ -9,8 +9,9 @@ import { useToast } from '../../components/ui/Toast';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
-import ProductDetailCard from '../../components/receipts/ProductDetailCard';
 import TransactionSummary from '../../components/receipts/TransactionSummary';
+import ProductList from '../../components/gastify/receipts/ProductList';
+import { ReceiptProduct } from '../../types/receipt';
 
 interface FormData {
   companyName: string;
@@ -33,13 +34,22 @@ export const UploadReceiptImproved: React.FC = () => {
     category: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+  const [extractedProducts, setExtractedProducts] = useState<ReceiptProduct[]>([]);
+
   const { user } = useAuth();
   const navigate = useNavigate();
   const { success, error } = useToast();
 
   const handleAnalysisComplete = async (analysis: OCRAnalysisResult, file: File) => {
     setAnalysisResult(analysis);
+    
+    // 🔍 DEBUG: Log completo de la respuesta OCR
+    console.log('=== ANÁLISIS OCR COMPLETO ===');
+    console.log('Respuesta completa:', analysis);
+    console.log('Analysis structure:', analysis.analysis);
+    console.log('Suggested form data:', analysis.analysis.suggested_form_data);
+    console.log('OCR data:', analysis.analysis.ocr);
+    console.log('Raw text presente:', !!analysis.analysis.ocr?.raw_text);
     
     // Extraer y formatear datos del análisis OCR
     const suggested = analysis.analysis.suggested_form_data;
@@ -123,6 +133,124 @@ export const UploadReceiptImproved: React.FC = () => {
       category: suggested.category || ''
     });
     
+    // 🔍 DEBUG: Verificar múltiples fuentes de productos
+    console.log('=== BÚSQUEDA DE PRODUCTOS ===');
+    console.log('suggested_form_data.detailed_products:', analysis.analysis.suggested_form_data.detailed_products);
+    console.log('ocr.items:', analysis.analysis.ocr?.items);
+    console.log('ocr.detailed_items:', analysis.analysis.ocr?.detailed_items);
+    console.log('parser_results.raw_text:', analysis.analysis.parser_results?.raw_text);
+    console.log('parser_results.products:', analysis.analysis.parser_results?.products);
+    
+    // 🚀 FALLBACK: Parser directo en frontend si backend falla
+    const parseProductsFromRawText = (rawText: string) => {
+      if (!rawText) return [];
+      
+      console.log('🔧 FALLBACK: Parsing productos directamente en frontend');
+      const lines = rawText.split('\n').filter(line => line.trim());
+      const products = [];
+      
+      // Patrón para productos chilenos: "2X1.000" seguido de nombre y precio
+      for (let i = 0; i < lines.length - 2; i++) {
+        const currentLine = lines[i].trim();
+        const nextLine = lines[i + 1]?.trim();
+        const priceLine = lines[i + 2]?.trim();
+        
+        // Patrón 1: cantidad X precio unitario (ej: "2X1.000")
+        const qtyPriceMatch = currentLine.match(/^(\d+)X([\d.,]+)$/);
+        if (qtyPriceMatch && nextLine && priceLine?.startsWith('$')) {
+          const quantity = parseInt(qtyPriceMatch[1]);
+          const unitPrice = parseFloat(qtyPriceMatch[2].replace(/[.,]/g, ''));
+          const totalPrice = parseFloat(priceLine.replace(/[$.,\s]/g, ''));
+          
+          products.push({
+            name: nextLine,
+            quantity,
+            unit_price: unitPrice,
+            total_price: totalPrice,
+            confidence: 0.8,
+            source: 'frontend_fallback'
+          });
+          
+          console.log(`✅ Producto extraído: ${nextLine} (${quantity}x${unitPrice} = ${totalPrice})`);
+          i += 2; // Saltar las líneas procesadas
+          continue;
+        }
+        
+        // Patrón 2: código de barras seguido de nombre y precio (ej: "7803468005005 MOLD INT 630")
+        const barcodeMatch = currentLine.match(/^(\d{13})\s+(.+)$/);
+        if (barcodeMatch && priceLine?.startsWith('$')) {
+          const barcode = barcodeMatch[1];
+          const name = barcodeMatch[2];
+          const totalPrice = parseFloat(priceLine.replace(/[$.,\s]/g, ''));
+          
+          products.push({
+            name: name,
+            quantity: 1,
+            unit_price: totalPrice,
+            total_price: totalPrice,
+            barcode: barcode,
+            confidence: 0.8,
+            source: 'frontend_fallback'
+          });
+          
+          console.log(`✅ Producto con código extraído: ${name} (${barcode}) = ${totalPrice}`);
+          i += 1; // Saltar línea de precio
+          continue;
+        }
+      }
+      
+      return products;
+    };
+    
+    // Buscar productos en múltiples ubicaciones posibles
+    let sourceProducts = analysis.analysis.suggested_form_data.detailed_products || 
+                        analysis.analysis.parser_results?.products || 
+                        analysis.analysis.ocr?.items || 
+                        analysis.analysis.ocr?.detailed_items || 
+                        [];
+    
+    // 🚀 Si no hay productos del backend, usar parser fallback
+    const rawTextSource = analysis.analysis.parser_results?.raw_text || analysis.analysis.ocr?.raw_text;
+    if ((!sourceProducts || sourceProducts.length === 0) && rawTextSource) {
+      console.log('⚠️ No hay productos del backend, activando fallback parser');
+      console.log('Raw text fuente:', rawTextSource.substring(0, 200) + '...');
+      sourceProducts = parseProductsFromRawText(rawTextSource);
+    }
+    
+    console.log('Productos finales encontrados:', sourceProducts.length);
+    console.log('Source products:', sourceProducts);
+    
+    // NUEVO: Procesar productos extraídos si están disponibles
+    if (sourceProducts && sourceProducts.length > 0) {
+      const products = sourceProducts.map((product: any, index: number) => ({
+        id: `temp_${index}`, // ID temporal para productos no guardados
+        name: product.name,
+        barcode: product.barcode,
+        quantity: product.quantity,
+        unit_price: product.unit_price,
+        total_price: product.total_price,
+        confidence: product.confidence || 0.7,
+        extraction_method: 'advanced_parser',
+        created_at: new Date().toISOString()
+      }));
+      setExtractedProducts(products);
+
+      // Validar totales automáticamente
+      const calculatedTotal = products.reduce((sum: number, p: any) => sum + (p.total_price || 0), 0);
+      const difference = Math.abs(calculatedTotal - (analysis.analysis.suggested_form_data.totalAmount || 0));
+      const differencePercentage = calculatedTotal > 0 ? (difference / calculatedTotal) * 100 : 0;
+      
+      // Log validation results for debugging
+      console.log('Validation results:', {
+        is_valid: differencePercentage <= 5,
+        declared_total: analysis.analysis.suggested_form_data.totalAmount || 0,
+        calculated_total: calculatedTotal,
+        difference,
+        difference_percentage: differencePercentage,
+        products_count: products.length
+      });
+    }
+    
     setStep('form');
   };
 
@@ -185,6 +313,7 @@ export const UploadReceiptImproved: React.FC = () => {
       totalAmount: 0,
       category: ''
     });
+    setExtractedProducts([]);
   };
 
   const goToReceipts = () => {
@@ -298,13 +427,42 @@ export const UploadReceiptImproved: React.FC = () => {
                   </div>
                   
                   <div className="grid gap-4 max-h-96 overflow-y-auto pr-2">
-                    {analysisResult.analysis.suggested_form_data.detailed_products.map((product, index) => (
-                      <ProductDetailCard 
-                        key={index} 
-                        product={product} 
-                        index={index} 
+                    {extractedProducts.length > 0 ? (
+                      <ProductList
+                        products={extractedProducts}
+                        declaredTotal={formData.totalAmount}
+                        receiptId="preview"
+                        onProductUpdate={(productId: string, updates: Partial<ReceiptProduct>) => {
+                          setExtractedProducts(prev => prev.map(p => 
+                            p.id === productId ? { ...p, ...updates } : p
+                          ));
+                        }}
+                        onValidationComplete={(isValid: boolean, difference: number) => {
+                          // Log validation completion for debugging
+                          console.log('Product validation completed:', {
+                            is_valid: isValid,
+                            declared_total: formData.totalAmount,
+                            calculated_total: extractedProducts.reduce((sum, p) => sum + (p.total_price || 0), 0),
+                            difference,
+                            difference_percentage: (difference / formData.totalAmount) * 100
+                          });
+                        }}
+                        readOnly={false}
                       />
-                    ))}
+                    ) : (
+                      <div className="bg-gray-50 p-6 rounded-lg text-center">
+                        <div className="h-12 w-12 text-gray-400 mx-auto mb-3">
+                          🛒
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">
+                          Sin productos detectados
+                        </h3>
+                        <p className="text-gray-600 text-sm">
+                          No se pudieron extraer productos individuales de este recibo. 
+                          Aún puedes guardar el recibo con la información básica.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -461,16 +619,18 @@ export const UploadReceiptImproved: React.FC = () => {
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <h4 className="text-sm font-medium text-gray-700 mb-3">📊 Métricas de Análisis</h4>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="text-center">
-                      <div className={`text-2xl font-bold ${
-                        analysisResult.confidence_summary.ocr_confidence > 0.8 ? 'text-green-600' :
-                        analysisResult.confidence_summary.ocr_confidence > 0.6 ? 'text-yellow-600' :
-                        'text-red-600'
-                      }`}>
-                        {(analysisResult.confidence_summary.ocr_confidence * 100).toFixed(0)}%
+                    {analysisResult.confidence_summary.ocr_confidence !== undefined && (
+                      <div className="text-center">
+                        <div className={`text-2xl font-bold ${
+                          analysisResult.confidence_summary.ocr_confidence > 0.8 ? 'text-green-600' :
+                          analysisResult.confidence_summary.ocr_confidence > 0.6 ? 'text-yellow-600' :
+                          'text-red-600'
+                        }`}>
+                          {(analysisResult.confidence_summary.ocr_confidence * 100).toFixed(0)}%
+                        </div>
+                        <div className="text-xs text-gray-600">OCR</div>
                       </div>
-                      <div className="text-xs text-gray-600">OCR</div>
-                    </div>
+                    )}
                     
                     {analysisResult.confidence_summary.category_confidence && (
                       <div className="text-center">

@@ -10,8 +10,12 @@ from app.services.geolocation_service import GeolocationService
 from app.services.workflow_service import WorkflowService
 from app.models.location_models import Location
 from app.models.workflow import ApprovalStatus
+from app.services.receipt_products_service import ReceiptProductsService
 import logging
 from datetime import datetime
+import os
+import uuid
+import shutil
 
 # Configurar logger
 logging.basicConfig(level=logging.INFO)
@@ -196,6 +200,212 @@ async def create_receipt_json(
     except Exception as e:
         logger.error(f"Error creando recibo desde JSON: {e}")
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+
+@router.post("/create-receipt-with-image", status_code=status.HTTP_201_CREATED)
+async def create_receipt_with_image(
+    image: UploadFile = File(...),
+    companyName: str = Form(...),
+    folioNumber: str = Form(...),
+    date: str = Form(...),
+    description: str = Form(...),
+    totalAmount: float = Form(...),
+    current_user: UserPublic = Depends(get_current_user)
+) -> Any:
+    """
+    Crea un recibo con imagen, extrae datos OCR y guarda productos individuales
+    """
+    
+    # Validar que sea una imagen
+    if not image.content_type.startswith('image/'):
+        raise HTTPException(
+            status_code=400,
+            detail="El archivo debe ser una imagen"
+        )
+    
+    try:
+        # Inicializar servicios
+        hybrid_ocr = HybridOCRService()
+        categorizer = ChileCategorizerService()
+        geolocation_service = GeolocationService()
+        workflow_service = WorkflowService()
+        products_service = ReceiptProductsService()
+        
+        # Crear directorio de uploads si no existe
+        os.makedirs("uploads", exist_ok=True)
+        
+        # Generar nombre único para la imagen
+        file_extension = os.path.splitext(image.filename)[1]
+        unique_filename = f"receipt_{uuid.uuid4()}{file_extension}"
+        image_path = os.path.join("uploads", unique_filename)
+        
+        # Guardar imagen
+        with open(image_path, "wb") as buffer:
+            shutil.copyfileobj(image.file, buffer)
+        
+        # Procesar OCR con análisis avanzado
+        logger.info(f"Procesando OCR avanzado para recibo de {current_user.email}")
+        hybrid_result = await hybrid_ocr.process_receipt_hybrid(image_path, force_engine="google_vision")
+        ocr_result = hybrid_result.data
+        
+        # Crear datos OCR expandidos incluyendo productos detallados
+        ocr_data = OCRDataModel(
+            vendor=ocr_result.get("vendor"),
+            total_amount=ocr_result.get("total_amount"),
+            date=ocr_result.get("date"),
+            items=ocr_result.get("items", []),
+            raw_text=ocr_result.get("raw_text", ""),
+            confidence=ocr_result.get("confidence", 0.0),
+            detailed_items=ocr_result.get("extracted_items", []),
+            total_items_count=len(ocr_result.get("extracted_items", [])),
+            chile_metadata=ChileReceiptMetadata(
+                rut_emisor=ocr_result.get("rut"),
+                folio=ocr_result.get("folio_number"),
+                subtotal=ocr_result.get("subtotal"),
+                iva_amount=ocr_result.get("iva_amount"),
+                parsing_confidence=ocr_result.get("confidence", 0.0)
+            ),
+            ocr_engine_used=hybrid_result.engine_used,
+            processing_time=hybrid_result.processing_time
+        )
+        
+        # Categorización ML
+        category_data = None
+        if ocr_result.get("raw_text"):
+            try:
+                categorization_result = categorizer.categorize_receipt(ocr_result.get("raw_text"))
+                category_data = CategoryPrediction(
+                    category=categorization_result.get("category", "Otros"),
+                    confidence=categorization_result.get("confidence", 0.0),
+                    method=categorization_result.get("method", "ml_prediction")
+                )
+            except Exception as e:
+                logger.error(f"Error en categorización: {str(e)}")
+        
+        # Geolocalización
+        location_data = None
+        try:
+            location_result = await geolocation_service.process_receipt_location(ocr_result.get("raw_text", ""))
+            if location_result:
+                location_data = LocationDataModel(
+                    address=getattr(location_result, 'address', None),
+                    city=getattr(location_result, 'city', None),
+                    region=getattr(location_result, 'region', None),
+                    country=getattr(location_result, 'country', None),
+                    latitude=getattr(location_result, 'latitude', None),
+                    longitude=getattr(location_result, 'longitude', None),
+                    confidence=getattr(location_result, 'confidence', 0.0)
+                )
+        except Exception as e:
+            logger.error(f"Error en geolocalización: {str(e)}")
+        
+        # Crear el recibo
+        receipt_data = ReceiptModel(
+            user=ObjectId(current_user.id),
+            companyName=companyName,
+            folioNumber=folioNumber,
+            date=datetime.fromisoformat(date.replace("Z", "+00:00")),
+            description=description,
+            totalAmount=totalAmount,
+            imageUrl=f"/uploads/{unique_filename}",
+            ocrData=ocr_data,
+            categoryPrediction=category_data,
+            chileSpecific=ChileSpecificData(
+                rut=ocr_result.get("rut"),
+                iva=ocr_result.get("iva_amount"),
+                folio=ocr_result.get("folio_number")
+            ) if ocr_result.get("rut") else None,
+            locationData=location_data
+        )
+        
+        # Guardar en MongoDB
+        db = await get_database()
+        result = await db.receipts.insert_one(receipt_data.dict(by_alias=True, exclude_none=True))
+        receipt_id = result.inserted_id
+        
+        # Guardar productos individuales en colección separada
+        if ocr_data.detailed_items:
+            try:
+                saved_products = await products_service.save_products_from_ocr(
+                    receipt_id=receipt_id,
+                    user_id=ObjectId(current_user.id),
+                    detailed_products=ocr_data.detailed_items
+                )
+                logger.info(f"Guardados {len(saved_products)} productos para recibo {receipt_id}")
+                
+                # Validar totales automáticamente
+                validation_result = await products_service.validate_receipt_totals(
+                    str(receipt_id), totalAmount
+                )
+                logger.info(f"Validación de totales: {validation_result['recommendation']}")
+                
+            except Exception as e:
+                logger.error(f"Error guardando productos: {str(e)}")
+                # Continúa sin fallar - los productos se pueden extraer después
+        
+        # Procesamiento de workflow (evaluación automática)
+        workflow_result = None
+        try:
+            workflow_result = await workflow_service.evaluate_receipt_workflow(
+                receipt_id=str(receipt_id),
+                user_id=current_user.id,
+                amount=totalAmount,
+                category=category_data.category if category_data else "Otros"
+            )
+        except Exception as e:
+            logger.error(f"Error en workflow: {str(e)}")
+        
+        # Respuesta completa con información de productos
+        response = {
+            "success": True,
+            "message": "Recibo creado exitosamente con análisis completo",
+            "receipt": {
+                "id": str(receipt_id),
+                "companyName": companyName,
+                "folioNumber": folioNumber,
+                "date": date,
+                "description": description,
+                "totalAmount": totalAmount,
+                "imageUrl": f"/uploads/{unique_filename}",
+                "status": "en_revision"
+            },
+            "analysis": {
+                "ocr": {
+                    "vendor": ocr_data.vendor,
+                    "total_amount": ocr_data.total_amount,
+                    "confidence": ocr_data.confidence,
+                    "products_found": len(ocr_data.detailed_items),
+                    "extraction_quality": "high" if ocr_data.confidence > 0.8 else "medium"
+                },
+                "categorization": {
+                    "category": category_data.category if category_data else "Otros",
+                    "confidence": category_data.confidence if category_data else 0.0
+                },
+                "geolocation": location_data.dict() if location_data else None,
+                "workflow": workflow_result,
+                "products": {
+                    "total_products": len(ocr_data.detailed_items),
+                    "products_with_prices": len([p for p in ocr_data.detailed_items if p.total_price]),
+                    "calculated_total": sum(p.total_price or 0 for p in ocr_data.detailed_items),
+                    "validation_status": validation_result['recommendation'] if 'validation_result' in locals() else "not_validated"
+                }
+            },
+            "confidence_summary": {
+                "overall_confidence": (
+                    ocr_data.confidence * 0.6 +
+                    (category_data.confidence if category_data else 0.0) * 0.25 +
+                    (location_data.confidence if location_data else 0.0) * 0.15
+                )
+            }
+        }
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Error creando recibo: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error procesando recibo: {str(e)}"
+        )
 
 @router.post("/", response_model=dict, status_code=status.HTTP_201_CREATED)
 async def create_receipt(

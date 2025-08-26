@@ -11,7 +11,18 @@ export interface OCRAnalysisResult {
   success: boolean;
   message: string;
   analysis: {
-    ocr: OCRDataExpanded;
+    ocr?: OCRDataExpanded;
+    parser_results?: {
+      raw_text: string;
+      products: ReceiptProduct[];
+      extraction_metadata: {
+        products_found: number;
+        parser_version: string;
+        processing_date: string;
+      };
+      location?: any;
+      transaction?: any;
+    };
     categorization: {
       category: string;
       confidence: number;
@@ -44,9 +55,9 @@ export interface OCRAnalysisResult {
     };
   };
   confidence_summary: {
-    ocr_confidence: number;
-    category_confidence: number;
-    location_confidence: number;
+    ocr_confidence?: number;
+    category_confidence?: number;
+    location_confidence?: number;
     overall_confidence: number;
     // Nuevas métricas de confianza del parser avanzado
     products_confidence?: number;

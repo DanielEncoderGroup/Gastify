@@ -4,21 +4,10 @@ import Icon from '../../components/ui/Icon';
 import Button from '../../components/ui/Button';
 import Card, { StatsCard } from '../../components/ui/Card';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
-import { useToast, ToastContainer } from '../../components/ui/Toast';
+import { useToast } from '../../components/ui/Toast';
 import { receiptService } from '../../services/receiptService';
-
-interface Receipt {
-  id: string;
-  companyName: string;
-  folioNumber: string;
-  date: string;
-  description: string;
-  totalAmount: number;
-  category: string;
-  status?: 'approved' | 'pending' | 'rejected';
-  createdAt: string;
-  updatedAt: string;
-}
+import { ReceiptDetailsModal } from '../../components/gastify/receipts/ReceiptDetailsModal';
+import { UnifiedReceipt, ModalReceipt } from '../../types/receipt';
 
 interface ReceiptStats {
   totalReceipts: number;
@@ -29,12 +18,15 @@ interface ReceiptStats {
 }
 
 const ReceiptsListPage: React.FC = () => {
-  const [receipts, setReceipts] = useState<Receipt[]>([]);
-  const [filteredReceipts, setFilteredReceipts] = useState<Receipt[]>([]);
+  const [receipts, setReceipts] = useState<UnifiedReceipt[]>([]);
+  const [filteredReceipts, setFilteredReceipts] = useState<UnifiedReceipt[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
+  // Estados para el modal
+  const [selectedReceipt, setSelectedReceipt] = useState<ModalReceipt | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [stats, setStats] = useState<ReceiptStats>({
     totalReceipts: 0,
     totalAmount: 0,
@@ -42,7 +34,7 @@ const ReceiptsListPage: React.FC = () => {
     aceptadas: 0,
     rechazadas: 0
   });
-  const toast = useToast();
+  const { success, error: showError, info } = useToast();
 
   const categories = ['Comida', 'Alojamiento', 'Transporte', 'Material Oficina', 'Entretenimiento', 'Salud'];
 
@@ -68,17 +60,24 @@ const ReceiptsListPage: React.FC = () => {
         const { receipts: backendReceipts, stats: backendStats } = await receiptService.getReceiptsWithStats();
         
         // Convertir los recibos del backend al formato de la interfaz local
-        const formattedReceipts: Receipt[] = backendReceipts.map((receipt: any) => ({
+        const formattedReceipts: UnifiedReceipt[] = backendReceipts.map((receipt: any) => ({
           id: receipt.id,
           companyName: receipt.company_name || receipt.companyName,
           folioNumber: receipt.folio_number || receipt.folioNumber,
           date: receipt.date,
           description: receipt.description,
           totalAmount: receipt.total_amount || receipt.totalAmount,
-          category: receipt.category,
+          category: receipt.category || 'General',
           status: mapBackendStatusToFrontend(receipt.approval_status || 'en_revision'),
           createdAt: receipt.created_at || receipt.createdAt,
-          updatedAt: receipt.updated_at || receipt.updatedAt
+          updatedAt: receipt.updated_at || receipt.updatedAt,
+          // Campos adicionales para compatibilidad
+          company_name: receipt.company_name || receipt.companyName,
+          folio_number: receipt.folio_number || receipt.folioNumber,
+          total_amount: receipt.total_amount || receipt.totalAmount,
+          ocr_data: receipt.ocr_data,
+          geolocation: receipt.geolocation,
+          workflow_data: receipt.workflow_data
         }));
         
         setReceipts(formattedReceipts);
@@ -87,10 +86,10 @@ const ReceiptsListPage: React.FC = () => {
         // Usar estadísticas del backend
         setStats(backendStats);
         
-        toast.success(`✅ Recibos cargados`, `${formattedReceipts.length} recibos cargados exitosamente`);
+        success(`✅ Recibos cargados`, `${formattedReceipts.length} recibos cargados exitosamente`);
       } catch (error) {
         console.error('Error cargando recibos:', error);
-        toast.error('❌ Error al cargar recibos', 'Verifique su conexión e intente nuevamente');
+        showError('❌ Error al cargar recibos', 'Verifique su conexión e intente nuevamente');
       } finally {
         setLoading(false);
       }
@@ -147,6 +146,51 @@ const ReceiptsListPage: React.FC = () => {
     return icons[category] || 'document';
   };
 
+  // Función para abrir modal de detalles
+  const handleViewDetails = (receipt: UnifiedReceipt) => {
+    // Convertir formato UnifiedReceipt a ModalReceipt
+    const modalReceipt: ModalReceipt = {
+      _id: receipt.id,
+      id: receipt.id,
+      company_name: receipt.company_name || receipt.companyName,
+      folio_number: receipt.folio_number || receipt.folioNumber,
+      date: receipt.date,
+      total_amount: receipt.total_amount || receipt.totalAmount,
+      description: receipt.description,
+      ocr_data: receipt.ocr_data,
+      geolocation: receipt.geolocation,
+      workflow_data: receipt.workflow_data || {
+        status: receipt.status || 'pending',
+        approval_level: 1
+      }
+    };
+    
+    setSelectedReceipt(modalReceipt);
+    setIsModalOpen(true);
+  };
+
+  // Función para cerrar modal
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedReceipt(null);
+  };
+
+  // Función para eliminar recibo
+  const handleDelete = async (receiptId: string) => {
+    if (!window.confirm('¿Está seguro de que desea eliminar este recibo?')) {
+      return;
+    }
+
+    try {
+      await receiptService.deleteReceipt(receiptId);
+      setReceipts(prev => prev.filter(r => r.id !== receiptId));
+      success('✅ Recibo eliminado', 'El recibo se eliminó correctamente');
+    } catch (error) {
+      console.error('Error eliminando recibo:', error);
+      showError('❌ Error al eliminar', 'No se pudo eliminar el recibo');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -157,7 +201,6 @@ const ReceiptsListPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <ToastContainer toasts={toast.toasts} />
       
       {/* Header Premium con Estadísticas */}
       <div className="bg-white shadow-sm border-b border-gray-200">
@@ -303,13 +346,13 @@ const ReceiptsListPage: React.FC = () => {
                   index % 3 === 1 ? 'animate-fade-in-up animation-delay-100' : 
                   'animate-fade-in-up animation-delay-200'
                 }`}
-                onClick={() => toast.info('Funcionalidad próximamente', 'Detalles del recibo')}
+                onClick={() => info('Funcionalidad próximamente', 'Detalles del recibo')}
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center space-x-3">
                     <div className="flex-shrink-0">
                       <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
-                        <Icon name={getCategoryIcon(receipt.category)} className="h-5 w-5 text-primary-600" />
+                        <Icon name={getCategoryIcon(receipt.category || 'General')} className="h-5 w-5 text-primary-600" />
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">
@@ -317,7 +360,7 @@ const ReceiptsListPage: React.FC = () => {
                         {receipt.companyName}
                       </p>
                       <p className="text-sm text-gray-500">
-                        {receipt.category}
+                        {receipt.category || 'General'}
                       </p>
                     </div>
                   </div>
@@ -344,13 +387,29 @@ const ReceiptsListPage: React.FC = () => {
                 )}
 
                 <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                  <Button variant="ghost" size="sm">
-                    <Icon name="EyeIcon" className="h-4 w-4 mr-1" />
-                    Ver detalles
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => handleViewDetails(receipt)}
+                    className="inline-flex items-center"
+                  >
+                    <Icon name="eye" className="w-4 h-4 mr-1" />
+                    Ver Detalles
                   </Button>
-                  <Button variant="ghost" size="sm">
-                    <Icon name="ArrowDownTrayIcon" className="h-4 w-4 mr-1" />
-                    Descargar
+                  <Link to={`/app/receipts/edit/${receipt.id}`}>
+                    <Button variant="secondary" size="sm">
+                      <Icon name="pencil" className="w-4 h-4 mr-1" />
+                      Editar
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => handleDelete(receipt.id)}
+                    disabled={loading}
+                  >
+                    <Icon name="trash" className="w-4 h-4 mr-1" />
+                    Eliminar
                   </Button>
                 </div>
               </Card>
@@ -397,6 +456,13 @@ const ReceiptsListPage: React.FC = () => {
       >
         <Icon name="PlusIcon" className="h-6 w-6" />
       </Link>
+
+      {/* Modal de detalles */}
+      <ReceiptDetailsModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        receipt={selectedReceipt}
+      />
     </div>
   );
 };
