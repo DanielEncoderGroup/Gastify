@@ -143,7 +143,7 @@ const ReceiptsListPage: React.FC = () => {
       'Entretenimiento': 'film',
       'Salud': 'heart'
     };
-    return icons[category] || 'document';
+    return icons[category] || 'DocumentTextIcon';
   };
 
   // Función para abrir modal de detalles
@@ -157,6 +157,9 @@ const ReceiptsListPage: React.FC = () => {
       date: receipt.date,
       total_amount: receipt.total_amount || receipt.totalAmount,
       description: receipt.description,
+      // Incluir productos y datos de análisis
+      products: receipt.products || [],
+      analysis_data: receipt.analysis_data,
       ocr_data: receipt.ocr_data,
       geolocation: receipt.geolocation,
       workflow_data: receipt.workflow_data || {
@@ -393,12 +396,12 @@ const ReceiptsListPage: React.FC = () => {
                     onClick={() => handleViewDetails(receipt)}
                     className="inline-flex items-center"
                   >
-                    <Icon name="eye" className="w-4 h-4 mr-1" />
+                    <Icon name="EyeIcon" className="w-4 h-4 mr-1" />
                     Ver Detalles
                   </Button>
                   <Link to={`/app/receipts/edit/${receipt.id}`}>
                     <Button variant="secondary" size="sm">
-                      <Icon name="pencil" className="w-4 h-4 mr-1" />
+                      <Icon name="PencilIcon" className="w-4 h-4 mr-1" />
                       Editar
                     </Button>
                   </Link>
@@ -408,7 +411,7 @@ const ReceiptsListPage: React.FC = () => {
                     onClick={() => handleDelete(receipt.id)}
                     disabled={loading}
                   >
-                    <Icon name="trash" className="w-4 h-4 mr-1" />
+                    <Icon name="TrashIcon" className="w-4 h-4 mr-1" />
                     Eliminar
                   </Button>
                 </div>

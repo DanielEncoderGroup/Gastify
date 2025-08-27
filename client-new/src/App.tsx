@@ -35,6 +35,9 @@ import AnalyticsDashboardPremium from './pages/analytics/AnalyticsDashboardPremi
 // Gastify - Gestión de Empleados (PREMIUM UX/UI)
 import { EmployeeManagement } from './components/gastify/employees/EmployeeManagement';
 
+// Gastify - Dashboard Empresarial (PREMIUM UX/UI)
+import { CompanyDashboard } from './pages/company/CompanyDashboard';
+
 // Gastify - Workflows de Aprobación (PREMIUM UX/UI)
 import ApprovalDashboard from './pages/workflows/ApprovalDashboard';
 import WorkflowConfiguration from './components/workflows/WorkflowConfiguration';
@@ -150,6 +153,9 @@ function App() {
             
             {/* Rutas de Analytics (PREMIUM UX/UI) */}
             <Route path="analytics" element={<AnalyticsDashboardPremium />} />
+            
+            {/* Rutas de Dashboard Empresarial (PREMIUM UX/UI) */}
+            <Route path="company-dashboard" element={<CompanyDashboard />} />
             
             {/* Rutas de Gestión de Empleados (PREMIUM UX/UI) */}
             <Route path="employees" element={<EmployeeManagement />} />

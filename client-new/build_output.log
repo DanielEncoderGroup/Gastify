@@ -1,0 +1,8 @@
+
+> gastify-client@1.0.0 build
+> tsc && vite build
+
+src/tests/setup.ts(2,39): error TS2307: Cannot find module 'vitest' or its corresponding type declarations.
+src/tests/setup.ts(31,37): error TS7006: Parameter 'query' implicitly has an 'any' type.
+src/tests/vite-migration.test.tsx(1,42): error TS2307: Cannot find module 'vitest' or its corresponding type declarations.
+src/tests/vite-migration.test.tsx(77,24): error TS2339: Property 'env' does not exist on type 'ImportMeta'.

@@ -13,13 +13,13 @@ import {
   XCircleIcon
 } from '@heroicons/react/24/outline';
 import ProductList from './ProductList';
-import { ReceiptProduct, ReceiptPDFData, Receipt } from '../../../types/receipt';
+import { ReceiptProduct, ReceiptPDFData, ModalReceipt } from '../../../types/receipt';
 import { pdfService } from '../../../services/pdfService';
 
 interface ReceiptDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  receipt: Receipt | null;
+  receipt: ModalReceipt | null;
 }
 
 export const ReceiptDetailsModal: React.FC<ReceiptDetailsModalProps> = ({
@@ -31,25 +31,22 @@ export const ReceiptDetailsModal: React.FC<ReceiptDetailsModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchReceiptProducts = React.useCallback(async () => {
+  const fetchReceiptProducts = React.useCallback(() => {
     if (!receipt) return;
     
     setIsLoading(true);
     setError(null);
     
     try {
-      const response = await fetch(`/api/receipt-products/receipt/${receipt.id}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Error al cargar productos');
-      }
-      
-      const data = await response.json();
-      setProducts(data.products || []);
+      // Usar productos que ya están en los datos del recibo
+      const receiptProducts = receipt.products || [];
+      console.log('🔍 MODAL DEBUG - Datos del recibo completo:', receipt);
+      console.log('🔍 MODAL DEBUG - Products field present:', 'products' in receipt);
+      console.log('🔍 MODAL DEBUG - Products value:', receipt.products);
+      console.log('🔍 MODAL DEBUG - Products length:', receiptProducts.length);
+      console.log('🔍 MODAL DEBUG - Analysis data present:', !!receipt.analysis_data);
+      console.log('Productos cargados desde datos del recibo:', receiptProducts);
+      setProducts(receiptProducts);
     } catch (error) {
       console.error('Error loading products:', error);
       setError('No se pudieron cargar los productos del recibo');
@@ -259,11 +256,68 @@ export const ReceiptDetailsModal: React.FC<ReceiptDetailsModalProps> = ({
                             <p className="text-sm font-medium text-green-900">Ubicación</p>
                           </div>
                           <div className="space-y-1 text-sm text-green-800">
-                            {receipt.geolocation.address && <p>{receipt.geolocation.address}</p>}
-                            {receipt.geolocation.city && <p>{receipt.geolocation.city}, {receipt.geolocation.region || 'Chile'}</p>}
+                            {receipt.geolocation.address && (
+                              <p>Dirección: {receipt.geolocation.address}</p>
+                            )}
+                            {receipt.geolocation.city && (
+                              <p>Ciudad: {receipt.geolocation.city}</p>
+                            )}
+                            {receipt.geolocation.region && (
+                              <p>Región: {receipt.geolocation.region}</p>
+                            )}
                           </div>
                         </div>
                       )}
+
+                    {/* Datos de Análisis Detallado */}
+                    {receipt.analysis_data && (
+                      <div className="bg-purple-50 rounded-lg p-4">
+                        <h4 className="text-sm font-medium text-purple-900 mb-3 flex items-center">
+                          <DocumentTextIcon className="w-4 h-4 mr-2" />
+                          Análisis con IA
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                          {receipt.analysis_data.confidence && (
+                            <div>
+                              <span className="text-purple-700 font-medium">Confianza:</span>
+                              <div className="flex items-center mt-1">
+                                <div className="flex-1 bg-purple-200 rounded-full h-2 mr-2">
+                                  <div 
+                                    className="h-2 rounded-full bg-purple-500"
+                                    style={{ width: `${receipt.analysis_data.confidence * 100}%` }}
+                                  />
+                                </div>
+                                <span className="text-purple-800 font-medium">
+                                  {(receipt.analysis_data.confidence * 100).toFixed(0)}%
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                          {receipt.analysis_data.suggestedFormData?.totalAmount && (
+                            <div>
+                              <span className="text-purple-700 font-medium">Total Detectado:</span>
+                              <p className="text-purple-800 font-semibold">
+                                ${receipt.analysis_data.suggestedFormData.totalAmount.toLocaleString('es-CL')}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {receipt.analysis_data.rawText && (
+                          <details className="mt-3">
+                            <summary className="text-purple-700 font-medium cursor-pointer hover:text-purple-800">
+                              Ver texto extraído por OCR
+                            </summary>
+                            <div className="mt-2 p-3 bg-white rounded border max-h-32 overflow-y-auto">
+                              <pre className="text-xs text-gray-600 whitespace-pre-wrap">
+                                {receipt.analysis_data.rawText.substring(0, 500)}
+                                {receipt.analysis_data.rawText.length > 500 && '...'}
+                              </pre>
+                            </div>
+                          </details>
+                        )}
+                      </div>
+                    )}
                     </div>
                   </div>
 

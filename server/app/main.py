@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 import os
-from app.api.routes import auth, receipts, notifications, categories, analytics, workflows, hybrid_ocr, ocr, invitations, websockets, spending_limits, advanced_notifications, employees, receipt_products
+from app.api.routes import auth, receipts, notifications, categories, analytics, workflows, hybrid_ocr, ocr, invitations, websockets, spending_limits, advanced_notifications, employees, receipt_products, company_analytics
 from app.routers import geolocation
 from app.core.config import settings
 from app.core.database import connect_to_mongo, close_mongo_connection
@@ -26,10 +26,11 @@ app.add_middleware(
 # Include routers
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(receipts.router, prefix="/api/receipts", tags=["Receipts"])
-app.include_router(receipt_products.router, prefix="/api/receipt-products", tags=["Receipt Products"])
+app.include_router(receipt_products.router, prefix="/api", tags=["Receipt Products"])
 app.include_router(notifications.router, prefix="/api/notifications", tags=["Notifications"])
 app.include_router(categories.router, prefix="/api/categories", tags=["Categories"])
 app.include_router(analytics.router, prefix="/api/analytics", tags=["Analytics"])
+app.include_router(company_analytics.router, prefix="/api/company-analytics", tags=["Company Analytics"])
 app.include_router(workflows.router, prefix="/api", tags=["Workflows"])
 app.include_router(geolocation.router, prefix="/api", tags=["Geolocation"])
 app.include_router(hybrid_ocr.router, prefix="/api/hybrid-ocr", tags=["Hybrid OCR"])

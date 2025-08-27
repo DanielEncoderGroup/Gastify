@@ -121,6 +121,14 @@ async def create_receipt_json(
             logger.warning(f"Error en geolocalización automática: {e}")
         
         # Crear objeto de recibo
+        print(f"🔍 BACKEND DEBUG - Received products: {len(receipt_data.products or [])}")
+        print(f"🔍 BACKEND DEBUG - Received analysisData: {receipt_data.analysisData is not None}")
+        print(f"🔍 BACKEND DEBUG - Products data: {receipt_data.products}")
+        print(f"🔍 BACKEND DEBUG - Analysis data: {receipt_data.analysisData}")
+        
+        processed_products = [product.dict() if hasattr(product, 'dict') else product for product in (receipt_data.products or [])]
+        print(f"🔍 BACKEND DEBUG - Processed products: {len(processed_products)}")
+        
         receipt_obj = {
             "user": ObjectId(current_user.id),
             "company_name": receipt_data.companyName,
@@ -132,6 +140,9 @@ async def create_receipt_json(
             "ocr_data": None,  # No hay imagen procesada
             "category_prediction": category_data.dict() if category_data else None,
             "location_data": location_data.dict() if location_data else None,
+            # Guardar productos y análisis detallado
+            "products": processed_products,
+            "analysis_data": receipt_data.analysisData,
             "created_at": datetime.utcnow(),
             "updated_at": datetime.utcnow(),
             "approval_status": ApprovalStatus.PENDING.value,
@@ -165,9 +176,12 @@ async def create_receipt_json(
             receipt_obj["workflow_evaluation"] = None
             receipt_obj["approval_status"] = ApprovalStatus.PENDING.value
         
-        # Insertar en base de datos
+        # Insertar recibo en la base de datos
+        print(f"🔍 BACKEND DEBUG - About to save receipt_obj with {len(receipt_obj.get('products', []))} products")
+        print(f"🔍 BACKEND DEBUG - Receipt obj keys: {list(receipt_obj.keys())}")
         result = await db.receipts.insert_one(receipt_obj)
-        receipt_obj["_id"] = result.inserted_id
+        receipt_id = str(result.inserted_id)
+        print(f"🔍 BACKEND DEBUG - Receipt saved with ID: {receipt_id}")
         
         # Preparar respuesta
         receipt_response = {
@@ -181,7 +195,11 @@ async def create_receipt_json(
             "userId": str(current_user.id),
             "createdAt": receipt_obj["created_at"].isoformat(),
             "updatedAt": receipt_obj["updated_at"].isoformat(),
-            "approvalStatus": receipt_obj["approval_status"]
+            "approvalStatus": receipt_obj["approval_status"],
+            "products": processed_products,
+            "analysis_data": receipt_obj.get("analysis_data"),
+            "ocr_data": receipt_obj.get("ocr_data"),
+            "location_data": receipt_obj.get("location_data")
         }
         
         logger.info(f"Recibo creado exitosamente desde JSON: {result.inserted_id}")

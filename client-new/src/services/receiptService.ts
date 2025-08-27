@@ -20,17 +20,30 @@ export interface CreateReceiptData {
   description: string;
   totalAmount: number;
   category: string;
+  // Campos adicionales para productos y análisis
+  products?: any[];
+  analysisData?: {
+    ocrData?: any;
+    parserResults?: any;
+    suggestedFormData?: any;
+    confidence?: number;
+    rawText?: string;
+  } | null;
 }
 
 class ReceiptService {
   /**
    * Crear un nuevo recibo desde JSON (método corregido)
    */
-  async createReceipt(receiptData: CreateReceiptData): Promise<Receipt> {
+  async createReceipt(receiptData: CreateReceiptData): Promise<any> {
     try {
+      console.log('📤 SENDING TO BACKEND:', receiptData);
+      console.log('📤 Products in request:', receiptData.products?.length || 0);
       const response = await api.post('/receipts/json', receiptData);
-      return response.data.receipt;
+      console.log('📥 BACKEND RESPONSE:', response.data);
+      return response.data; // Retornar respuesta completa con success, message, receipt
     } catch (error) {
+      console.error('❌ CREATE RECEIPT ERROR:', error);
       throw error;
     }
   }

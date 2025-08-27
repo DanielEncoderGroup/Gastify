@@ -149,20 +149,21 @@ export const UploadReceiptImproved: React.FC = () => {
       const lines = rawText.split('\n').filter(line => line.trim());
       const products = [];
       
-      // Patrón para productos chilenos: "2X1.000" seguido de nombre y precio
-      for (let i = 0; i < lines.length - 2; i++) {
+      // Patrón mejorado para productos chilenos
+      for (let i = 0; i < lines.length - 1; i++) {
         const currentLine = lines[i].trim();
         const nextLine = lines[i + 1]?.trim();
-        const priceLine = lines[i + 2]?.trim();
+        const nextLine2 = lines[i + 2]?.trim();
         
         // Patrón 1: cantidad X precio unitario (ej: "2X1.000")
         const qtyPriceMatch = currentLine.match(/^(\d+)X([\d.,]+)$/);
-        if (qtyPriceMatch && nextLine && priceLine?.startsWith('$')) {
+        if (qtyPriceMatch && nextLine && nextLine2?.startsWith('$')) {
           const quantity = parseInt(qtyPriceMatch[1]);
           const unitPrice = parseFloat(qtyPriceMatch[2].replace(/[.,]/g, ''));
-          const totalPrice = parseFloat(priceLine.replace(/[$.,\s]/g, ''));
+          const totalPrice = parseFloat(nextLine2.replace(/[$.,\s]/g, ''));
           
           products.push({
+            id: `temp_${products.length}`,
             name: nextLine,
             quantity,
             unit_price: unitPrice,
@@ -176,29 +177,63 @@ export const UploadReceiptImproved: React.FC = () => {
           continue;
         }
         
-        // Patrón 2: código de barras seguido de nombre y precio (ej: "7803468005005 MOLD INT 630")
+        // Patrón 2: código de barras + nombre, precio inmediato (ej: "7803468005005 MOLD INT 630")
         const barcodeMatch = currentLine.match(/^(\d{13})\s+(.+)$/);
-        if (barcodeMatch && priceLine?.startsWith('$')) {
+        if (barcodeMatch && nextLine?.startsWith('$')) {
           const barcode = barcodeMatch[1];
           const name = barcodeMatch[2];
-          const totalPrice = parseFloat(priceLine.replace(/[$.,\s]/g, ''));
+          const totalPrice = parseFloat(nextLine.replace(/[$.,\s]/g, ''));
           
-          products.push({
-            name: name,
-            quantity: 1,
-            unit_price: totalPrice,
-            total_price: totalPrice,
-            barcode: barcode,
-            confidence: 0.8,
-            source: 'frontend_fallback'
-          });
+          if (totalPrice > 0) {
+            products.push({
+              id: `temp_${products.length}`,
+              name: name,
+              quantity: 1,
+              unit_price: totalPrice,
+              total_price: totalPrice,
+              barcode: barcode,
+              confidence: 0.8,
+              source: 'frontend_fallback'
+            });
+            
+            console.log(`✅ Producto con código extraído: ${name} (${barcode}) = ${totalPrice}`);
+            i += 1; // Saltar línea de precio
+            continue;
+          }
+        }
+        
+        // Patrón 3: código + nombre, luego "$" solo, luego precio en línea separada
+        if (barcodeMatch && nextLine === '$' && nextLine2) {
+          const barcode = barcodeMatch[1];
+          const name = barcodeMatch[2];
+          const priceText = nextLine2.trim();
           
-          console.log(`✅ Producto con código extraído: ${name} (${barcode}) = ${totalPrice}`);
-          i += 1; // Saltar línea de precio
-          continue;
+          // Verificar si la siguiente línea contiene un precio válido
+          const priceMatch = priceText.match(/^([\d.,]+)$/);
+          if (priceMatch) {
+            const totalPrice = parseFloat(priceMatch[1].replace(/[.,]/g, ''));
+            
+            if (totalPrice > 0) {
+              products.push({
+                id: `temp_${products.length}`,
+                name: name,
+                quantity: 1,
+                unit_price: totalPrice,
+                total_price: totalPrice,
+                barcode: barcode,
+                confidence: 0.8,
+                source: 'frontend_fallback'
+              });
+              
+              console.log(`✅ Producto separado extraído: ${name} (${barcode}) = ${totalPrice}`);
+              i += 2; // Saltar líneas $ y precio
+              continue;
+            }
+          }
         }
       }
       
+      console.log(`🔍 Total productos encontrados: ${products.length}`);
       return products;
     };
     
@@ -223,7 +258,7 @@ export const UploadReceiptImproved: React.FC = () => {
     // NUEVO: Procesar productos extraídos si están disponibles
     if (sourceProducts && sourceProducts.length > 0) {
       const products = sourceProducts.map((product: any, index: number) => ({
-        id: `temp_${index}`, // ID temporal para productos no guardados
+        id: product.id || `temp_${index}`, // ID temporal para productos no guardados
         name: product.name,
         barcode: product.barcode,
         quantity: product.quantity,
@@ -251,6 +286,9 @@ export const UploadReceiptImproved: React.FC = () => {
       });
     }
     
+    console.log('🔄 SETTING STEP TO FORM - Analysis complete');
+    console.log('🔄 ExtractedProducts before form:', extractedProducts.length);
+    console.log('🔄 FormData before form:', formData);
     setStep('form');
   };
 
@@ -279,6 +317,16 @@ export const UploadReceiptImproved: React.FC = () => {
         }
       }
       
+      // Limpiar productos para compatibilidad con backend
+      const cleanedProducts = extractedProducts.map(product => ({
+        name: product.name,
+        quantity: product.quantity,
+        unit_price: product.unit_price,
+        total_price: product.total_price,
+        barcode: product.barcode && product.barcode !== 'undefined' ? product.barcode : null,
+        // Eliminar campos que el backend no espera como 'id'
+      }));
+
       // Crear objeto de datos para enviar al backend
       const submitData = {
         companyName: formData.companyName,
@@ -286,13 +334,34 @@ export const UploadReceiptImproved: React.FC = () => {
         date: formattedDate,
         description: formData.description,
         totalAmount: formData.totalAmount,
-        category: formData.category
+        category: formData.category,
+        // Incluir productos extraídos y análisis detallado
+        products: cleanedProducts,
+        analysisData: analysisResult ? {
+          ocrData: analysisResult.analysis.ocr,
+          parserResults: analysisResult.analysis.parser_results,
+          suggestedFormData: analysisResult.analysis.suggested_form_data,
+          confidence: analysisResult.confidence_summary?.overall_confidence || 0.8,
+          rawText: analysisResult.analysis.parser_results?.raw_text || ''
+        } : null
       };
 
-      await receiptService.createReceipt(submitData);
+      console.log('🚀 DATOS A ENVIAR AL BACKEND:');
+      console.log('Products to send:', cleanedProducts.length);
+      console.log('🔧 CLEANED PRODUCTS:', cleanedProducts);
+      console.log('🔧 ORIGINAL PRODUCTS:', extractedProducts);
+      console.log('Analysis data present:', !!analysisResult);
+      console.log('Full submit data:', submitData);
+
+      // Enviar al backend usando el servicio
+      const response = await receiptService.createReceipt(submitData);
       
-      success('¡Recibo guardado!', 'El recibo se ha guardado exitosamente');
-      setStep('success');
+      if (response.success) {
+        success('¡Éxito!', 'Recibo guardado correctamente');
+        setStep('success');
+      } else {
+        throw new Error(response.message || 'Error desconocido');
+      }
       
     } catch (err: any) {
       error('Error', 'No se pudo guardar el recibo');
@@ -320,6 +389,10 @@ export const UploadReceiptImproved: React.FC = () => {
     navigate('/app/receipts');
   };
 
+  console.log('🔍 RENDER DEBUG - Current step:', step);
+  console.log('🔍 RENDER DEBUG - ExtractedProducts length:', extractedProducts.length);
+  console.log('🔍 RENDER DEBUG - AnalysisResult present:', !!analysisResult);
+  
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
@@ -410,19 +483,37 @@ export const UploadReceiptImproved: React.FC = () => {
               )}
 
               {/* Productos Detectados con componentes mejorados */}
-              {analysisResult.analysis.suggested_form_data.detailed_products && analysisResult.analysis.suggested_form_data.detailed_products.length > 0 && (
+              {extractedProducts && extractedProducts.length > 0 && (
                 <div className="mb-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="text-lg font-semibold text-gray-900 flex items-center">
-                      🛒 Productos Detectados
-                      <span className="ml-3 text-sm text-gray-500">
-                        ({analysisResult.analysis.suggested_form_data.detailed_products.length} productos)
-                      </span>
-                    </h4>
-                    <div className="text-sm text-gray-600 bg-blue-50 px-3 py-1 rounded-full">
-                      {analysisResult.confidence_summary.products_confidence ? 
-                        `${(analysisResult.confidence_summary.products_confidence * 100).toFixed(0)}% confianza` : 
-                        'Extraído con IA'}
+                  <div className="bg-gradient-to-r from-emerald-50 to-blue-50 rounded-lg p-4 mb-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-lg font-semibold text-gray-900 flex items-center">
+                        🤖 Productos Detectados por IA
+                        <span className="ml-3 text-sm bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-medium">
+                          {extractedProducts.length} encontrados
+                        </span>
+                      </h4>
+                      <div className="text-sm text-gray-600 bg-white px-3 py-1 rounded-full border">
+                        {analysisResult.confidence_summary.products_confidence ? 
+                          `${(analysisResult.confidence_summary.products_confidence * 100).toFixed(0)}% confianza` : 
+                          'Extraído con IA'}
+                      </div>
+                    </div>
+                    
+                    {/* Explicación clara de la diferencia */}
+                    <div className="flex items-start space-x-4 text-sm">
+                      <div className="flex items-center space-x-2 text-blue-700 bg-blue-100 px-3 py-1 rounded-full">
+                        📋
+                        <span>Boleta declara: <strong>7 artículos vendidos</strong></span>
+                      </div>
+                      <div className="flex items-center space-x-2 text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">
+                        🤖
+                        <span>IA detectó: <strong>{extractedProducts.length} productos individuales</strong></span>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-2 text-xs text-gray-600 bg-yellow-50 px-3 py-2 rounded border-l-4 border-yellow-400">
+                      💡 <strong>Nota:</strong> La diferencia puede deberse a productos con cantidad mayor a 1 o líneas que la IA no pudo procesar completamente.
                     </div>
                   </div>
                   

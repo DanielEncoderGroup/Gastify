@@ -14,6 +14,8 @@ from app.models.user import UserPublic
 from app.services.analytics_service import PredictiveAnalyticsService
 from app.services.anomaly_detector import ExpenseAnomalyDetector
 from app.services.insights_generator import IntelligentInsights
+from app.models.user import UserRole
+from bson import ObjectId
 
 router = APIRouter()
 

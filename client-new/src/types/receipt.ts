@@ -105,6 +105,16 @@ export interface ModalReceipt {
   date: string;
   total_amount: number;
   description: string;
+  // Productos extraídos durante el análisis
+  products?: ReceiptProduct[];
+  // Datos del análisis completo
+  analysis_data?: {
+    ocrData?: any;
+    parserResults?: any;
+    suggestedFormData?: any;
+    confidence?: number;
+    rawText?: string;
+  };
   ocr_data?: {
     confidence: number;
     vendor?: string;
@@ -141,6 +151,15 @@ export interface UnifiedReceipt {
   company_name?: string;
   folio_number?: string;
   total_amount?: number;
+  // Productos y análisis
+  products?: ReceiptProduct[];
+  analysis_data?: {
+    ocrData?: any;
+    parserResults?: any;
+    suggestedFormData?: any;
+    confidence?: number;
+    rawText?: string;
+  };
   ocr_data?: {
     confidence: number;
     vendor?: string;

@@ -20,7 +20,7 @@ class ReceiptProductsService:
     async def _get_collection(self):
         """Obtener colección de productos de recibos"""
         if not self.collection:
-            self.db = await get_database()
+            self.db = get_database()  # Remover await - get_database() no es async
             self.collection = self.db.receipt_products
             # Crear índices para consultas eficientes
             await self._ensure_indexes()

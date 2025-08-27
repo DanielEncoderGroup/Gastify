@@ -159,6 +159,22 @@ class ReceiptCreate(BaseModel):
     date: datetime
     description: str
     totalAmount: float
+    category: Optional[str] = None
+    # Campos adicionales para productos y análisis detallado
+    products: Optional[List[DetailedProductItem]] = None
+    analysisData: Optional[Dict[str, Any]] = None
+    
+    @validator('products', pre=True)
+    def validate_products(cls, v):
+        print(f"🔍 PYDANTIC VALIDATOR - Raw products received: {v}")
+        print(f"🔍 PYDANTIC VALIDATOR - Products type: {type(v)}")
+        if v is None:
+            return []
+        if isinstance(v, list):
+            print(f"🔍 PYDANTIC VALIDATOR - Products count: {len(v)}")
+            for i, product in enumerate(v):
+                print(f"🔍 PYDANTIC VALIDATOR - Product {i}: {product}")
+        return v
     
     class Config:
         schema_extra = {
@@ -167,7 +183,10 @@ class ReceiptCreate(BaseModel):
                 "folioNumber": "F001-123456",
                 "date": "2023-08-28T12:34:56.789Z",
                 "description": "Gastos de transporte",
-                "totalAmount": 150.50
+                "totalAmount": 150.50,
+                "category": "Transporte",
+                "products": [],
+                "analysisData": {}
             }
         }
 
