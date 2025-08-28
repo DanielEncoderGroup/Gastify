@@ -29,6 +29,12 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
       description: 'Gestiona todos los recibos'
     },
     { 
+      name: 'Gastos de Combustible', 
+      href: '/app/fuel-expenses', 
+      iconName: 'TruckIcon',
+      description: 'Gestiona gastos de combustible'
+    },
+    { 
       name: 'Analytics', 
       href: '/app/analytics', 
       iconName: 'ChartBarIcon',
@@ -55,6 +61,12 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
       href: '/app/receipts/new', 
       iconName: 'PlusCircleIcon',
       description: 'Añade un nuevo recibo de gastos'
+    },
+    { 
+      name: 'Gastos de Combustible', 
+      href: '/app/fuel-expenses', 
+      iconName: 'TruckIcon',
+      description: 'Gestiona tus gastos de combustible'
     },
     { 
       name: 'Analytics', 
@@ -96,6 +108,11 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
       return location.pathname === href || 
              (location.pathname.startsWith(href + '/') && 
               location.pathname !== '/app/receipts/new');
+    }
+    
+    // Para rutas de gastos de combustible, verificar coincidencia exacta o que empiece con la ruta
+    if (href === '/app/fuel-expenses') {
+      return location.pathname === href || location.pathname.startsWith(href + '/');
     }
     
     // Para el resto de rutas, verificar coincidencia exacta o que empiece con la ruta + '/'
