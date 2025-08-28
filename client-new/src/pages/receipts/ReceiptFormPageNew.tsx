@@ -64,9 +64,10 @@ const ReceiptFormPageNew: React.FC = () => {
         date: result.receipt.date || '',
         confidence: result.analysis?.confidence || 0.85 // Usar confianza del análisis OCR
       };
-    } catch (error: any) {
-      console.error('Error en procesamiento OCR:', error);
-      throw new Error(error.message || 'Error en el procesamiento OCR');
+    } catch (error: unknown) {
+      // console.error('Error en procesamiento OCR:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Error en el procesamiento OCR';
+      throw new Error(errorMessage);
     }
   };
 
@@ -181,12 +182,9 @@ const ReceiptFormPageNew: React.FC = () => {
       // Navegar a la lista de recibos donde aparecerá el nuevo recibo
       navigate('/app/receipts');
       
-    } catch (error: any) {
-      console.error('Error guardando recibo:', error);
-      toast.error(
-        'Error al guardar', 
-        error.message || 'No se pudo procesar el recibo. Intenta nuevamente.'
-      );
+    } catch (error: unknown) {
+      // console.error('Error guardando recibo:', error);
+      toast.error('Error', 'No se pudo guardar el recibo');
     } finally {
       setSubmitting(false);
     }

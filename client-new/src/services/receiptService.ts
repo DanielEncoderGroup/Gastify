@@ -7,7 +7,7 @@ export interface CreateReceiptWithImageResponse {
   receipt: Receipt;
   analysis?: {
     confidence: number;
-    ocrData?: any;
+    ocrData?: unknown;
     category?: string;
   };
   message: string;

@@ -45,11 +45,7 @@ export const UploadReceiptImproved: React.FC = () => {
     
     // 🔍 DEBUG: Log completo de la respuesta OCR
     console.log('=== ANÁLISIS OCR COMPLETO ===');
-    console.log('Respuesta completa:', analysis);
-    console.log('Analysis structure:', analysis.analysis);
-    console.log('Suggested form data:', analysis.analysis.suggested_form_data);
-    console.log('OCR data:', analysis.analysis.ocr);
-    console.log('Raw text presente:', !!analysis.analysis.ocr?.raw_text);
+    // Debug info removed for production
     
     // Extraer y formatear datos del análisis OCR
     const suggested = analysis.analysis.suggested_form_data;
@@ -363,9 +359,9 @@ export const UploadReceiptImproved: React.FC = () => {
         throw new Error('Error guardando el recibo');
       }
       
-    } catch (err: any) {
+    } catch (err: unknown) {
       error('Error', 'No se pudo guardar el recibo');
-      console.error('Error saving receipt:', err);
+      // console.error('Error saving receipt:', err);
     } finally {
       setIsSubmitting(false);
     }
