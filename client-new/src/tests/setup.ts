@@ -1,14 +1,26 @@
 import '@testing-library/jest-dom'
-import { expect, afterEach, vi } from 'vitest'
+import { expect, afterEach, beforeAll, afterAll, vi } from 'vitest'
 import { cleanup } from '@testing-library/react'
 import * as matchers from '@testing-library/jest-dom/matchers'
+import { server } from './mocks/server'
 
 // Extend Vitest's expect with jest-dom matchers
 expect.extend(matchers)
 
-// Cleanup after each test case
+// Setup MSW server
+beforeAll(() => {
+  server.listen({ 
+    onUnhandledRequest: 'error' // Fail tests on unhandled requests
+  })
+})
+
 afterEach(() => {
   cleanup()
+  server.resetHandlers() // Reset handlers after each test
+})
+
+afterAll(() => {
+  server.close()
 })
 
 // Mock IntersectionObserver
