@@ -42,6 +42,17 @@ async def get_user_receipts(
             # Convertir user a string si es ObjectId
             if hasattr(receipt.get("user"), "generation_time"):
                 receipt["user"] = str(receipt["user"])
+            
+            # Debug products field
+            print(f"🔍 BACKEND DEBUG - Receipt {receipt['id']} raw products field exists: {'products' in receipt}")
+            print(f"🔍 BACKEND DEBUG - Receipt {receipt['id']} products value: {receipt.get('products', 'MISSING')}")
+            print(f"🔍 BACKEND DEBUG - Receipt {receipt['id']} products type: {type(receipt.get('products'))}")
+            print(f"🔍 BACKEND DEBUG - Receipt {receipt['id']} products length: {len(receipt.get('products', []))}")
+            
+            # Asegurar que los productos están incluidos en la respuesta
+            if "products" not in receipt or receipt["products"] is None:
+                receipt["products"] = []
+                print(f"🔍 BACKEND DEBUG - Receipt {receipt['id']} - PRODUCTS FIELD WAS MISSING OR NULL, SET TO EMPTY")
             formatted_receipts.append(receipt)
         
         # Calcular estadísticas
@@ -51,6 +62,13 @@ async def get_user_receipts(
         approved_count = sum(1 for r in formatted_receipts if r.get("approval_status") == "aceptada") 
         rejected_count = sum(1 for r in formatted_receipts if r.get("approval_status") == "rechazada")
         
+        # Debug: Verificar productos antes de la respuesta final
+        print(f"🔍 FINAL RESPONSE DEBUG - Total receipts: {total_receipts}")
+        if formatted_receipts:
+            first_receipt = formatted_receipts[0]
+            print(f"🔍 FINAL RESPONSE DEBUG - First receipt products: {first_receipt.get('products', 'MISSING')}")
+            print(f"🔍 FINAL RESPONSE DEBUG - First receipt products length: {len(first_receipt.get('products', []))}")
+
         return {
             "success": True,
             "count": total_receipts,
@@ -759,9 +777,35 @@ async def get_receipt_by_id(
             detail="Receipt not found"
         )
     
-    # Format response
+    # 🔧 CORRECCIÓN: Convertir todos los ObjectIds a strings recursivamente
+    def convert_objectids(obj):
+        """Convierte recursivamente ObjectIds a strings en la estructura de datos"""
+        if isinstance(obj, ObjectId):
+            return str(obj)
+        elif isinstance(obj, dict):
+            return {key: convert_objectids(value) for key, value in obj.items()}
+        elif isinstance(obj, list):
+            return [convert_objectids(item) for item in obj]
+        else:
+            return obj
+    
+    # Convertir ObjectIds en todo el documento
+    receipt = convert_objectids(receipt)
+    
+    # Format response IDs principales
     receipt["id"] = str(receipt["_id"])
-    receipt["user"] = str(receipt["user"])
+    if hasattr(receipt.get("user"), "generation_time"):
+        receipt["user"] = str(receipt["user"])
+    
+    # Debug products field for individual receipt
+    print(f"🔍 BACKEND DEBUG - Individual receipt {receipt['id']} raw products field exists: {'products' in receipt}")
+    print(f"🔍 BACKEND DEBUG - Individual receipt {receipt['id']} products value: {receipt.get('products', 'MISSING')}")
+    print(f"🔍 BACKEND DEBUG - Individual receipt {receipt['id']} products length: {len(receipt.get('products', []))}")
+    
+    # Asegurar que los productos están incluidos
+    if "products" not in receipt or receipt["products"] is None:
+        receipt["products"] = []
+        print(f"🔍 BACKEND DEBUG - Individual receipt {receipt['id']} - PRODUCTS FIELD WAS MISSING OR NULL, SET TO EMPTY")
     
     return {
         "success": True,

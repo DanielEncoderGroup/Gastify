@@ -103,7 +103,7 @@ export const UploadReceiptImproved: React.FC = () => {
         // Guardar automáticamente usando el nuevo método con datos enriquecidos
         const result = await receiptService.createReceiptWithImage(file, enrichedData);
         
-        if (result.success) {
+        if (result && result.success) {
           const productCount = analysis.analysis.suggested_form_data.detailed_products?.length || 0;
           success(`¡Recibo procesado automáticamente! Confianza: ${Math.round(overallConfidence * 100)}%${productCount > 0 ? ` • ${productCount} productos detectados` : ''}`);
           setStep('success');
@@ -356,11 +356,11 @@ export const UploadReceiptImproved: React.FC = () => {
       // Enviar al backend usando el servicio
       const response = await receiptService.createReceipt(submitData);
       
-      if (response.success) {
+      if (response && response.id) {
         success('¡Éxito!', 'Recibo guardado correctamente');
         setStep('success');
       } else {
-        throw new Error(response.message || 'Error desconocido');
+        throw new Error('Error guardando el recibo');
       }
       
     } catch (err: any) {

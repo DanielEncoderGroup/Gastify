@@ -55,3 +55,4 @@ rock-embassy-467919-s1-*.json
 *.md
 *.txt
 .claude
+.husky

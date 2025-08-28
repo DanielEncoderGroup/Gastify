@@ -1,36 +1,22 @@
-// Tipos centralizados para evitar duplicación y importaciones circulares
-export interface ReceiptProduct {
-  id: string;
-  name: string;
-  barcode?: string;
-  quantity: number;
-  unit_price?: number;
-  total_price?: number;
-  confidence: number;
-  extraction_method: string;
-  created_at: string;
-}
+// Re-export types from receiptTypes for backward compatibility
+export * from './receiptTypes';
 
-export interface ProductValidation {
-  is_valid: boolean;
-  declared_total: number;
-  calculated_total: number;
-  difference: number;
-  difference_percentage: number;
-  products_count: number;
-  average_confidence: number;
-  issues: string[];
-  recommendation: 'auto_approve' | 'manual_review';
-}
-
-export interface Receipt {
-  _id: string;
+// Para compatibilidad con páginas existentes
+export interface LegacyReceipt {
   id: string;
+  companyName: string;
+  folioNumber: string;
+  date: string;
+  description: string;
+  totalAmount: number;
+  category: string;
+  status?: 'approved' | 'pending' | 'rejected';
+  createdAt: string;
+  updatedAt: string;
+  // Campos adicionales para el modal
   company_name: string;
   folio_number: string;
-  date: string;
   total_amount: number;
-  description: string;
   ocr_data?: {
     confidence: number;
     vendor?: string;
@@ -51,51 +37,6 @@ export interface Receipt {
   };
 }
 
-export interface ReceiptPDFData {
-  id: string;
-  companyName: string;
-  folioNumber: string;
-  date: string;
-  totalAmount: number;
-  description: string;
-  products: ReceiptProduct[];
-  ocrData?: {
-    confidence: number;
-    vendor?: string;
-    chile_metadata?: {
-      rut_emisor?: string;
-      iva_amount?: number;
-      subtotal?: number;
-    };
-  };
-  geolocation?: {
-    address?: string;
-    city?: string;
-    region?: string;
-  };
-}
-
-// Para compatibilidad con páginas existentes
-export interface LegacyReceipt {
-  id: string;
-  companyName: string;
-  folioNumber: string;
-  date: string;
-  description: string;
-  totalAmount: number;
-  category: string;
-  status?: 'approved' | 'pending' | 'rejected';
-  createdAt: string;
-  updatedAt: string;
-  // Campos adicionales para el modal
-  company_name: string;
-  folio_number: string;
-  total_amount: number;
-  ocr_data?: Receipt['ocr_data'];
-  geolocation?: Receipt['geolocation'];
-  workflow_data?: Receipt['workflow_data'];
-}
-
 // Tipo específico para el modal de detalles
 export interface ModalReceipt {
   _id: string;
@@ -105,13 +46,23 @@ export interface ModalReceipt {
   date: string;
   total_amount: number;
   description: string;
-  // Productos extraídos durante el análisis
-  products?: ReceiptProduct[];
+  // Productos extraídos durante el análisis (usar estructura del backend)
+  products?: {
+    name: string;
+    quantity: number;
+    unit_price?: number;
+    total_price?: number;
+    barcode?: string | null;
+    sku?: string | null;
+    category?: string | null;
+    confidence?: number;
+    raw_line?: string | null;
+  }[];
   // Datos del análisis completo
   analysis_data?: {
-    ocrData?: any;
-    parserResults?: any;
-    suggestedFormData?: any;
+    ocrData?: unknown;
+    parserResults?: unknown;
+    suggestedFormData?: unknown;
     confidence?: number;
     rawText?: string;
   };
@@ -151,12 +102,22 @@ export interface UnifiedReceipt {
   company_name?: string;
   folio_number?: string;
   total_amount?: number;
-  // Productos y análisis
-  products?: ReceiptProduct[];
+  // Productos y análisis (usar estructura del backend)
+  products?: {
+    name: string;
+    quantity: number;
+    unit_price?: number;
+    total_price?: number;
+    barcode?: string | null;
+    sku?: string | null;
+    category?: string | null;
+    confidence?: number;
+    raw_line?: string | null;
+  }[];
   analysis_data?: {
-    ocrData?: any;
-    parserResults?: any;
-    suggestedFormData?: any;
+    ocrData?: unknown;
+    parserResults?: unknown;
+    suggestedFormData?: unknown;
     confidence?: number;
     rawText?: string;
   };

@@ -59,8 +59,8 @@ const ReceiptFormPageNew: React.FC = () => {
       
       // Extraer datos de la respuesta del backend
       return {
-        vendor: result.receipt.companyName || '',
-        amount: result.receipt.totalAmount?.toString() || '',
+        vendor: result.receipt.company_name || '',
+        amount: result.receipt.total_amount?.toString() || '',
         date: result.receipt.date || '',
         confidence: result.analysis?.confidence || 0.85 // Usar confianza del análisis OCR
       };

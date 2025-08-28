@@ -1,16 +1,16 @@
+import { Receipt, BackendProduct } from '../types/receipt';
 import api from './api';
 
-export interface Receipt {
-  id: string;
-  companyName: string;
-  folioNumber: string;
-  date: string;
-  description: string;
-  totalAmount: number;
-  category: string;
-  userId: string;
-  createdAt: string;
-  updatedAt: string;
+// Interface for createReceiptWithImage response
+export interface CreateReceiptWithImageResponse {
+  success: boolean;
+  receipt: Receipt;
+  analysis?: {
+    confidence: number;
+    ocrData?: any;
+    category?: string;
+  };
+  message: string;
 }
 
 export interface CreateReceiptData {
@@ -21,11 +21,11 @@ export interface CreateReceiptData {
   totalAmount: number;
   category: string;
   // Campos adicionales para productos y análisis
-  products?: any[];
+  products?: BackendProduct[];
   analysisData?: {
-    ocrData?: any;
-    parserResults?: any;
-    suggestedFormData?: any;
+    ocrData?: unknown;
+    parserResults?: unknown;
+    suggestedFormData?: unknown;
     confidence?: number;
     rawText?: string;
   } | null;
@@ -35,17 +35,9 @@ class ReceiptService {
   /**
    * Crear un nuevo recibo desde JSON (método corregido)
    */
-  async createReceipt(receiptData: CreateReceiptData): Promise<any> {
-    try {
-      console.log('📤 SENDING TO BACKEND:', receiptData);
-      console.log('📤 Products in request:', receiptData.products?.length || 0);
-      const response = await api.post('/receipts/json', receiptData);
-      console.log('📥 BACKEND RESPONSE:', response.data);
-      return response.data; // Retornar respuesta completa con success, message, receipt
-    } catch (error) {
-      console.error('❌ CREATE RECEIPT ERROR:', error);
-      throw error;
-    }
+  async createReceipt(receiptData: CreateReceiptData): Promise<Receipt> {
+    const response = await api.post('/receipts/json', receiptData);
+    return response.data;
   }
 
   /**
@@ -56,65 +48,42 @@ class ReceiptService {
    * 3. Extrae geolocalización
    * 4. Guarda en base de datos
    */
-  async createReceiptWithImage(
-    imageFile: File,
-    formData?: Partial<CreateReceiptData>
-  ): Promise<{
-    success: boolean;
-    receipt: Receipt;
-    analysis: any;
-    message: string;
-  }> {
-    try {
-      const formDataToSend = new FormData();
-      
-      // Agregar imagen
-      formDataToSend.append('image', imageFile);
-      
-      // Si se proporcionan datos del formulario, usarlos
-      // Si no, el backend los extraerá automáticamente con OCR
-      formDataToSend.append('companyName', formData?.companyName || 'Auto-detectado');
-      formDataToSend.append('folioNumber', formData?.folioNumber || 'Auto-detectado');
-      formDataToSend.append('date', formData?.date || new Date().toISOString().split('T')[0]);
-      formDataToSend.append('description', formData?.description || 'Procesado automáticamente con IA');
-      formDataToSend.append('totalAmount', formData?.totalAmount?.toString() || '0');
-      
-      const response = await api.post('/receipts', formDataToSend, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      
-      return {
-        success: true,
-        receipt: response.data.receipt,
-        analysis: response.data.analysis,
-        message: 'Recibo procesado automáticamente con IA'
-      };
-    } catch (error: any) {
-      console.error('Error creating receipt with image:', error);
-      const errorMessage = error.response?.data?.detail || 'Error al procesar el recibo';
-      throw new Error(errorMessage);
-    }
+  async createReceiptWithImage(imageFile: File, additionalData?: Record<string, unknown>): Promise<CreateReceiptWithImageResponse> {
+    const formDataToSend = new FormData();
+    
+    // Agregar imagen
+    formDataToSend.append('image', imageFile);
+    // No products found
+    // Si se proporcionan datos del formulario, usarlos
+    // Si no, el backend los extraerá automáticamente con OCR
+    formDataToSend.append('companyName', (additionalData?.companyName as string) || 'Auto-detectado');
+    formDataToSend.append('folioNumber', (additionalData?.folioNumber as string) || 'Auto-detectado');
+    formDataToSend.append('date', (additionalData?.date as string) || new Date().toISOString().split('T')[0]);
+    formDataToSend.append('description', (additionalData?.description as string) || 'Procesado automáticamente con IA');
+    
+    const response = await api.post('/receipts', formDataToSend, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    
+    return {
+      success: true,
+      receipt: response.data.receipt,
+      analysis: response.data.analysis,
+      message: 'Recibo procesado automáticamente con IA'
+    };
   }
 
   /**
    * Obtener todos los recibos del usuario con estadísticas
    */
   async getReceipts(): Promise<Receipt[]> {
-    try {
-      const response = await api.get('/receipts');
-      // El backend devuelve {success: boolean, count: number, data: Receipt[], stats: {...}}
-      if (response.data && response.data.success && Array.isArray(response.data.data)) {
-        return response.data.data;
-      }
-      // Fallback: si la respuesta no tiene la estructura esperada, devolver array vacío
-      console.warn('Unexpected response structure from /receipts endpoint:', response.data);
-      return [];
-    } catch (error) {
-      console.error('Error fetching receipts:', error);
-      throw error;
+    const response = await api.get('/receipts');
+    if (response.data && response.data.success && Array.isArray(response.data.data)) {
+      return response.data.data;
     }
+    return [];
   }
 
   /**
@@ -130,26 +99,20 @@ class ReceiptService {
       rechazadas: number;
     };
   }> {
-    try {
-      const response = await api.get('/receipts');
-      // El backend devuelve {success: boolean, count: number, data: Receipt[], stats: {...}}
-      if (response.data && response.data.success) {
-        return {
-          receipts: response.data.data || [],
-          stats: response.data.stats || {
-            totalReceipts: 0,
-            totalAmount: 0,
-            enRevision: 0,
-            aceptadas: 0,
-            rechazadas: 0
-          }
-        };
-      }
-      throw new Error('Invalid response structure');
-    } catch (error) {
-      console.error('Error fetching receipts with stats:', error);
-      throw error;
+    const response = await api.get('/receipts');
+    if (response.data && response.data.success) {
+      return {
+        receipts: response.data.data || [],
+        stats: response.data.stats || {
+          totalReceipts: 0,
+          totalAmount: 0,
+          enRevision: 0,
+          aceptadas: 0,
+          rechazadas: 0
+        }
+      };
     }
+    throw new Error('Invalid response structure');
   }
 
   /**
@@ -162,68 +125,43 @@ class ReceiptService {
     aceptadas: number;
     rechazadas: number;
   }> {
-    try {
-      const response = await api.get('/receipts/stats');
-      // El backend devuelve {success: boolean, data: {...}}
-      if (response.data && response.data.success && response.data.data) {
-        return response.data.data;
-      }
-      // Fallback: devolver estadísticas vacías si la estructura no es la esperada
-      console.warn('Unexpected response structure from /receipts/stats endpoint:', response.data);
-      return {
-        totalReceipts: 0,
-        totalAmount: 0,
-        enRevision: 0,
-        aceptadas: 0,
-        rechazadas: 0
-      };
-    } catch (error) {
-      console.error('Error fetching receipt stats:', error);
-      console.warn('Stats endpoint not available, will calculate locally');
-      throw error;
+    const response = await api.get('/receipts/stats');
+    if (response.data && response.data.success && response.data.data) {
+      return response.data.data;
     }
+    return {
+      totalReceipts: 0,
+      totalAmount: 0,
+      enRevision: 0,
+      aceptadas: 0,
+      rechazadas: 0
+    };
   }
 
   /**
    * Obtener un recibo por ID
    */
   async getReceiptById(id: string): Promise<Receipt> {
-    try {
-      const response = await api.get(`/receipts/${id}`);
-      // El backend devuelve {success: boolean, data: Receipt}
-      if (response.data && response.data.success && response.data.data) {
-        return response.data.data;
-      }
-      // Si la estructura no es la esperada, lanzar error
-      console.error('Unexpected response structure from /receipts/{id} endpoint:', response.data);
-      throw new Error('Invalid response format from server');
-    } catch (error) {
-      console.error('Error fetching receipt by ID:', error);
-      throw error;
+    const response = await api.get(`/receipts/${id}`);
+    if (response.data && response.data.success && response.data.data) {
+      return response.data.data;
     }
+    throw new Error('Invalid response format from server');
   }
 
   /**
    * Actualizar un recibo
    */
   async updateReceipt(id: string, receiptData: Partial<CreateReceiptData>): Promise<Receipt> {
-    try {
-      const response = await api.put(`/receipts/${id}`, receiptData);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await api.put(`/receipts/${id}`, receiptData);
+    return response.data;
   }
 
   /**
    * Eliminar un recibo
    */
   async deleteReceipt(id: string): Promise<void> {
-    try {
-      await api.delete(`/receipts/${id}`);
-    } catch (error) {
-      throw error;
-    }
+    await api.delete(`/receipts/${id}`);
   }
 }
 
