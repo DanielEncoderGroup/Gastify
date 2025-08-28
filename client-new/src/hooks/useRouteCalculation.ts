@@ -8,7 +8,7 @@ import {
   Location
 } from '../types/fuel';
 import { mapsService } from '../services/mapsService';
-import { cneService } from '../services/cneService';
+import { fixedFuelPricesService } from '../services/fixedFuelPricesService';
 import { fuelCalculations } from '../utils/fuelCalculations';
 
 interface UseRouteCalculationReturn {
@@ -69,7 +69,7 @@ export const useRouteCalculation = (): UseRouteCalculationReturn => {
       if (manualPrice && fuelCalculations.validateFuelPrice(manualPrice)) {
         fuelPrice = manualPrice;
       } else {
-        const prices = await cneService.getFuelPrices();
+        const prices = await fixedFuelPricesService.getFuelPrices();
         const regionPrice = Object.values(prices).find((p: any) => p.fuelType === fuelType);
         
         if (!regionPrice) {

@@ -75,6 +75,8 @@ export const FuelExpenseForm: React.FC<FuelExpenseFormProps> = ({
   // Referencias para autocompletado
   const originInputRef = useRef<HTMLInputElement>(null);
   const destinationInputRef = useRef<HTMLInputElement>(null);
+  const [originAutocomplete, setOriginAutocomplete] = useState<any>(null);
+  const [destinationAutocomplete, setDestinationAutocomplete] = useState<any>(null);
 
   // Hooks
   const { createExpense, loading: submitLoading, error: submitError } = useFuelExpenses();
@@ -98,6 +100,67 @@ export const FuelExpenseForm: React.FC<FuelExpenseFormProps> = ({
       });
     }
   }, [errors]);
+
+  // Inicializar Google Places Autocomplete
+  useEffect(() => {
+    if (mapsLoaded && window.google && window.google.maps.places) {
+      // Autocomplete para origen
+      if (originInputRef.current && !originAutocomplete) {
+        const autocomplete = new window.google.maps.places.Autocomplete(originInputRef.current, {
+          componentRestrictions: { country: 'CL' },
+          fields: ['formatted_address', 'geometry'],
+          types: ['address']
+        });
+
+        autocomplete.addListener('place_changed', () => {
+          const place = autocomplete.getPlace();
+          if (place.geometry && place.geometry.location) {
+            const coordinates = {
+              lat: place.geometry.location.lat(),
+              lng: place.geometry.location.lng()
+            };
+            setFormData(prev => ({
+              ...prev,
+              originAddress: place.formatted_address || '',
+              originCoordinates: coordinates
+            }));
+            setIsDirty(true);
+            clearFieldError('originAddress');
+          }
+        });
+
+        setOriginAutocomplete(autocomplete);
+      }
+
+      // Autocomplete para destino
+      if (destinationInputRef.current && !destinationAutocomplete) {
+        const autocomplete = new window.google.maps.places.Autocomplete(destinationInputRef.current, {
+          componentRestrictions: { country: 'CL' },
+          fields: ['formatted_address', 'geometry'],
+          types: ['address']
+        });
+
+        autocomplete.addListener('place_changed', () => {
+          const place = autocomplete.getPlace();
+          if (place.geometry && place.geometry.location) {
+            const coordinates = {
+              lat: place.geometry.location.lat(),
+              lng: place.geometry.location.lng()
+            };
+            setFormData(prev => ({
+              ...prev,
+              destinationAddress: place.formatted_address || '',
+              destinationCoordinates: coordinates
+            }));
+            setIsDirty(true);
+            clearFieldError('destinationAddress');
+          }
+        });
+
+        setDestinationAutocomplete(autocomplete);
+      }
+    }
+  }, [mapsLoaded, originAutocomplete, destinationAutocomplete, clearFieldError]);
 
   // Validar formulario
   const validateForm = useCallback((): boolean => {
@@ -499,6 +562,10 @@ export const FuelExpenseForm: React.FC<FuelExpenseFormProps> = ({
                 error={routeError}
                 height="300px"
                 showDetails={false}
+                originCoordinates={formData.originCoordinates || undefined}
+                destinationCoordinates={formData.destinationCoordinates || undefined}
+                showMarkers={true}
+                showRoute={true}
               />
               
               {/* Botón para calcular ruta */}

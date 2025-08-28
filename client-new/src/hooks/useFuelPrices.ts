@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { FuelPrice, FuelType } from '../types/fuel';
-import { cneService } from '../services/cneService';
+import { fixedFuelPricesService } from '../services/fixedFuelPricesService';
 
 /**
  * Hook personalizado para gestión de precios de combustible
@@ -55,8 +55,8 @@ export const useFuelPrices = () => {
         }
       }
 
-      console.log('Obteniendo precio actualizado desde CNE:', priceKey);
-      const price = await cneService.getFuelPrice(fuelType, region);
+      console.log('Obteniendo precio actualizado desde precios fijos:', priceKey);
+      const price = await fixedFuelPricesService.getFuelPrice(fuelType, region);
       
       // Actualizar cache
       setPrices(prev => ({
@@ -104,7 +104,7 @@ export const useFuelPrices = () => {
       
       const fuelTypes = Object.values(FuelType);
       const pricesPromises = fuelTypes.map(fuelType => 
-        cneService.getFuelPrice(fuelType, region)
+        fixedFuelPricesService.getFuelPrice(fuelType, region)
       );
       
       const fetchedPrices = await Promise.all(pricesPromises);
@@ -117,7 +117,7 @@ export const useFuelPrices = () => {
       // Actualizar cache con todos los precios
       const newPricesCache: Record<string, FuelPrice> = {};
       fetchedPrices.forEach(price => {
-        const key = getPriceKey(price.fuelType, price.region);
+        const key = getPriceKey((price as any).fuelType, (price as any).region);
         newPricesCache[key] = price;
       });
       
@@ -157,10 +157,10 @@ export const useFuelPrices = () => {
       });
       
       // Limpiar cache del servicio también
-      cneService.clearTokenCache();
+      fixedFuelPricesService.clearTokenCache();
       
       // Obtener precio fresco
-      const freshPrice = await cneService.getFuelPrice(fuelType, region);
+      const freshPrice = await fixedFuelPricesService.getFuelPrice(fuelType, region);
       
       // Actualizar estado
       setPrices(prev => ({
@@ -186,7 +186,7 @@ export const useFuelPrices = () => {
   const refreshAllPrices = useCallback(async (region: string = 'Metropolitana'): Promise<void> => {
     try {
       // Limpiar cache completo
-      cneService.clearTokenCache();
+      fixedFuelPricesService.clearTokenCache();
       setPrices({});
       
       // Obtener precios frescos
@@ -213,7 +213,7 @@ export const useFuelPrices = () => {
       
       const comparisons = await Promise.allSettled(
         regions.map(async (region) => {
-          const price = await cneService.getFuelPrice(fuelType, region);
+          const price = await fixedFuelPricesService.getFuelPrice(fuelType, region);
           return { region, price };
         })
       );

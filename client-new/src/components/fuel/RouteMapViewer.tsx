@@ -1,7 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { RouteData, Coordinates } from '../../types/fuel';
 import { useGoogleMaps } from '@hooks/useGoogleMaps';
 import { mapUtils } from '@utils/mapUtils';
+import '../../types/google-maps.d.ts';
 
 interface RouteMapViewerProps {
   routeData: RouteData | null;
@@ -11,6 +12,11 @@ interface RouteMapViewerProps {
   showDetails?: boolean;
   onMapClick?: (coordinates: Coordinates) => void;
   className?: string;
+  // Nuevas props para marcadores individuales
+  originCoordinates?: Coordinates;
+  destinationCoordinates?: Coordinates;
+  showMarkers?: boolean;
+  showRoute?: boolean;
 }
 
 /**
@@ -22,27 +28,131 @@ export const RouteMapViewer: React.FC<RouteMapViewerProps> = ({
   error = null,
   height = '400px',
   showDetails = true,
-  className = ''
+  className = '',
+  originCoordinates,
+  destinationCoordinates,
+  showMarkers = true,
+  showRoute = true
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
+  const [map, setMap] = useState<any | null>(null);
+  const [directionsRenderer, setDirectionsRenderer] = useState<any | null>(null);
+  const [markers, setMarkers] = useState<any[]>([]);
   const { isLoaded, error: mapsError, initializeMap } = useGoogleMaps();
 
+  // Limpiar marcadores existentes
+  const clearMarkers = () => {
+    markers.forEach(marker => marker.setMap(null));
+    setMarkers([]);
+  };
+
+  // Crear marcador
+  const createMarker = (position: Coordinates, title: string, icon?: string) => {
+    if (!map || !window.google) return null;
+
+    const marker = new window.google.maps.Marker({
+      position,
+      map,
+      title,
+      icon: icon || undefined,
+      animation: window.google.maps.Animation.DROP
+    });
+
+    return marker;
+  };
+
+  // Actualizar marcadores
+  const updateMarkers = () => {
+    if (!map || !isLoaded || !showMarkers) return;
+
+    clearMarkers();
+    const newMarkers: any[] = [];
+
+    // Marcador de origen
+    if (originCoordinates) {
+      const originMarker = createMarker(
+        originCoordinates,
+        'Origen',
+        'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="%2300a650"%3E%3Cpath d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/%3E%3C/svg%3E'
+      );
+      if (originMarker) newMarkers.push(originMarker);
+    }
+
+    // Marcador de destino
+    if (destinationCoordinates) {
+      const destinationMarker = createMarker(
+        destinationCoordinates,
+        'Destino',
+        'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="%23ea4335"%3E%3Cpath d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/%3E%3C/svg%3E'
+      );
+      if (destinationMarker) newMarkers.push(destinationMarker);
+    }
+
+    setMarkers(newMarkers);
+
+    // Ajustar vista para mostrar todos los marcadores
+    if (newMarkers.length > 0) {
+      const bounds = new window.google.maps.LatLngBounds();
+      newMarkers.forEach(marker => {
+        bounds.extend(marker.getPosition());
+      });
+      map.fitBounds(bounds);
+    }
+  };
+
+  // Mostrar ruta usando Directions API
+  const displayRoute = () => {
+    if (!map || !isLoaded || !showRoute || !originCoordinates || !destinationCoordinates || !window.google) return;
+
+    // Crear DirectionsService y DirectionsRenderer si no existen
+    if (!directionsRenderer) {
+      const renderer = new window.google.maps.DirectionsRenderer({
+        suppressMarkers: showMarkers, // Suprimir marcadores si ya los estamos mostrando
+        polylineOptions: {
+          strokeColor: '#1976d2',
+          strokeWeight: 5,
+          strokeOpacity: 0.8
+        }
+      });
+      renderer.setMap(map);
+      setDirectionsRenderer(renderer);
+
+      const directionsService = new window.google.maps.DirectionsService();
+      
+      directionsService.route({
+        origin: originCoordinates,
+        destination: destinationCoordinates,
+        travelMode: window.google.maps.TravelMode.DRIVING,
+        avoidHighways: false,
+        avoidTolls: false
+      }, (result: any, status: any) => {
+        if (status === window.google.maps.DirectionsStatus.OK && result) {
+          renderer.setDirections(result);
+        } else {
+          console.error('Error obteniendo direcciones:', status);
+        }
+      });
+    }
+  };
+
+  // Inicializar mapa
   useEffect(() => {
     if (isLoaded && mapRef.current && !loading) {
-      // Inicializar mapa
-      const map = initializeMap(mapRef.current, {
+      const newMap = initializeMap(mapRef.current, {
         center: { lat: -33.4489, lng: -70.6693 }, // Santiago por defecto
         zoom: 10
       });
 
-      if (map && routeData) {
-        // Centrar en la ruta
+      setMap(newMap);
+
+      // Si hay routeData completa, ajustar vista
+      if (newMap && routeData) {
         const bounds = mapUtils.getBounds([
           routeData.origin.coordinates,
           routeData.destination.coordinates
         ]);
         
-        map.fitBounds({
+        newMap.fitBounds({
           north: bounds.north,
           south: bounds.south,
           east: bounds.east,
@@ -50,7 +160,19 @@ export const RouteMapViewer: React.FC<RouteMapViewerProps> = ({
         });
       }
     }
-  }, [isLoaded, initializeMap, routeData, loading]);
+  }, [isLoaded, initializeMap, loading]);
+
+  // Actualizar marcadores cuando cambien las coordenadas
+  useEffect(() => {
+    updateMarkers();
+  }, [map, originCoordinates, destinationCoordinates, showMarkers]);
+
+  // Mostrar ruta cuando cambien las coordenadas o la configuración
+  useEffect(() => {
+    if (showRoute && originCoordinates && destinationCoordinates) {
+      displayRoute();
+    }
+  }, [map, originCoordinates, destinationCoordinates, showRoute, isLoaded, directionsRenderer]);
 
   if (loading) {
     return (

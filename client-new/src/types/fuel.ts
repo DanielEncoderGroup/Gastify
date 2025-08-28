@@ -37,13 +37,13 @@ export enum FuelType {
   DIESEL = 'diesel'
 }
 
-// Precio de combustible desde API CNE
+// Precio de combustible desde diferentes fuentes
 export interface FuelPrice {
   fuelType: FuelType;
   price: number; // Precio por litro en CLP
   region: string;
   lastUpdated: string;
-  source: 'CNE' | 'manual';
+  source: 'CNE' | 'manual' | 'fixed_prices';
 }
 
 // Datos de ruta calculados

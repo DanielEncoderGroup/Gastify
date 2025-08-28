@@ -84,9 +84,12 @@ export const FuelCostCalculator: React.FC<FuelCostCalculatorProps> = ({
         
         <div className="flex justify-between items-center">
           <span className="text-sm text-gray-600">Precio por litro:</span>
-          <span className="text-sm font-medium text-gray-900">
-            {fuelCalculations.formatChileanPrice(calculation.fuelPrice)}
-          </span>
+          <div className="text-right">
+            <span className="text-sm font-medium text-gray-900">
+              {fuelCalculations.formatChileanPrice(calculation.fuelPrice)}
+            </span>
+            <p className="text-xs text-green-600">Precio actualizado hoy</p>
+          </div>
         </div>
         
         <div className="border-t border-gray-200 pt-3">
