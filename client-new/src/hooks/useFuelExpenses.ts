@@ -4,7 +4,9 @@ import {
   CreateFuelExpenseData, 
   CreateFuelExpenseResponse,
   FuelExpenseFilters,
-  FuelExpenseStats
+  FuelExpenseStats,
+  RouteData,
+  FuelCalculation
 } from '../types/fuel';
 import { fuelService } from '../services/fuelService';
 
@@ -26,14 +28,18 @@ export const useFuelExpenses = () => {
   }, []);
 
   /**
-   * Crear un nuevo gasto de combustible
+   * Crear un nuevo gasto de combustible (con datos calculados)
    */
-  const createExpense = useCallback(async (data: CreateFuelExpenseData): Promise<CreateFuelExpenseResponse> => {
+  const createExpenseWithCalculations = useCallback(async (
+    data: CreateFuelExpenseData, 
+    routeData: RouteData, 
+    calculation: FuelCalculation
+  ): Promise<CreateFuelExpenseResponse> => {
     try {
       setLoading(true);
       setError(null);
       
-      const response = await fuelService.createFuelExpense(data);
+      const response = await fuelService.createFuelExpense(data, routeData, calculation);
       
       if (response.success && response.fuelExpense) {
         // Agregar el nuevo gasto al estado local
@@ -41,6 +47,26 @@ export const useFuelExpenses = () => {
       }
       
       return response;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error creando gasto de combustible';
+      setError(errorMessage);
+      console.error('Error creating fuel expense:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  /**
+   * Crear un nuevo gasto de combustible (versión simple para compatibilidad)
+   */
+  const createExpense = useCallback(async (data: CreateFuelExpenseData): Promise<CreateFuelExpenseResponse> => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Para esta versión simple, devolvemos un mensaje indicando que se necesitan datos adicionales
+      throw new Error('Datos insuficientes: se requieren datos de ruta y cálculo. Use createExpenseWithCalculations en su lugar.');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error creando gasto de combustible';
       setError(errorMessage);
@@ -318,6 +344,7 @@ export const useFuelExpenses = () => {
     
     // Funciones CRUD
     createExpense,
+    createExpenseWithCalculations,
     fetchExpenses,
     getExpenseById,
     updateExpense,

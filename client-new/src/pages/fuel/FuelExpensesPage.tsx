@@ -48,24 +48,23 @@ export const FuelExpensesPage: React.FC = () => {
 
   const localTotals = getLocalTotals();
 
-  // Manejar creación de gasto
+  // Manejar creación de gasto (callback después de que el formulario complete la creación)
   const handleCreateExpense = useCallback(async (data: CreateFuelExpenseData) => {
     try {
-      const response = await createExpense(data);
-      if (response.success) {
-        setCurrentView('list');
-        setShowToast({
-          type: 'success',
-          message: 'Gasto de combustible creado exitosamente'
-        });
-      }
+      // El formulario ya manejó la creación, ahora refrescamos la lista
+      await fetchExpenses();
+      setCurrentView('list');
+      setShowToast({
+        type: 'success',
+        message: 'Gasto de combustible creado exitosamente'
+      });
     } catch (error) {
       setShowToast({
         type: 'error',
-        message: 'Error al crear el gasto de combustible'
+        message: 'Error al refrescar la lista de gastos'
       });
     }
-  }, [createExpense]);
+  }, [fetchExpenses]);
 
   // Manejar eliminación
   const handleDeleteExpense = useCallback(async (id: string) => {

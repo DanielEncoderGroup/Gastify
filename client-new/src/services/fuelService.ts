@@ -4,8 +4,109 @@ import {
   CreateFuelExpenseResponse,
   FuelExpense,
   FuelExpenseFilters,
-  FuelExpenseStats
+  FuelExpenseStats,
+  RouteData,
+  FuelCalculation
 } from '../types/fuel';
+
+/**
+ * Mapear respuesta del backend al formato frontend
+ */
+const mapFromBackendFormat = (backendExpense: any): FuelExpense => {
+  return {
+    id: backendExpense.id,
+    userId: backendExpense.user_id,
+    employerId: backendExpense.employer_id,
+    
+    // Reconstruir routeData desde campos planos
+    routeData: {
+      origin: {
+        coordinates: {
+          lat: backendExpense.origin_lat,
+          lng: backendExpense.origin_lng
+        },
+        address: backendExpense.origin_address || '',
+        city: '', // No disponible en backend actual
+        region: '', // No disponible en backend actual  
+        country: 'Chile'
+      },
+      destination: {
+        coordinates: {
+          lat: backendExpense.destination_lat,
+          lng: backendExpense.destination_lng
+        },
+        address: backendExpense.destination_address || '',
+        city: '', // No disponible en backend actual
+        region: '', // No disponible en backend actual
+        country: 'Chile'
+      },
+      distance: backendExpense.distance_km,
+      duration: 0, // No disponible en backend actual
+      polyline: undefined
+    },
+    
+    // Datos del vehículo y combustible
+    vehicleType: backendExpense.vehicle_type,
+    fuelType: backendExpense.fuel_type,
+    
+    // Reconstruir calculation desde campos planos
+    calculation: {
+      routeData: {} as RouteData, // Se llenará con routeData de arriba
+      vehicleType: backendExpense.vehicle_type,
+      fuelType: backendExpense.fuel_type,
+      fuelPrice: backendExpense.fuel_price_per_liter,
+      fuelNeeded: backendExpense.fuel_needed_liters,
+      totalCost: backendExpense.total_cost,
+      consumption: 0 // Calcular si es necesario
+    },
+    
+    // Justificación
+    businessPurpose: backendExpense.business_purpose,
+    description: backendExpense.description,
+    
+    // Estado
+    status: backendExpense.status || 'submitted',
+    
+    // Metadatos
+    createdAt: backendExpense.created_at,
+    updatedAt: backendExpense.updated_at
+  };
+};
+
+/**
+ * Mapear datos del frontend al formato esperado por el backend
+ */
+const mapToBackendFormat = (
+  frontendData: CreateFuelExpenseData, 
+  routeData: RouteData, 
+  calculation: FuelCalculation
+) => {
+  return {
+    // Coordenadas planas
+    origin_lat: frontendData.originCoordinates.lat,
+    origin_lng: frontendData.originCoordinates.lng,
+    destination_lat: frontendData.destinationCoordinates.lat,
+    destination_lng: frontendData.destinationCoordinates.lng,
+    
+    // Direcciones
+    origin_address: frontendData.originAddress || routeData.origin.address || '',
+    destination_address: frontendData.destinationAddress || routeData.destination.address || '',
+    
+    // Datos del vehículo y combustible
+    vehicle_type: frontendData.vehicleType,
+    fuel_type: frontendData.fuelType,
+    
+    // Justificación
+    business_purpose: frontendData.businessPurpose,
+    description: frontendData.description || null,
+    
+    // Datos calculados
+    distance_km: routeData.distance,
+    fuel_needed_liters: calculation.fuelNeeded,
+    fuel_price_per_liter: calculation.fuelPrice,
+    total_cost: calculation.totalCost
+  };
+};
 
 /**
  * Servicio para gestión de gastos de combustible
@@ -15,10 +116,22 @@ export const fuelService = {
   /**
    * Crear un nuevo gasto de combustible
    */
-  createFuelExpense: async (data: CreateFuelExpenseData): Promise<CreateFuelExpenseResponse> => {
+  createFuelExpense: async (
+    data: CreateFuelExpenseData, 
+    routeData: RouteData, 
+    calculation: FuelCalculation
+  ): Promise<CreateFuelExpenseResponse> => {
     try {
-      const response = await api.post('/fuel-expenses', data);
-      return response.data;
+      const backendData = mapToBackendFormat(data, routeData, calculation);
+      const response = await api.post('/fuel-expenses', backendData);
+      
+      // Mapear respuesta del backend al formato frontend
+      const mappedExpense = mapFromBackendFormat(response.data);
+      return {
+        success: true,
+        fuelExpense: mappedExpense,
+        message: 'Gasto de combustible creado exitosamente'
+      };
     } catch (error) {
       console.error('Error creating fuel expense:', error);
       throw error;
@@ -31,7 +144,8 @@ export const fuelService = {
   getFuelExpenses: async (filters: FuelExpenseFilters = {}): Promise<FuelExpense[]> => {
     try {
       const response = await api.get('/fuel-expenses', { params: filters });
-      return response.data;
+      // Mapear cada gasto del backend al formato frontend
+      return response.data.map(mapFromBackendFormat);
     } catch (error) {
       console.error('Error fetching fuel expenses:', error);
       throw error;
@@ -44,7 +158,7 @@ export const fuelService = {
   getFuelExpenseById: async (id: string): Promise<FuelExpense> => {
     try {
       const response = await api.get(`/fuel-expenses/${id}`);
-      return response.data;
+      return mapFromBackendFormat(response.data);
     } catch (error) {
       console.error('Error fetching fuel expense by ID:', error);
       throw error;

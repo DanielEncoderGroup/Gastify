@@ -36,6 +36,7 @@ interface FormErrors {
   businessPurpose?: string;
   description?: string;
   general?: string;
+  submit?: string;
 }
 
 interface FuelExpenseFormProps {
@@ -79,7 +80,7 @@ export const FuelExpenseForm: React.FC<FuelExpenseFormProps> = ({
   const [destinationAutocomplete, setDestinationAutocomplete] = useState<any>(null);
 
   // Hooks
-  const { createExpense, loading: submitLoading, error: submitError } = useFuelExpenses();
+  const { createExpenseWithCalculations, loading: submitLoading, error: submitError } = useFuelExpenses();
   const {
     routeData,
     calculation,
@@ -307,13 +308,19 @@ export const FuelExpenseForm: React.FC<FuelExpenseFormProps> = ({
         manualFuelPrice: formData.manualFuelPrice
       };
 
-      await createExpense(submitData);
+      // Verificar que tenemos todos los datos necesarios
+      if (!routeData || !calculation) {
+        setErrors({ submit: 'Faltan datos de ruta o cálculo. Por favor, calcule la ruta primero.' });
+        return;
+      }
+
+      await createExpenseWithCalculations(submitData, routeData, calculation);
       setIsDirty(false);
       onSubmit(submitData);
     } catch (error) {
       console.error('Error submitting form:', error);
     }
-  }, [validateForm, formData, createExpense, onSubmit]);
+  }, [validateForm, formData, createExpenseWithCalculations, onSubmit, routeData, calculation]);
 
   // Manejar cancelación
   const handleCancel = useCallback(() => {

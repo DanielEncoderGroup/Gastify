@@ -64,11 +64,21 @@ async def get_fuel_expenses(
     """
     Obtener todos los gastos de combustible del usuario
     """
+    # Debug: imprimir información de búsqueda
+    print(f"🔍 Buscando gastos para usuario: {str(current_user.id)}")
+    print(f"📋 Total gastos en sistema: {len(mock_fuel_expenses)}")
+    
     # Filtrar por usuario actual
     user_expenses = [
         expense for expense in mock_fuel_expenses 
         if expense.get("user_id") == str(current_user.id)
     ]
+    
+    print(f"✅ Gastos encontrados para usuario: {len(user_expenses)}")
+    if user_expenses:
+        for expense in user_expenses:
+            print(f"  - ID: {expense.get('id')}, Propósito: {expense.get('business_purpose')}")
+    
     return user_expenses
 
 @router.post("/fuel-expenses", response_model=FuelExpenseResponse)
@@ -94,6 +104,10 @@ async def create_fuel_expense(
     
     # Agregar a mock data
     mock_fuel_expenses.append(new_expense)
+    
+    # Debug: imprimir datos guardados
+    print(f"✅ Nuevo gasto guardado - ID: {new_expense['id']}, Usuario: {new_expense['user_id']}")
+    print(f"📊 Total gastos en sistema: {len(mock_fuel_expenses)}")
     
     # Actualizar estadísticas
     global mock_stats
