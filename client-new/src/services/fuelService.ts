@@ -31,7 +31,7 @@ export const fuelService = {
   getFuelExpenses: async (filters: FuelExpenseFilters = {}): Promise<FuelExpense[]> => {
     try {
       const response = await api.get('/fuel-expenses', { params: filters });
-      return response.data.data;
+      return response.data;
     } catch (error) {
       console.error('Error fetching fuel expenses:', error);
       throw error;
@@ -44,7 +44,7 @@ export const fuelService = {
   getFuelExpenseById: async (id: string): Promise<FuelExpense> => {
     try {
       const response = await api.get(`/fuel-expenses/${id}`);
-      return response.data.data;
+      return response.data;
     } catch (error) {
       console.error('Error fetching fuel expense by ID:', error);
       throw error;
@@ -57,7 +57,7 @@ export const fuelService = {
   updateFuelExpense: async (id: string, data: Partial<CreateFuelExpenseData>): Promise<FuelExpense> => {
     try {
       const response = await api.put(`/fuel-expenses/${id}`, data);
-      return response.data.data;
+      return response.data;
     } catch (error) {
       console.error('Error updating fuel expense:', error);
       throw error;
@@ -82,7 +82,7 @@ export const fuelService = {
   getFuelExpenseStats: async (): Promise<FuelExpenseStats> => {
     try {
       const response = await api.get('/fuel-expenses/stats');
-      return response.data.data;
+      return response.data;
     } catch (error) {
       console.error('Error fetching fuel expense stats:', error);
       throw error;
@@ -99,7 +99,7 @@ export const fuelService = {
   ): Promise<FuelExpense> => {
     try {
       const response = await api.patch(`/fuel-expenses/${id}/status`, { status, reason });
-      return response.data.data;
+      return response.data;
     } catch (error) {
       console.error('Error updating fuel expense status:', error);
       throw error;
@@ -116,7 +116,7 @@ export const fuelService = {
       const response = await api.post(`/fuel-expenses/${id}/attachments`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      return response.data.data;
+      return response.data;
     } catch (error) {
       console.error('Error uploading fuel expense attachment:', error);
       throw error;

@@ -40,6 +40,7 @@ app.include_router(websockets.router, prefix="/api/v1/websockets", tags=["WebSoc
 app.include_router(employees.router, prefix="/api/employees", tags=["Employees"])
 app.include_router(spending_limits.router, prefix="/api/spending-limits", tags=["Spending Limits"])
 app.include_router(advanced_notifications.router, prefix="/api/advanced-notifications", tags=["Advanced Notifications"])
+app.include_router(fuel_expenses.router, prefix="/api", tags=["Fuel Expenses"])
 
 # Mount static files for uploads
 
