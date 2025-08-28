@@ -5,8 +5,8 @@ import {
   CreateFuelExpenseResponse,
   FuelExpenseFilters,
   FuelExpenseStats
-} from '@types/fuel';
-import { fuelService } from '@services/fuelService';
+} from '../types/fuel';
+import { fuelService } from '../services/fuelService';
 
 /**
  * Hook personalizado para gestión de gastos de combustible
@@ -281,7 +281,7 @@ export const useFuelExpenses = () => {
   /**
    * Calcular totales locales (para mostrar resúmenes rápidos)
    */
-  const getLocalTotals = useCallback(): {
+  const getLocalTotals = useCallback((): {
     totalExpenses: number;
     totalAmount: number;
     totalDistance: number;

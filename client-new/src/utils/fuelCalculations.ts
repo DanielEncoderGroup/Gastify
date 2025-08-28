@@ -1,4 +1,4 @@
-import { VehicleType, FuelType, VEHICLE_CONSUMPTION } from '@types/fuel';
+import { VehicleType, FuelType, VEHICLE_CONSUMPTION } from '../types/fuel';
 
 /**
  * Utilidades para cálculos de combustible en Gastify

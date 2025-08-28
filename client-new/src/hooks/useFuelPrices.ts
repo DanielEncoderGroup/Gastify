@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { FuelPrice, FuelType } from '@types/fuel';
-import { cneService } from '@services/cneService';
+import { FuelPrice, FuelType } from '../types/fuel';
+import { cneService } from '../services/cneService';
 
 /**
  * Hook personalizado para gestión de precios de combustible
@@ -157,7 +157,7 @@ export const useFuelPrices = () => {
       });
       
       // Limpiar cache del servicio también
-      cneService.clearCache();
+      cneService.clearTokenCache();
       
       // Obtener precio fresco
       const freshPrice = await cneService.getFuelPrice(fuelType, region);
@@ -186,7 +186,7 @@ export const useFuelPrices = () => {
   const refreshAllPrices = useCallback(async (region: string = 'Metropolitana'): Promise<void> => {
     try {
       // Limpiar cache completo
-      cneService.clearCache();
+      cneService.clearTokenCache();
       setPrices({});
       
       // Obtener precios frescos
@@ -291,7 +291,7 @@ export const useFuelPrices = () => {
   /**
    * Obtener información del estado del cache
    */
-  const getCacheInfo = useCallback(): {
+  const getCacheInfo = useCallback((): {
     totalPrices: number;
     regions: string[];
     fuelTypes: FuelType[];
@@ -299,8 +299,8 @@ export const useFuelPrices = () => {
     newestPrice: Date | null;
   } => {
     const priceList = Object.values(prices);
-    const regions = [...new Set(priceList.map(p => p.region))];
-    const fuelTypes = [...new Set(priceList.map(p => p.fuelType))];
+    const regions = Array.from(new Set(priceList.map(p => p.region)));
+    const fuelTypes = Array.from(new Set(priceList.map(p => p.fuelType)));
     
     const dates = priceList.map(p => new Date(p.lastUpdated));
     const oldestPrice = dates.length > 0 ? new Date(Math.min(...dates.map(d => d.getTime()))) : null;

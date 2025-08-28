@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 import os
-from app.api.routes import auth, receipts, notifications, categories, analytics, workflows, hybrid_ocr, ocr, invitations, websockets, spending_limits, advanced_notifications, employees, receipt_products, company_analytics
+from app.api.routes import auth, receipts, notifications, categories, analytics, workflows, hybrid_ocr, ocr, invitations, websockets, spending_limits, advanced_notifications, employees, receipt_products, company_analytics, fuel_expenses
 from app.routers import geolocation
 from app.core.config import settings
 from app.core.database import connect_to_mongo, close_mongo_connection

@@ -1,6 +1,6 @@
 import React from 'react';
-import { VehicleType } from '@types/fuel';
-import { vehicleConstants, VEHICLE_COLORS, VEHICLE_CSS_CLASSES } from '@utils/vehicleConstants';
+import { VehicleType } from '../../types/fuel';
+import { vehicleConstants } from '../../utils/vehicleConstants';
 
 interface VehicleTypeSelectorProps {
   selectedType: VehicleType | null;
@@ -48,7 +48,7 @@ export const VehicleTypeSelector: React.FC<VehicleTypeSelectorProps> = ({
           const isSelected = selectedType === type;
           const baseClasses = `relative flex items-start p-4 border rounded-lg cursor-pointer transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`;
           const selectedClasses = isSelected 
-            ? `${VEHICLE_CSS_CLASSES[type]} border-2 shadow-md selected` 
+            ? 'bg-blue-50 border-blue-500 border-2 shadow-md' 
             : 'border-gray-300 bg-white hover:border-gray-400';
           const disabledClasses = disabled ? 'opacity-50 cursor-not-allowed' : '';
 
@@ -80,12 +80,12 @@ export const VehicleTypeSelector: React.FC<VehicleTypeSelectorProps> = ({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
-                    <span className="text-2xl mr-2" role="img" aria-label={info.displayName}>
+                    <span className="text-2xl mr-2" role="img" aria-label={info.name}>
                       {info.icon}
                     </span>
                     <div>
                       <h3 className="text-sm font-medium text-gray-900">
-                        {info.displayName}
+                        {info.name}
                       </h3>
                       <p className="text-xs text-gray-500">
                         {info.consumption} km/litro
@@ -95,8 +95,8 @@ export const VehicleTypeSelector: React.FC<VehicleTypeSelectorProps> = ({
                   
                   {/* Badge de categoría */}
                   <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    info.category === 'economico' ? 'bg-green-100 text-green-800' :
-                    info.category === 'intermedio' ? 'bg-yellow-100 text-yellow-800' :
+                    info.category === 'economy' ? 'bg-green-100 text-green-800' :
+                    info.category === 'commercial' ? 'bg-yellow-100 text-yellow-800' :
                     'bg-red-100 text-red-800'
                   }`}>
                     {info.category}
@@ -116,18 +116,6 @@ export const VehicleTypeSelector: React.FC<VehicleTypeSelectorProps> = ({
                       {info.examples.slice(0, 3).join(', ')}
                       {info.examples.length > 3 && '...'}
                     </div>
-
-                    {/* Pros principales */}
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      {info.pros.slice(0, 2).map((pro, index) => (
-                        <span 
-                          key={index}
-                          className="inline-flex px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded"
-                        >
-                          ✓ {pro}
-                        </span>
-                      ))}
-                    </div>
                   </div>
                 )}
               </div>
@@ -141,7 +129,7 @@ export const VehicleTypeSelector: React.FC<VehicleTypeSelectorProps> = ({
         <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
           <div className="flex items-center mb-2">
             <span className="text-blue-600 text-sm font-medium">
-              {vehicleConstants.getVehicleInfo(selectedType).displayName} seleccionado
+              {vehicleConstants.getVehicleInfo(selectedType).name} seleccionado
             </span>
           </div>
           
@@ -149,7 +137,7 @@ export const VehicleTypeSelector: React.FC<VehicleTypeSelectorProps> = ({
             <div>
               <span className="font-medium text-gray-700">Consumo:</span>
               <span className="ml-1 text-gray-600">
-                {vehicleConstants.getConsumption(selectedType)} km/litro
+                {vehicleConstants.getVehicleConsumption(selectedType)} km/litro
               </span>
             </div>
             
@@ -165,10 +153,10 @@ export const VehicleTypeSelector: React.FC<VehicleTypeSelectorProps> = ({
           <div className="mt-2">
             <span className="font-medium text-gray-700 text-sm">Recomendado para:</span>
             <ul className="mt-1 text-xs text-gray-600">
-              {vehicleConstants.getVehicleInfo(selectedType).recommendedFor.map((rec, index) => (
+              {vehicleConstants.getUsageSuggestions(selectedType).slice(0, 3).map((suggestion, index) => (
                 <li key={index} className="flex items-center">
                   <span className="text-green-500 mr-1">•</span>
-                  {rec}
+                  {suggestion}
                 </li>
               ))}
             </ul>

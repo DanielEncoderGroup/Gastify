@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FuelExpense, FuelExpenseFilters, CreateFuelExpenseData } from '@types/fuel';
-import { useFuelExpenses } from '@hooks/useFuelExpenses';
-import { vehicleConstants } from '@utils/vehicleConstants';
-import { fuelCalculations } from '@utils/fuelCalculations';
-import { mapUtils } from '@utils/mapUtils';
-import FuelExpenseForm from '@components/fuel/FuelExpenseForm';
-import { Toast } from '@components/ui/Toast';
+import { FuelExpense, FuelExpenseFilters, CreateFuelExpenseData } from '../../types/fuel';
+import { useFuelExpenses } from '../../hooks/useFuelExpenses';
+import { vehicleConstants } from '../../utils/vehicleConstants';
+import { fuelCalculations } from '../../utils/fuelCalculations';
+import { mapUtils } from '../../utils/mapUtils';
+import FuelExpenseForm from '../../components/fuel/FuelExpenseForm';
+import Toast from '../../components/ui/Toast';
+import GoogleMapsTest from '../../components/fuel/GoogleMapsTest';
 
 /**
  * Página principal para gestión de gastos de combustible
@@ -351,6 +352,8 @@ export const FuelExpensesPage: React.FC = () => {
 
         {showToast && (
           <Toast
+            id="fuel-expense-toast"
+            title={showToast.type === 'success' ? 'Éxito' : 'Error'}
             type={showToast.type}
             message={showToast.message}
             onClose={() => setShowToast(null)}
@@ -380,6 +383,11 @@ export const FuelExpensesPage: React.FC = () => {
         </p>
       </div>
 
+      {/* Estado de Google Maps API */}
+      <div className="mb-6">
+        <GoogleMapsTest className="max-w-3xl" />
+      </div>
+
       {/* Estadísticas rápidas */}
       <QuickStats />
 
@@ -392,6 +400,8 @@ export const FuelExpensesPage: React.FC = () => {
       {/* Toast notifications */}
       {showToast && (
         <Toast
+          id="fuel-expense-list-toast"
+          title={showToast.type === 'success' ? 'Éxito' : 'Error'}
           type={showToast.type}
           message={showToast.message}
           onClose={() => setShowToast(null)}

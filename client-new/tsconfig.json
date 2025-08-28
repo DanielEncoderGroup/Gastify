@@ -32,5 +32,11 @@
     }
   },
   "include": ["src"],
-  "exclude": ["src/pages/landing/LandingPage.tsx", "**/LandingPage.tsx"]
+  "exclude": [
+    "src/pages/landing/LandingPage.tsx", 
+    "**/LandingPage.tsx",
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx"
+  ]
 }

@@ -42,6 +42,9 @@ import { CompanyDashboard } from './pages/company/CompanyDashboard';
 import ApprovalDashboard from './pages/workflows/ApprovalDashboard';
 import WorkflowConfiguration from './components/workflows/WorkflowConfiguration';
 
+// Gastify - Gastos de Combustible (PREMIUM UX/UI)
+import { FuelExpensesPage } from './pages/fuel/FuelExpensesPage';
+
 // Componente de inicialización para garantizar que se revisa la autenticación
 // antes de renderizar las rutas
 const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -163,6 +166,9 @@ function App() {
             {/* Rutas de Workflows de Aprobación (PREMIUM UX/UI) */}
             <Route path="approvals" element={<ApprovalDashboard />} />
             <Route path="workflows" element={<WorkflowConfiguration />} />
+            
+            {/* Rutas de Gastos de Combustible (PREMIUM UX/UI) */}
+            <Route path="fuel-expenses" element={<FuelExpensesPage />} />
             
             {/* Rutas protegidas para clientes */}
             <Route element={<ClientRoute />}>

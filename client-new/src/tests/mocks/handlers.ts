@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw';
-import { FuelType } from '@types/fuel';
+import { FuelType } from '../../types/fuel';
 
 // Mock data para CNE API
 const mockCNEData = {

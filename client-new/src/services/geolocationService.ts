@@ -1,4 +1,4 @@
-import { Coordinates, GeolocationState } from '@types/fuel';
+import { Coordinates, GeolocationState } from '../types/fuel';
 
 /**
  * Servicio para gestión de geolocalización del navegador

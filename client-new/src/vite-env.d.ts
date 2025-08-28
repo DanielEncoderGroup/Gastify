@@ -1,9 +1,10 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-  readonly VITE_API_URL?: string
-  readonly NODE_ENV: string
-  // Agregar más variables de entorno según sea necesario
+  readonly VITE_API_URL: string
+  readonly VITE_NAME: string
+  readonly VITE_VERSION: string
+  readonly VITE_GOOGLE_MAPS_API_KEY: string
 }
 
 interface ImportMeta {

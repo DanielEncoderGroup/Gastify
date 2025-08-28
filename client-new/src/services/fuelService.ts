@@ -5,7 +5,7 @@ import {
   FuelExpense,
   FuelExpenseFilters,
   FuelExpenseStats
-} from '@types/fuel';
+} from '../types/fuel';
 
 /**
  * Servicio para gestión de gastos de combustible

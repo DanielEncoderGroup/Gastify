@@ -6,12 +6,12 @@ import {
   Coordinates,
   RouteData,
   FuelCalculation 
-} from '@types/fuel';
-import { useFuelExpenses } from '@hooks/useFuelExpenses';
-import { useRouteCalculation } from '@hooks/useRouteCalculation';
-import { useGoogleMaps } from '@hooks/useGoogleMaps';
-import { geolocationService } from '@services/geolocationService';
-import { mapsService } from '@services/mapsService';
+} from '../../types/fuel';
+import { useFuelExpenses } from '../../hooks/useFuelExpenses';
+import { useRouteCalculation } from '../../hooks/useRouteCalculation';
+import { useGoogleMaps } from '../../hooks/useGoogleMaps';
+import { geolocationService } from '../../services/geolocationService';
+import { mapsService } from '../../services/mapsService';
 import VehicleTypeSelector from './VehicleTypeSelector';
 import FuelCostCalculator from './FuelCostCalculator';
 import RouteMapViewer from './RouteMapViewer';

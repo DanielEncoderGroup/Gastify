@@ -1,7 +1,7 @@
-import { Coordinates, Location, RouteData } from '@types/fuel';
+import { Coordinates, Location, RouteData } from '../types/fuel';
 
 // Configuración de Google Maps desde variables de entorno
-const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 if (!GOOGLE_MAPS_API_KEY) {
   console.warn('GOOGLE_MAPS_API_KEY no está configurada');
@@ -65,7 +65,7 @@ export const mapsService = {
           region: 'CL', // Bias hacia Chile
           componentRestrictions: { country: 'CL' } // Restringir a Chile
         },
-        (results, status) => {
+        (results: any, status: any) => {
           if (status === window.google.maps.GeocoderStatus.OK && results && results[0]) {
             const result = results[0];
             const location = result.geometry.location;
@@ -76,7 +76,7 @@ export const mapsService = {
             let region = '';
             let country = '';
 
-            addressComponents.forEach((component) => {
+            addressComponents.forEach((component: any) => {
               const types = component.types;
               
               if (types.includes('locality') || types.includes('administrative_area_level_3')) {
@@ -128,7 +128,7 @@ export const mapsService = {
       const geocoder = new window.google.maps.Geocoder();
       const latLng = new window.google.maps.LatLng(coordinates.lat, coordinates.lng);
       
-      geocoder.geocode({ location: latLng }, (results, status) => {
+      geocoder.geocode({ location: latLng }, (results: any, status: any) => {
         if (status === window.google.maps.GeocoderStatus.OK && results && results[0]) {
           const result = results[0];
           const addressComponents = result.address_components;
@@ -137,7 +137,7 @@ export const mapsService = {
           let region = '';
           let country = '';
 
-          addressComponents.forEach((component) => {
+          addressComponents.forEach((component: any) => {
             const types = component.types;
             
             if (types.includes('locality') || types.includes('administrative_area_level_3')) {
@@ -178,7 +178,7 @@ export const mapsService = {
 
       const directionsService = new window.google.maps.DirectionsService();
 
-      const request: google.maps.DirectionsRequest = {
+      const request: any = {
         origin: new window.google.maps.LatLng(origin.lat, origin.lng),
         destination: new window.google.maps.LatLng(destination.lat, destination.lng),
         travelMode: window.google.maps.TravelMode.DRIVING,
@@ -188,7 +188,7 @@ export const mapsService = {
         avoidTolls: false
       };
 
-      directionsService.route(request, async (result, status) => {
+      directionsService.route(request, async (result: any, status: any) => {
         if (status === window.google.maps.DirectionsStatus.OK && result) {
           const route = result.routes[0];
           const leg = route.legs[0];
@@ -288,9 +288,9 @@ export const mapsService = {
           componentRestrictions: { country: 'CL' },
           types: ['geocode', 'establishment']
         },
-        (predictions, status) => {
+        (predictions: any, status: any) => {
           if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
-            const suggestions = predictions.map(prediction => prediction.description);
+            const suggestions = predictions.map((prediction: any) => prediction.description);
             resolve(suggestions);
           } else {
             resolve([]);

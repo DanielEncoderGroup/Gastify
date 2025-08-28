@@ -1,4 +1,4 @@
-import { VehicleType, VEHICLE_CONSUMPTION } from '@types/fuel';
+import { VehicleType, VEHICLE_CONSUMPTION } from '../types/fuel';
 
 /**
  * Constantes y utilidades para tipos de vehículos en Gastify

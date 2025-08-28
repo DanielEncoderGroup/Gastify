@@ -1,4 +1,4 @@
-import { Coordinates } from '@types/fuel';
+import { Coordinates } from '../types/fuel';
 
 /**
  * Utilidades para manejo de mapas y geolocalización en Gastify

@@ -1,14 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Coordinates, GoogleMapsConfig } from '@types/fuel';
+import { Coordinates, GoogleMapsConfig } from '../types/fuel';
 
 interface UseGoogleMapsReturn {
   isLoaded: boolean;
   error: string | null;
-  maps: typeof google.maps | null;
-  initializeMap: (container: HTMLElement, options?: google.maps.MapOptions) => google.maps.Map | null;
-  createMarker: (map: google.maps.Map, position: Coordinates, options?: google.maps.MarkerOptions) => google.maps.Marker | null;
-  drawRoute: (map: google.maps.Map, route: google.maps.DirectionsResult) => void;
-  clearMap: (map: google.maps.Map) => void;
+  maps: any;
+  initializeMap: (container: HTMLElement, options?: any) => any;
+  createMarker: (map: any, position: Coordinates, options?: any) => any;
+  drawRoute: (map: any, route: any) => void;
+  clearMap: (map: any) => void;
 }
 
 /**
@@ -17,12 +17,12 @@ interface UseGoogleMapsReturn {
 export const useGoogleMaps = (): UseGoogleMapsReturn => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [maps, setMaps] = useState<typeof google.maps | null>(null);
-  const [directionsRenderer, setDirectionsRenderer] = useState<google.maps.DirectionsRenderer | null>(null);
+  const [maps, setMaps] = useState<any>(null);
+  const [directionsRenderer, setDirectionsRenderer] = useState<any>(null);
 
   // Configuración de Google Maps
   const config: GoogleMapsConfig = {
-    apiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '',
+    apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
     region: 'CL',
     language: 'es',
     libraries: ['places', 'geometry']
@@ -70,14 +70,14 @@ export const useGoogleMaps = (): UseGoogleMapsReturn => {
   }, [config.apiKey]);
 
   // Inicializar mapa
-  const initializeMap = useCallback((container: HTMLElement, options?: google.maps.MapOptions): google.maps.Map | null => {
+  const initializeMap = useCallback((container: HTMLElement, options?: any): any => {
     if (!isLoaded || !maps) {
       console.warn('Google Maps no está cargado');
       return null;
     }
 
     try {
-      const defaultOptions: google.maps.MapOptions = {
+      const defaultOptions: any = {
         center: { lat: -33.4489, lng: -70.6693 }, // Santiago, Chile
         zoom: 10,
         mapTypeId: maps.MapTypeId.ROADMAP,
@@ -115,17 +115,17 @@ export const useGoogleMaps = (): UseGoogleMapsReturn => {
 
   // Crear marcador
   const createMarker = useCallback((
-    map: google.maps.Map, 
+    map: any, 
     position: Coordinates, 
-    options?: google.maps.MarkerOptions
-  ): google.maps.Marker | null => {
+    options?: any
+  ): any => {
     if (!isLoaded || !maps) {
       console.warn('Google Maps no está cargado');
       return null;
     }
 
     try {
-      const defaultOptions: google.maps.MarkerOptions = {
+      const defaultOptions: any = {
         position: { lat: position.lat, lng: position.lng },
         map,
         animation: maps.Animation.DROP,
@@ -140,7 +140,7 @@ export const useGoogleMaps = (): UseGoogleMapsReturn => {
   }, [isLoaded, maps]);
 
   // Dibujar ruta
-  const drawRoute = useCallback((map: google.maps.Map, route: google.maps.DirectionsResult): void => {
+  const drawRoute = useCallback((map: any, route: any): void => {
     if (!isLoaded || !maps || !directionsRenderer) {
       console.warn('Google Maps o DirectionsRenderer no está cargado');
       return;
@@ -156,7 +156,7 @@ export const useGoogleMaps = (): UseGoogleMapsReturn => {
   }, [isLoaded, maps, directionsRenderer]);
 
   // Limpiar mapa
-  const clearMap = useCallback((map: google.maps.Map): void => {
+  const clearMap = useCallback((map: any): void => {
     if (!isLoaded || !maps) {
       console.warn('Google Maps no está cargado');
       return;
