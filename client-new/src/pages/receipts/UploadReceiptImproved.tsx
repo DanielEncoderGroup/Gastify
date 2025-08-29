@@ -361,7 +361,7 @@ export const UploadReceiptImproved: React.FC = () => {
       
     } catch (err: unknown) {
       error('Error', 'No se pudo guardar el recibo');
-      // console.error('Error saving receipt:', err);
+      console.error('Error saving receipt:', err);
     } finally {
       setIsSubmitting(false);
     }

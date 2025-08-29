@@ -37,7 +37,14 @@ class ReceiptService {
    */
   async createReceipt(receiptData: CreateReceiptData): Promise<Receipt> {
     const response = await api.post('/receipts/json', receiptData);
-    return response.data;
+    
+    // El backend devuelve {success: true, receipt: {...}}, extraer solo el receipt
+    if (response.data && response.data.success && response.data.receipt) {
+      return response.data.receipt;
+    }
+    
+    // Si la estructura es diferente, intentar devolver los datos directamente
+    throw new Error('Respuesta del servidor inválida: no se encontró el recibo creado');
   }
 
   /**

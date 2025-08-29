@@ -54,7 +54,12 @@ class WorkflowService:
                 **workflow_data.dict()
             )
             
-            result = await self.workflows_collection.insert_one(workflow.dict(by_alias=True))
+            # Excluir _id si es None para evitar errores de MongoDB
+            workflow_dict = workflow.dict(by_alias=True, exclude_unset=True)
+            if workflow_dict.get('_id') is None:
+                workflow_dict.pop('_id', None)
+            
+            result = await self.workflows_collection.insert_one(workflow_dict)
             workflow.id = result.inserted_id
             
             logger.info(f"Workflow creado: {workflow.name} para empresa {company_id}")
@@ -231,9 +236,12 @@ class WorkflowService:
                 # Establecer fecha límite (por defecto 3 días)
                 instance.due_date = datetime.utcnow() + timedelta(days=3)
             
-            result = await self.approval_instances_collection.insert_one(
-                instance.dict(by_alias=True)
-            )
+            # Excluir _id si es None para evitar errores de MongoDB
+            instance_dict = instance.dict(by_alias=True, exclude_unset=True)
+            if instance_dict.get('_id') is None:
+                instance_dict.pop('_id', None)
+            
+            result = await self.approval_instances_collection.insert_one(instance_dict)
             instance.id = result.inserted_id
             
             logger.info(f"Instancia de aprobación creada: {instance.id}")
@@ -368,9 +376,12 @@ class WorkflowService:
                 parent_role_id=parent_role_id
             )
             
-            result = await self.organization_roles_collection.insert_one(
-                role.model_dump(by_alias=True)
-            )
+            # Excluir _id si es None para evitar errores de MongoDB
+            role_dict = role.model_dump(by_alias=True, exclude_unset=True)
+            if role_dict.get('_id') is None:
+                role_dict.pop('_id', None)
+            
+            result = await self.organization_roles_collection.insert_one(role_dict)
             role.id = result.inserted_id
             
             return role
@@ -401,9 +412,12 @@ class WorkflowService:
                 assigned_by=assigned_by
             )
             
-            result = await self.user_role_assignments_collection.insert_one(
-                assignment.model_dump(by_alias=True)
-            )
+            # Excluir _id si es None para evitar errores de MongoDB
+            assignment_dict = assignment.model_dump(by_alias=True, exclude_unset=True)
+            if assignment_dict.get('_id') is None:
+                assignment_dict.pop('_id', None)
+            
+            result = await self.user_role_assignments_collection.insert_one(assignment_dict)
             assignment.id = result.inserted_id
             
             return assignment

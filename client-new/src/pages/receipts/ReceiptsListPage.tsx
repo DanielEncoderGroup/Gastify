@@ -4,6 +4,7 @@ import Icon from '../../components/ui/Icon';
 import Button from '../../components/ui/Button';
 import Card, { StatsCard } from '../../components/ui/Card';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import ConfirmationModal from '../../components/ui/ConfirmationModal';
 import { useToast } from '../../components/ui/Toast';
 import { receiptService } from '../../services/receiptService';
 import { ReceiptDetailsModal } from '../../components/gastify/receipts/ReceiptDetailsModal';
@@ -24,9 +25,13 @@ const ReceiptsListPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
-  // Estados para el modal
+  // Estados para el modal de detalles
   const [selectedReceipt, setSelectedReceipt] = useState<ModalReceipt | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // Estados para el modal de confirmación de eliminación
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [receiptToDelete, setReceiptToDelete] = useState<UnifiedReceipt | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [stats, setStats] = useState<ReceiptStats>({
     totalReceipts: 0,
     totalAmount: 0,
@@ -178,20 +183,51 @@ const ReceiptsListPage: React.FC = () => {
     setSelectedReceipt(null);
   };
 
-  // Función para eliminar recibo
-  const handleDelete = async (receiptId: string) => {
-    if (!window.confirm('¿Está seguro de que desea eliminar este recibo?')) {
-      return;
-    }
+  // Función para abrir modal de confirmación de eliminación
+  const handleDeleteClick = (receipt: UnifiedReceipt) => {
+    setReceiptToDelete(receipt);
+    setIsDeleteModalOpen(true);
+  };
 
+  // Función para confirmar eliminación
+  const handleConfirmDelete = async () => {
+    if (!receiptToDelete) return;
+
+    setIsDeleting(true);
     try {
-      await receiptService.deleteReceipt(receiptId);
-      setReceipts(prev => prev.filter(r => r.id !== receiptId));
-      success('✅ Recibo eliminado', 'El recibo se eliminó correctamente');
+      await receiptService.deleteReceipt(receiptToDelete.id);
+      
+      // Actualizar estado de recibos
+      const updatedReceipts = receipts.filter(r => r.id !== receiptToDelete.id);
+      setReceipts(updatedReceipts);
+      
+      // Recalcular estadísticas inmediatamente
+      const newStats = {
+        totalReceipts: updatedReceipts.length,
+        totalAmount: updatedReceipts.reduce((sum, r) => sum + r.totalAmount, 0),
+        enRevision: updatedReceipts.filter(r => r.status === 'pending').length,
+        aceptadas: updatedReceipts.filter(r => r.status === 'approved').length,
+        rechazadas: updatedReceipts.filter(r => r.status === 'rejected').length
+      };
+      setStats(newStats);
+      
+      success('✅ Recibo eliminado', `"${receiptToDelete.companyName}" se eliminó correctamente`);
+      
+      // Cerrar modal
+      setIsDeleteModalOpen(false);
+      setReceiptToDelete(null);
     } catch (error) {
       console.error('Error eliminando recibo:', error);
       showError('❌ Error al eliminar', 'No se pudo eliminar el recibo');
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  // Función para cancelar eliminación
+  const handleCancelDelete = () => {
+    setIsDeleteModalOpen(false);
+    setReceiptToDelete(null);
   };
 
   if (loading) {
@@ -408,7 +444,7 @@ const ReceiptsListPage: React.FC = () => {
                   <Button
                     variant="danger"
                     size="sm"
-                    onClick={() => handleDelete(receipt.id)}
+                    onClick={() => handleDeleteClick(receipt)}
                     disabled={loading}
                   >
                     <Icon name="TrashIcon" className="w-4 h-4 mr-1" />
@@ -465,6 +501,23 @@ const ReceiptsListPage: React.FC = () => {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         receipt={selectedReceipt}
+      />
+
+      {/* Modal de confirmación de eliminación */}
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        title="Eliminar Recibo"
+        message={
+          receiptToDelete 
+            ? `¿Está seguro de que desea eliminar permanentemente el recibo de "${receiptToDelete.companyName}" por ${receiptToDelete.totalAmount.toLocaleString('es-CL', { style: 'currency', currency: 'CLP' })}?`
+            : 'Esta acción no se puede deshacer.'
+        }
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        type="danger"
+        isLoading={isDeleting}
       />
     </div>
   );
